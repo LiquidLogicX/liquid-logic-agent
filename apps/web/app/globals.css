@@ -1,56 +1,359 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Outfit:wght@300;400;500;600&display=swap");
+
 :root {
-  --bg: #0b1020;
-  --card: #121a2f;
-  --text: #e8eefc;
-  --muted: #9aa8c7;
-  --accent: #5b8cff;
-  --border: #243049;
+  --navy: #0b1c2c;
+  --navy-deep: #07141f;
+  --navy-card: #122536;
+  --gold: #c4a35a;
+  --gold-soft: #e0c989;
+  --cream: #f4efe4;
+  --cream-ink: #1c2a36;
+  --cream-muted: #5c6b78;
+  --text: #eef3f7;
+  --muted: #9eb0bf;
+  --line: rgba(196, 163, 90, 0.28);
+  --radius: 14px;
 }
+
 * { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
 body {
   margin: 0;
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  background: radial-gradient(1200px 600px at 10% -10%, #1a2744, var(--bg));
+  font-family: "Outfit", system-ui, sans-serif;
+  background: var(--navy-deep);
   color: var(--text);
   min-height: 100vh;
-  line-height: 1.5;
+  line-height: 1.55;
+  font-weight: 400;
 }
-a { color: var(--accent); text-decoration: none; }
-a:hover { text-decoration: underline; }
-.site-header, .site-footer {
-  max-width: 960px;
+
+h1, h2, h3, .display {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.15;
+}
+
+a { color: var(--gold-soft); text-decoration: none; }
+a:hover { text-decoration: underline; color: var(--gold); }
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+
+.truncate {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.site-header {
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 1.25rem 1.5rem;
+  padding: 1.35rem 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
 }
-.site-header nav { display: flex; gap: 1rem; }
-.logo { font-weight: 700; color: var(--text); letter-spacing: 0.02em; }
-.site-footer { color: var(--muted); font-size: 0.875rem; display: block; }
-main { max-width: 960px; margin: 0 auto; padding: 1rem 1.5rem 3rem; }
-.card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1.25rem 1.5rem;
-  margin: 1rem 0;
+
+.logo {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.04em;
 }
-h1 { font-size: 1.75rem; margin: 0 0 0.75rem; }
-h2 { font-size: 1.15rem; margin: 0 0 0.5rem; }
+
+.site-header nav {
+  display: flex;
+  gap: 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.site-footer {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 3rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.hero {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem 1.5rem 2.5rem;
+  display: grid;
+  grid-template-columns: 1.2fr 0.9fr;
+  gap: 2rem;
+  align-items: stretch;
+}
+
+@media (max-width: 860px) {
+  .hero { grid-template-columns: 1fr; }
+}
+
+.hero-copy h1 {
+  font-size: clamp(2.4rem, 5vw, 3.4rem);
+  margin: 0 0 1rem;
+  color: #fff;
+}
+
+.hero-copy .lede {
+  font-size: 1.08rem;
+  color: var(--muted);
+  max-width: 36rem;
+  margin: 0 0 1.5rem;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.7rem 1.15rem;
+  border-radius: 999px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  border: 1px solid transparent;
+}
+
+.btn-primary {
+  background: var(--gold);
+  color: var(--navy-deep);
+}
+.btn-primary:hover { background: var(--gold-soft); text-decoration: none; color: var(--navy-deep); }
+
+.btn-ghost {
+  border-color: var(--line);
+  color: var(--text);
+}
+.btn-ghost:hover { border-color: var(--gold); text-decoration: none; }
+
+.hero-panel {
+  background: linear-gradient(160deg, var(--navy-card), #0e2233 70%);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.35rem 1.4rem 1.5rem;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+}
+
+.hero-panel-kicker {
+  margin: 0 0 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.72rem;
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.hero-panel-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.15rem;
+}
+
+.kpi-label, .stat-label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.kpi-value {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 2rem;
+  color: #fff;
+}
+
+.hero-panel-recent p { margin: 0.2rem 0 0.55rem; color: var(--text); }
+.small { font-size: 0.88rem; }
 .muted { color: var(--muted); }
+
+.stats-band {
+  background: var(--navy);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.stats-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.75rem 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+}
+
+@media (max-width: 860px) {
+  .stats-inner { grid-template-columns: 1fr 1fr; }
+}
+
+.stat-value {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.55rem;
+  color: #fff;
+}
+
+.stat-value a { color: var(--gold-soft); }
+
+.cream {
+  background: var(--cream);
+  color: var(--cream-ink);
+}
+
+.cream a { color: #8a6a28; }
+.cream a:hover { color: #6d521c; }
+
+.cream-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+
+.cream h2 {
+  font-size: 2rem;
+  margin: 0 0 0.75rem;
+}
+
+.cream .section-lede {
+  color: var(--cream-muted);
+  max-width: 40rem;
+  margin: 0 0 1.75rem;
+}
+
+.changelog {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.changelog li {
+  background: #fff;
+  border: 1px solid rgba(11, 28, 44, 0.08);
+  border-radius: 12px;
+  padding: 1rem 1.15rem;
+}
+
+.changelog .date {
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cream-muted);
+  font-weight: 600;
+}
+
+.changelog h3 {
+  margin: 0.2rem 0 0.35rem;
+  font-size: 1.35rem;
+}
+
+.changelog p {
+  margin: 0 0 0.55rem;
+  color: var(--cream-muted);
+}
+
+.section {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2.75rem 1.5rem;
+}
+
+.section h2 {
+  font-size: 2rem;
+  margin: 0 0 0.75rem;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+@media (max-width: 700px) {
+  .card-grid { grid-template-columns: 1fr; }
+}
+
+.card {
+  background: var(--navy-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.35rem;
+}
+
+.card h3 {
+  margin: 0 0 0.45rem;
+  font-size: 1.35rem;
+}
+
+.card p, .card ul { color: var(--muted); margin: 0; }
+.card ul { padding-left: 1.1rem; }
+.card li { margin: 0.25rem 0; }
+
+.contact-band {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1.5rem 3rem;
+}
+
+.contact-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.5rem 1.6rem;
+  background: linear-gradient(135deg, #122536, #0c1d2b);
+}
+
+.contact-card h2 { margin: 0 0 0.5rem; font-size: 1.8rem; }
+.contact-card p { color: var(--muted); margin: 0 0 0.85rem; }
+.contact-email {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.6rem;
+  color: var(--gold-soft);
+}
+
 code, pre {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  background: #0a0f1c;
+  background: #0a1520;
   border-radius: 6px;
 }
 code { padding: 0.1em 0.35em; font-size: 0.9em; }
-pre { padding: 1rem; overflow: auto; border: 1px solid var(--border); }
+pre {
+  padding: 1rem;
+  overflow: auto;
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+
 iframe.ledger-frame {
   width: 100%;
   min-height: 420px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--line);
   border-radius: 12px;
   background: #fff;
+  margin-top: 1rem;
+}
+
+main.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem 3rem;
 }
