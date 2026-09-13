@@ -9,7 +9,14 @@ let serverPromise: Promise<X402Server> | null = null;
 
 export function getAuditX402Server(): Promise<X402Server> {
   if (!serverPromise) {
-    const payTo = process.env.AUDIT_PAY_TO_EVM;
+    const payToRaw = process.env.AUDIT_PAY_TO_EVM ?? "";
+    // Strip whitespace/newlines from mobile paste wrapping
+    const payTo = payToRaw.replace(/\s+/g, "");
+    if (payTo && !/^0x[a-fA-F0-9]{40}$/.test(payTo)) {
+      throw new Error(
+        `AUDIT_PAY_TO_EVM must be a 42-char 0x address (got length ${payTo.length})`,
+      );
+    }
     serverPromise = createX402Server({
       // production default = Base mainnet. Set CDP_X402_SERVER_ENVIRONMENT=development for Sepolia.
       environment:
