@@ -29,6 +29,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             USDC on Base for x402 services only. No custom token. No investment
             product. Plans describes intent, not a commitment.
           </p>
+          <p className="site-footer-x">
+            <a href="https://x.com/LiquidLogicX" rel="me noopener noreferrer">
+              @LiquidLogicX
+            </a>
+          </p>
         </footer>
       </body>
     </html>
