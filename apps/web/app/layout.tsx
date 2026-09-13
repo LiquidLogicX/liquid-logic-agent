@@ -16,15 +16,17 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             Liquid Logic
           </a>
           <nav>
-            <a href="/ledger">Ledger</a>
+            <a href="/#ledger-live">Ledger</a>
+            <a href="/#changelog">Changelog</a>
             <a href="/docs">Endpoint docs</a>
+            <a href="/#contact">Contact</a>
           </nav>
         </header>
         {children}
         <footer className="site-footer">
           <p>
-            USDC on Base for x402 services only. No custom token. No investment or
-            treasury-growth framing.
+            USDC on Base for x402 services only. No custom token. No investment
+            product. No forward-looking roadmap on this site.
           </p>
         </footer>
       </body>
