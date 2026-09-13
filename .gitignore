@@ -11,6 +11,8 @@ apps/treasurer/data/*.jsonl
 !apps/treasurer/data/.gitkeep
 data/*.jsonl
 !data/.gitkeep
+# Canonical treasurer events for the public publisher / CI
+!data/ledger.jsonl
 .DS_Store
 coverage/
 *.tsbuildinfo
