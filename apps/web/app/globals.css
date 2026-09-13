@@ -357,3 +357,131 @@ main.page {
   margin: 0 auto;
   padding: 1rem 1.5rem 3rem;
 }
+
+
+.plans-intro {
+  margin-bottom: 1.5rem;
+}
+
+.plans-kicker {
+  margin: 0 0 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.72rem;
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.plans-intro h1 {
+  font-size: clamp(2.2rem, 4.5vw, 3rem);
+  margin: 0 0 0.85rem;
+  color: #fff;
+}
+
+.plans-intro .lede {
+  font-size: 1.05rem;
+  color: var(--muted);
+  max-width: 38rem;
+  margin: 0;
+}
+
+.plans-block {
+  margin: 2.25rem 0 2.75rem;
+}
+
+.plans-block-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-bottom: 0.75rem;
+}
+
+.plans-block-head h2 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.plans-status {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid var(--line);
+  color: var(--gold-soft);
+}
+
+.plans-status.live {
+  background: rgba(196, 163, 90, 0.14);
+  color: var(--gold);
+}
+
+.plans-status.built {
+  background: rgba(11, 28, 44, 0.06);
+  color: #8a6a28;
+  border-color: rgba(11, 28, 44, 0.12);
+}
+
+.plans-status.intent {
+  color: var(--muted);
+  border-color: rgba(158, 176, 191, 0.35);
+}
+
+.plans-lede {
+  color: var(--muted);
+  max-width: 42rem;
+  margin: 0 0 1.25rem;
+}
+
+.plans-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 900px) {
+  .plans-grid { grid-template-columns: 1fr; }
+}
+
+.plans-links {
+  margin-top: 0.9rem !important;
+  color: var(--text) !important;
+}
+
+.plans-built {
+  margin: 0 -1.5rem;
+  width: calc(100% + 3rem);
+}
+
+@media (min-width: 1132px) {
+  .plans-built {
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    width: 100vw;
+  }
+}
+
+.cream-cards .cream-card {
+  background: #fff;
+  border-color: rgba(11, 28, 44, 0.08);
+  color: var(--cream-ink);
+}
+
+.cream-cards .cream-card p {
+  color: var(--cream-muted);
+}
+
+.cream-cards .cream-card a {
+  color: #8a6a28;
+}
+
+.plans-intent-card p {
+  color: var(--text);
+  margin: 0;
+  max-width: 40rem;
+}
+
+.plans-intent-note {
+  margin-top: 0.85rem !important;
+}
