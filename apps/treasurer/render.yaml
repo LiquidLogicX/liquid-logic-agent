@@ -1,0 +1,38 @@
+# Render Blueprint — Liquid Logic Treasurer
+# Account: hello@liquidlogicx.com
+# Instance / plan: starter
+# Network: Base mainnet (omit CDP_X402_ENVIRONMENT). Development uses Base Sepolia.
+#
+# Deploy from repo root. After deploy, use Render Shell / one-off jobs for CLI:
+#   node dist/cli/index.js print-wallet-address
+#   node dist/cli/index.js pay <url>
+previewsEnabled: false
+services:
+  - type: worker
+    name: liquid-logic-treasurer
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./apps/treasurer/Dockerfile
+    dockerContext: .
+    region: oregon
+    envVars:
+      - key: CDP_API_KEY_ID
+        sync: false
+      - key: CDP_API_KEY_SECRET
+        sync: false
+      - key: CDP_WALLET_SECRET
+        sync: false
+      - key: TREASURER_LEDGER_PATH
+        value: /app/data/ledger.jsonl
+      - key: TREASURER_ALLOWLIST
+        sync: false
+      - key: TREASURER_MAX_PER_PAYMENT_USDC
+        value: "1.00"
+      - key: TREASURER_DAILY_CAP_USDC
+        value: "10.00"
+      - key: TREASURER_WALLET_ACCOUNT_NAME
+        value: x402-client-wallet-1
+    disk:
+      name: treasurer-ledger
+      mountPath: /app/data
+      sizeGB: 1

@@ -1,0 +1,24 @@
+{
+  "name": "liquid-logic-agent",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Liquid Logic Agent \u2014 Base mainnet USDC treasurer + x402 audit (services only)",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "build": "npm run build -w @liquid-logic/shared && npm run build -w @liquid-logic/ledger-publisher && npm run build -w @liquid-logic/treasurer && npm run build -w @liquid-logic/audit && npm run build -w @liquid-logic/web",
+    "build:treasurer": "npm run build -w @liquid-logic/treasurer",
+    "build:audit": "npm run build -w @liquid-logic/audit",
+    "build:web": "npm run build -w @liquid-logic/web",
+    "build:publisher": "npm run build -w @liquid-logic/ledger-publisher",
+    "publish-ledger": "node --import tsx packages/ledger-publisher/src/publish.ts",
+    "treasurer": "npm run cli -w @liquid-logic/treasurer --",
+    "lint": "echo \"No root lint yet\""
+  },
+  "license": "MIT"
+}
