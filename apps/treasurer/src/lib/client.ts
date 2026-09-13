@@ -56,6 +56,7 @@ export async function getWalletAddress(
 
 function extractTxHash(response: Response): string | undefined {
   const headers = [
+    "payment-response",
     "x-payment-response",
     "x-x402-tx-hash",
     "x-transaction-hash",
@@ -63,12 +64,30 @@ function extractTxHash(response: Response): string | undefined {
   for (const h of headers) {
     const v = response.headers.get(h);
     if (!v) continue;
+    if (/^0x[a-fA-F0-9]{64}$/.test(v)) return v;
+    // JSON or base64url(JSON) — CDP/x402 sellers often use payment-response
+    const candidates = [v];
     try {
-      const parsed = JSON.parse(v) as { txHash?: string; transactionHash?: string };
-      if (parsed.txHash) return parsed.txHash;
-      if (parsed.transactionHash) return parsed.transactionHash;
+      const pad = "=".repeat((4 - (v.length % 4)) % 4);
+      candidates.push(Buffer.from(v + pad, "base64url").toString("utf8"));
     } catch {
-      if (/^0x[a-fA-F0-9]{64}$/.test(v)) return v;
+      /* ignore */
+    }
+    for (const c of candidates) {
+      try {
+        const parsed = JSON.parse(c) as {
+          txHash?: string;
+          transactionHash?: string;
+          transaction?: string;
+        };
+        if (parsed.transaction && /^0x[a-fA-F0-9]{64}$/.test(parsed.transaction)) {
+          return parsed.transaction;
+        }
+        if (parsed.txHash) return parsed.txHash;
+        if (parsed.transactionHash) return parsed.transactionHash;
+      } catch {
+        /* try next */
+      }
     }
   }
   return undefined;
