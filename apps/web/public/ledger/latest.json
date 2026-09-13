@@ -1,0 +1,12 @@
+{
+  "generatedAt": "2026-09-13T04:36:45.204Z",
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "walletAddress": null,
+  "totalEvents": 0,
+  "totalPayments": 0,
+  "totalPaidUsdcApprox": 0,
+  "days": [],
+  "today": "2026-09-13",
+  "recentPayments": []
+}

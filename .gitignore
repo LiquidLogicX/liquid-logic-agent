@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.next/
+.turbo/
+*.log
+.env
+.env.local
+.env.*.local
+!.env.example
+apps/treasurer/data/*.jsonl
+!apps/treasurer/data/.gitkeep
+data/*.jsonl
+!data/.gitkeep
+.DS_Store
+coverage/
+*.tsbuildinfo
+.vercel
