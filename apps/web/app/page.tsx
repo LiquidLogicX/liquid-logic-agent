@@ -1,46 +1,93 @@
+import { HeroLedgerPanel } from "@/components/HeroLedgerPanel";
+import { StatsBand } from "@/components/StatsBand";
+import { CHANGELOG } from "@/lib/changelog";
+
 const auditUrl =
   process.env.NEXT_PUBLIC_AUDIT_URL ?? "https://audit.liquidlogicx.com";
 
 export default function HomePage() {
   return (
-    <main>
-      <h1>Liquid Logic Agent</h1>
-      <p className="muted">
-        An autonomous agent that spends <strong>USDC on Base</strong> to pay
-        allowlisted <strong>x402</strong> service endpoints — operating spend only.
-      </p>
-
-      <section className="card">
-        <h2>What it is</h2>
-        <ul>
-          <li>CDP-managed wallet pays x402 APIs (Base mainnet)</li>
-          <li>Hard caps: allowlist, max per payment, daily USDC limit</li>
-          <li>Append-only ledger published for humans to verify on BaseScan</li>
-        </ul>
+    <>
+      <section className="hero">
+        <div className="hero-copy">
+          <h1>Operating spend for agent services — on Base, in USDC.</h1>
+          <p className="lede">
+            Liquid Logic Agent pays allowlisted{" "}
+            <strong>x402</strong> endpoints with <strong>USDC on Base</strong>.
+            Caps and an append-only public ledger keep every payment checkable on
+            BaseScan. Services only — not a token, fund, or treasury product.
+          </p>
+          <div className="hero-actions">
+            <a className="btn btn-primary" href="/ledger">
+              View public ledger
+            </a>
+            <a className="btn btn-ghost" href="/docs">
+              Audit endpoint docs
+            </a>
+          </div>
+        </div>
+        <HeroLedgerPanel />
       </section>
 
-      <section className="card">
-        <h2>Live ledger</h2>
-        <p className="muted">
-          Machine summary: <a href="/ledger">/ledger</a> · raw{" "}
-          <a href="/ledger/latest.json">latest.json</a>
-        </p>
-        <iframe
-          className="ledger-frame"
-          title="Public ledger"
-          src="/ledger/embed"
-        />
+      <StatsBand />
+
+      <section className="cream" id="changelog">
+        <div className="cream-inner">
+          <h2>Changelog</h2>
+          <p className="section-lede">
+            What actually shipped — dated and linked to a commit, pull request, or
+            on-chain transaction. No roadmap.
+          </p>
+          <ol className="changelog">
+            {CHANGELOG.map((e) => (
+              <li key={`${e.date}-${e.href}`}>
+                <div className="date">{e.date}</div>
+                <h3>{e.title}</h3>
+                <p>{e.detail}</p>
+                <a href={e.href} rel="noopener noreferrer" target="_blank">
+                  {e.hrefLabel}
+                </a>
+              </li>
+            ))}
+          </ol>
+        </div>
       </section>
 
-      <section className="card">
-        <h2>Paid audit</h2>
-        <p>
-          Audit any agent wallet&apos;s spend summary for{" "}
-          <strong>$0.05 USDC</strong> via x402:
-        </p>
-        <pre>{`GET ${auditUrl}/api/audit?wallet=0x…`}</pre>
-        <p className="muted">See <a href="/docs">endpoint docs</a>. No other pricing.</p>
+      <section className="section" id="ledger-live">
+        <h2>What it does</h2>
+        <div className="card-grid">
+          <div className="card">
+            <h3>Treasurer</h3>
+            <ul>
+              <li>CDP-managed wallet pays x402 APIs on Base mainnet</li>
+              <li>Allowlist, max per payment, and daily USDC cap</li>
+              <li>Disk ledger synced to GitHub for public publishing</li>
+            </ul>
+          </div>
+          <div className="card">
+            <h3>Paid audit</h3>
+            <p>
+              Structured spend summary for an agent wallet —{" "}
+              <strong>$0.05 USDC</strong> via x402 on Base.
+            </p>
+            <p style={{ marginTop: "0.75rem" }}>
+              <code>{`GET ${auditUrl}/api/audit?wallet=0x…`}</code>
+            </p>
+          </div>
+        </div>
       </section>
-    </main>
+
+      <section className="contact-band" id="contact">
+        <div className="contact-card">
+          <h2>Contact</h2>
+          <p>
+            No contact form on this site. Reach the Liquid Logic X team directly:
+          </p>
+          <a className="contact-email" href="mailto:hello@liquidlogicx.com">
+            hello@liquidlogicx.com
+          </a>
+        </div>
+      </section>
+    </>
   );
 }

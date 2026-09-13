@@ -1,39 +1,28 @@
 import Link from "next/link";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import type { LedgerLatest } from "@/lib/ledger";
+import { paymentBasescan } from "@/lib/ledger";
 
-async function loadLatest(): Promise<{
-  generatedAt?: string;
-  totalPayments?: number;
-  totalPaidUsdcApprox?: number;
-  recentPayments?: Array<{
-    endpoint: string;
-    amountUsdc: string;
-    basescanUrl?: string;
-    txHash?: string;
-    timestamp: string;
-  }>;
-} | null> {
+async function loadLatest(): Promise<LedgerLatest | null> {
   try {
-    const base = process.env.NEXT_PUBLIC_SITE_URL ?? "";
-    // Prefer static file served from public/ copied at build, or monorepo public via rewrite
-    const res = await fetch(`${base}/ledger/latest.json`, {
-      next: { revalidate: 60 },
-    }).catch(() => null);
-    if (res?.ok) return res.json();
+    const file = path.join(process.cwd(), "public/ledger/latest.json");
+    const raw = await readFile(file, "utf8");
+    return JSON.parse(raw) as LedgerLatest;
   } catch {
-    /* fall through */
+    return null;
   }
-  return null;
 }
 
 export default async function LedgerPage() {
   const latest = await loadLatest();
 
   return (
-    <main>
+    <main className="page">
       <h1>Public ledger</h1>
       <p className="muted">
-        Operating spend in USDC on Base. Every payment links to BaseScan when a tx
-        hash exists.
+        Operating spend in USDC on Base. Every payment links to BaseScan when a
+        transaction hash exists.
       </p>
 
       <section className="card">
@@ -43,12 +32,21 @@ export default async function LedgerPage() {
             <li>Generated: {latest.generatedAt ?? "—"}</li>
             <li>Payments: {latest.totalPayments ?? 0}</li>
             <li>Approx USDC paid: {latest.totalPaidUsdcApprox ?? 0}</li>
+            {latest.walletAddress ? (
+              <li>
+                Wallet:{" "}
+                <a
+                  href={`https://basescan.org/address/${latest.walletAddress}`}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  {latest.walletAddress}
+                </a>
+              </li>
+            ) : null}
           </ul>
         ) : (
-          <p className="muted">
-            No published summary yet. Run the ledger publisher after treasurer
-            activity.
-          </p>
+          <p className="muted">No published summary yet.</p>
         )}
         <p>
           <Link href="/ledger/latest.json">latest.json</Link> ·{" "}
@@ -59,29 +57,30 @@ export default async function LedgerPage() {
       <section className="card">
         <h2>Recent payments</h2>
         <ul>
-          {(latest?.recentPayments ?? []).map((p, i) => (
-            <li key={i}>
-              {p.amountUsdc} USDC → {p.endpoint}{" "}
-              {p.basescanUrl || p.txHash ? (
-                <a
-                  href={
-                    p.basescanUrl ??
-                    `https://basescan.org/tx/${p.txHash}`
-                  }
-                  rel="noopener noreferrer"
-                >
-                  BaseScan
-                </a>
-              ) : null}
-            </li>
-          ))}
+          {(latest?.recentPayments ?? []).map((p, i) => {
+            const href = paymentBasescan(p);
+            return (
+              <li key={i}>
+                {p.amountUsdc} USDC → {p.endpoint}{" "}
+                {href ? (
+                  <a href={href} rel="noopener noreferrer" target="_blank">
+                    BaseScan
+                  </a>
+                ) : null}
+              </li>
+            );
+          })}
           {!latest?.recentPayments?.length ? (
             <li className="muted">None yet.</li>
           ) : null}
         </ul>
       </section>
 
-      <iframe className="ledger-frame" title="Ledger HTML" src="/ledger/index.html" />
+      <iframe
+        className="ledger-frame"
+        title="Ledger HTML"
+        src="/ledger/index.html"
+      />
     </main>
   );
 }
