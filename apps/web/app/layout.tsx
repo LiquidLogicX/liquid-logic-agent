@@ -18,6 +18,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <nav>
             <a href="/#ledger-live">Ledger</a>
             <a href="/#changelog">Changelog</a>
+            <a href="/plans">Plans</a>
             <a href="/docs">Endpoint docs</a>
             <a href="/#contact">Contact</a>
           </nav>
@@ -26,7 +27,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <footer className="site-footer">
           <p>
             USDC on Base for x402 services only. No custom token. No investment
-            product. No forward-looking roadmap on this site.
+            product. Plans describes intent, not a commitment.
           </p>
         </footer>
       </body>
