@@ -38,5 +38,15 @@ Scaffold is complete and pushed. The following are required before real Base pay
 ### Ledger publisher
 
 1. Ensure `data/ledger.jsonl` is available to the publisher (volume, S3, or CI artifact).
-2. Enable `.github/workflows/publish-ledger.yml` or cron on Render.
+2. Enable `ops/github-workflows/publish-ledger.yml` or cron on Render.
 3. Commit/publish `public/ledger/*` and leave `drafts/social/*` for humans (never auto-post).
+
+## GitHub Actions workflow scope
+
+The OAuth token used to push this scaffold lacks the `workflow` scope, so
+`ops/github-workflows/publish-ledger.yml` was **not** installed under
+`.github/workflows/`. To enable the ledger publisher Action:
+
+1. Copy `ops/github-workflows/publish-ledger.yml` → `.github/workflows/publish-ledger.yml`
+2. Push with a token that has the `workflow` scope (or use the GitHub UI to create the workflow)
+3. Set repository secret `AGENT_WALLET_ADDRESS`
