@@ -1,10 +1,46 @@
 /**
  * Long-running worker process for Render Starter.
- * Payments are invoked via CLI / one-off jobs; this process keeps the service healthy.
+ * Payments via CLI / one-off jobs. Periodically syncs disk ledger → GitHub.
  */
+import { loadConfig } from "./lib/config.js";
+import {
+  loadLedgerSyncConfigFromEnv,
+  syncLedgerToGitHub,
+} from "./lib/sync-ledger-github.js";
+
+const DEFAULT_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+
+async function runSync(label: string): Promise<void> {
+  try {
+    const config = loadConfig();
+    const syncCfg = loadLedgerSyncConfigFromEnv(config.ledgerPath);
+    if (!syncCfg) {
+      if (label === "startup") {
+        console.log(
+          "[treasurer] ledger sync disabled (set LEDGER_SYNC_GITHUB_TOKEN to enable)",
+        );
+      }
+      return;
+    }
+    const result = await syncLedgerToGitHub(syncCfg);
+    console.log(`[treasurer] ledger sync (${label}):`, result.message);
+  } catch (err) {
+    console.error(
+      `[treasurer] ledger sync (${label}) failed:`,
+      err instanceof Error ? err.message : err,
+    );
+  }
+}
+
 console.log(
-  "[treasurer] worker idle — use CLI: node dist/cli/index.js <command>. USDC/x402 on Base only.",
+  "[treasurer] worker up — CLI: node dist/cli/index.js <command>. USDC/x402 on Base only.",
 );
+
+const intervalMs = Number(
+  process.env.LEDGER_SYNC_INTERVAL_MS ?? DEFAULT_INTERVAL_MS,
+);
+
+void runSync("startup");
 setInterval(() => {
-  /* heartbeat */
-}, 60_000);
+  void runSync("schedule");
+}, Number.isFinite(intervalMs) && intervalMs >= 60_000 ? intervalMs : DEFAULT_INTERVAL_MS);

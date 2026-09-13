@@ -12,6 +12,10 @@ import { loadConfig } from "../lib/config.js";
 import { getWalletAddress, payEndpoint } from "../lib/client.js";
 import { LedgerStore } from "../lib/ledger-store.js";
 import { refuseNonUsdcSwap } from "../lib/usdc-guard.js";
+import {
+  loadLedgerSyncConfigFromEnv,
+  syncLedgerToGitHub,
+} from "../lib/sync-ledger-github.js";
 
 function usage(): never {
   console.log(`Usage:
@@ -20,6 +24,8 @@ function usage(): never {
   ll-treasurer revoke [--reason <text>]
   ll-treasurer pay <url> [--amount <usdc>] [--reason <text>]
   ll-treasurer print-wallet-address
+  ll-treasurer sync-ledger
+  ll-treasurer dump-ledger
 
 Guardrails: USDC on Base only; allowlist + max/payment + daily cap enforced.
 Never swap/buy non-USDC. Social posts are human-only (see drafts/social/).
@@ -31,6 +37,15 @@ function flag(args: string[], name: string): string | undefined {
   const i = args.indexOf(name);
   if (i === -1) return undefined;
   return args[i + 1];
+}
+
+
+async function maybeSyncLedger(ledgerPath: string): Promise<void> {
+  const syncCfg = loadLedgerSyncConfigFromEnv(ledgerPath);
+  if (!syncCfg) return;
+  const result = await syncLedgerToGitHub(syncCfg);
+  console.error(`[treasurer] ${result.message}`);
+  if (!result.ok) throw new Error(result.message);
 }
 
 async function main(): Promise<void> {
@@ -168,6 +183,27 @@ async function main(): Promise<void> {
         ),
       );
       if (result.status >= 400) process.exit(2);
+      await maybeSyncLedger(config.ledgerPath);
+      break;
+    }
+
+
+    case "dump-ledger": {
+      const raw = ledger.readAll();
+      for (const e of raw) console.log(JSON.stringify(e));
+      console.error(`events=${raw.length} path=${config.ledgerPath}`);
+      break;
+    }
+
+    case "sync-ledger": {
+      const syncCfg = loadLedgerSyncConfigFromEnv(config.ledgerPath);
+      if (!syncCfg) {
+        console.error("Set LEDGER_SYNC_GITHUB_TOKEN (and optional LEDGER_SYNC_REPO)");
+        process.exit(2);
+      }
+      const result = await syncLedgerToGitHub(syncCfg);
+      console.log(JSON.stringify(result, null, 2));
+      if (!result.ok) process.exit(2);
       break;
     }
 

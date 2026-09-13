@@ -32,6 +32,14 @@ services:
         value: "10.00"
       - key: TREASURER_WALLET_ACCOUNT_NAME
         value: x402-client-wallet-1
+      - key: LEDGER_SYNC_GITHUB_TOKEN
+        sync: false
+      - key: LEDGER_SYNC_REPO
+        value: LiquidLogicX/liquid-logic-agent
+      - key: LEDGER_SYNC_PATH
+        value: data/ledger.jsonl
+      - key: LEDGER_SYNC_INTERVAL_MS
+        value: "300000"
     disk:
       name: treasurer-ledger
       mountPath: /app/data
