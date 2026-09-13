@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withX402 } from "@x402/next";
-import { AUDIT_PRICE_LABEL, NETWORK_BASE } from "@liquid-logic/shared";
+import { withX402FromHTTPServer } from "@x402/next";
 import { buildSpendSummary } from "@/lib/spend-summary";
 import { getAuditX402Server } from "@/lib/x402-server";
 
@@ -30,7 +29,7 @@ async function handleAudit(req: NextRequest): Promise<NextResponse> {
   if (!wallet) {
     return NextResponse.json(
       {
-        error: "Provide wallet address as ?wallet=0x… or JSON { \"wallet\": \"0x…\" }",
+        error: 'Provide wallet address as ?wallet=0x… or JSON { "wallet": "0x…" }',
       },
       { status: 400 },
     );
@@ -41,30 +40,15 @@ async function handleAudit(req: NextRequest): Promise<NextResponse> {
 }
 
 /**
- * Lazy withX402 binding: createX402Server is async; we wrap once the server is ready.
- * Fallback route handlers invoke payment gating when CDP env is configured.
+ * CDP createX402Server returns an x402HTTPResourceServer — use
+ * withX402FromHTTPServer (not withX402, which expects x402ResourceServer).
  */
 async function paidHandler(req: NextRequest): Promise<NextResponse> {
-  const payTo = (process.env.AUDIT_PAY_TO_EVM ?? "0x0000000000000000000000000000000000000000") as `0x${string}`;
   try {
     const server = await getAuditX402Server();
-    const wrapped = withX402(
-      handleAudit,
-      {
-        accepts: {
-          scheme: "exact",
-          price: AUDIT_PRICE_LABEL,
-          network: NETWORK_BASE,
-          payTo: (server.payToEvmAddress as `0x${string}`) || payTo,
-        },
-        description: "Audit agent wallet spend summary (USDC / Base)",
-        mimeType: "application/json",
-      },
-      server as never,
-    );
+    const wrapped = withX402FromHTTPServer(handleAudit, server);
     return wrapped(req);
   } catch (err) {
-    // Without CDP credentials, still expose handler for local structure checks (402 docs).
     const message = err instanceof Error ? err.message : String(err);
     if (process.env.ALLOW_UNPAID_AUDIT === "1") {
       return handleAudit(req);
@@ -73,8 +57,8 @@ async function paidHandler(req: NextRequest): Promise<NextResponse> {
       {
         error: "x402 audit endpoint requires CDP credentials",
         detail: message,
-        price: AUDIT_PRICE_LABEL,
-        network: NETWORK_BASE,
+        price: "$0.05",
+        network: "eip155:8453",
       },
       { status: 503 },
     );
