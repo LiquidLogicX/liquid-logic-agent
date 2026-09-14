@@ -115,7 +115,7 @@ a:hover { text-decoration: underline; color: var(--gold); }
 .hero::after {
   content: "";
   position: absolute;
-  inset: auto -10% -55% auto;
+  inset: auto -25% -55% auto;
   width: 60%;
   aspect-ratio: 1;
   background: radial-gradient(
@@ -125,7 +125,7 @@ a:hover { text-decoration: underline; color: var(--gold); }
   );
   opacity: 0.55;
   pointer-events: none;
-  filter: blur(18px);
+  filter: blur(32px);
 }
 
 @media (max-width: 860px) {
@@ -172,7 +172,7 @@ a:hover { text-decoration: underline; color: var(--gold); }
   border-color: var(--line);
   color: var(--text);
 }
-.btn-ghost:hover { border-color: var(--gold); text-decoration: none; }
+.btn-ghost:hover { border-color: var(--accent); text-decoration: none; }
 
 .hero-panel {
   background: linear-gradient(160deg, var(--navy-card), #0e2233 70%);
@@ -210,7 +210,7 @@ a:hover { text-decoration: underline; color: var(--gold); }
 .kpi-value {
   font-family: "Cormorant Garamond", Georgia, serif;
   font-size: 2rem;
-  color: #fff;
+  color: var(--metal);
 }
 
 .hero-panel-recent p { margin: 0.2rem 0 0.55rem; color: var(--text); }
