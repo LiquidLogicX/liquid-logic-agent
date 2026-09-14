@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withX402FromHTTPServer } from "@x402/next";
-import { buildSpendSummary } from "@/lib/spend-summary";
+import { AUDIT_PRICE_USDC, basescanTxUrl, type PaymentEvent } from "@liquid-logic/shared";
+import {
+  buildSpendSummary,
+  loadLedgerEvents,
+} from "@/lib/spend-summary";
 import { getAuditX402Server } from "@/lib/x402-server";
 
 function parseWallet(req: NextRequest): string | null {
@@ -21,6 +25,65 @@ async function parseWalletFromBody(req: NextRequest): Promise<string | null> {
   return null;
 }
 
+function decodePaymentResponse(raw: string): {
+  payer?: string;
+  transaction?: string;
+  txHash?: string;
+  transactionHash?: string;
+} | null {
+  const candidates = [raw];
+  try {
+    const pad = "=".repeat((4 - (raw.length % 4)) % 4);
+    candidates.push(Buffer.from(raw + pad, "base64url").toString("utf8"));
+  } catch {
+    /* ignore */
+  }
+  for (const c of candidates) {
+    try {
+      return JSON.parse(c) as {
+        payer?: string;
+        transaction?: string;
+        txHash?: string;
+        transactionHash?: string;
+      };
+    } catch {
+      /* try next */
+    }
+  }
+  return null;
+}
+
+/** If this request settled a payment from the audited wallet, include it. */
+function settlementFromRequest(
+  req: NextRequest,
+  wallet: string,
+): PaymentEvent | null {
+  const raw =
+    req.headers.get("payment-response") ??
+    req.headers.get("x-payment-response");
+  if (!raw) return null;
+  const parsed = decodePaymentResponse(raw);
+  if (!parsed) return null;
+  const tx =
+    parsed.transaction ?? parsed.txHash ?? parsed.transactionHash ?? "";
+  if (!/^0x[a-fA-F0-9]{64}$/.test(tx)) return null;
+  const payer = parsed.payer;
+  if (payer && payer.toLowerCase() !== wallet.toLowerCase()) return null;
+  const url = new URL(req.url);
+  return {
+    type: "payment",
+    timestamp: new Date().toISOString(),
+    endpoint: `${url.origin}${url.pathname}`,
+    amountUsdc: AUDIT_PRICE_USDC,
+    asset: "USDC",
+    network: "eip155:8453",
+    txHash: tx,
+    basescanUrl: basescanTxUrl(tx),
+    walletAddress: wallet,
+    reason: "paid audit call",
+  };
+}
+
 async function handleAudit(req: NextRequest): Promise<NextResponse> {
   let wallet = parseWallet(req);
   if (!wallet && req.method === "POST") {
@@ -35,7 +98,9 @@ async function handleAudit(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const summary = buildSpendSummary(wallet);
+  const extra = settlementFromRequest(req, wallet);
+  const events = await loadLedgerEvents(extra ? [extra] : []);
+  const summary = buildSpendSummary(wallet, events);
   return NextResponse.json(summary);
 }
 

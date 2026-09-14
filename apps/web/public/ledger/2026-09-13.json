@@ -2,8 +2,58 @@
   "day": "2026-09-13",
   "events": [
     {
+      "type": "wallet_address",
+      "timestamp": "2026-09-13T14:11:07.316Z",
+      "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
+      "reason": "CDP-managed x402 payer address"
+    },
+    {
+      "type": "top_up",
+      "timestamp": "2026-09-13T15:20:07.000Z",
+      "amountUsdc": "5.00",
+      "txHash": "0x86725a32173f31957011a2a7b6a8136d48ed8074ac436396472adf3b7ce96310",
+      "basescanUrl": "https://basescan.org/tx/0x86725a32173f31957011a2a7b6a8136d48ed8074ac436396472adf3b7ce96310",
+      "reason": "USDC top-up from OKX (on-chain funding tx)"
+    },
+    {
       "type": "payment",
-      "timestamp": "2026-09-13T20:02:11.342Z",
+      "timestamp": "2026-09-13T15:23:37.000Z",
+      "endpoint": "https://x402uselessfacts.vercel.app/api/useless-fact",
+      "amountUsdc": "0.001",
+      "asset": "USDC",
+      "network": "eip155:8453",
+      "txHash": "0x4f940314772fc825f077caa13d36debea8f5dac4843d93e6b8cb740b3d1fb7fe",
+      "basescanUrl": "https://basescan.org/tx/0x4f940314772fc825f077caa13d36debea8f5dac4843d93e6b8cb740b3d1fb7fe",
+      "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
+      "reason": "x402 service payment"
+    },
+    {
+      "type": "payment",
+      "timestamp": "2026-09-13T15:24:39.000Z",
+      "endpoint": "https://x402uselessfacts.vercel.app/api/useless-fact",
+      "amountUsdc": "0.001",
+      "asset": "USDC",
+      "network": "eip155:8453",
+      "txHash": "0xacf34818767a8a5a17b4790bb3778af2787b8ea28a06774c3678ec0567293e8e",
+      "basescanUrl": "https://basescan.org/tx/0xacf34818767a8a5a17b4790bb3778af2787b8ea28a06774c3678ec0567293e8e",
+      "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
+      "reason": "Task A acceptance: Base mainnet x402 USDC pay"
+    },
+    {
+      "type": "payment",
+      "timestamp": "2026-09-13T18:06:49.000Z",
+      "endpoint": "https://liquid-logic-agent-audit.vercel.app/api/audit",
+      "amountUsdc": "0.05",
+      "asset": "USDC",
+      "network": "eip155:8453",
+      "txHash": "0x9e69f6d6a0e2b7fe3997733398a6f7986adeb3f64066b421fa38c77d6f051c74",
+      "basescanUrl": "https://basescan.org/tx/0x9e69f6d6a0e2b7fe3997733398a6f7986adeb3f64066b421fa38c77d6f051c74",
+      "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
+      "reason": "paid audit call"
+    },
+    {
+      "type": "payment",
+      "timestamp": "2026-09-13T20:02:13.000Z",
       "endpoint": "https://x402uselessfacts.vercel.app/api/useless-fact",
       "amountUsdc": "0.001",
       "asset": "USDC",

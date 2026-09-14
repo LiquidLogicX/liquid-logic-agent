@@ -26,8 +26,12 @@ npm run treasurer -- print-wallet-address
 npm run treasurer -- set-allowance --max 1.00 --daily 10.00
 npm run treasurer -- top-up 5.00 --tx 0x...
 npm run treasurer -- pay https://x402.vercel.app/protected --amount 0.01
+npm run treasurer -- record-payment --endpoint https://audit.liquidlogicx.com/api/audit --amount 0.05 --tx 0x...
+npm run treasurer -- sync-ledger
 npm run treasurer -- revoke
 ```
+
+`sync-ledger` **unions** the disk JSONL with GitHub `data/ledger.jsonl` (never replaces history).
 
 ## Deploy (Render)
 

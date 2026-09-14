@@ -9,6 +9,14 @@ export type ChangelogEntry = {
 /** Backward-looking only. Every link must resolve to a real commit, PR, or tx. */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: "2026-09-14",
+    title: "Ledger union sync + audit settlements",
+    detail:
+      "Treasurer GitHub sync now unions events instead of replacing the file, restoring wiped Task A spend and recording live $0.05 audit settlements.",
+    href: "https://basescan.org/tx/0x465910619fb6ba1fa3106b911098d435d4900e0bf2bce05b35f3c7e077643318",
+    hrefLabel: "BaseScan 0x4659…3318",
+  },
+  {
     date: "2026-09-13",
     title: "Render ledger sync + live Base payment",
     detail:
