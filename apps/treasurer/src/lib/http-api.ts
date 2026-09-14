@@ -172,12 +172,30 @@ export function startOperatorHttpServer(opts: {
             holdId,
             approvedBy: "operator",
           });
+          const settled =
+            result.status >= 200 &&
+            result.status < 300 &&
+            Boolean(result.txHash);
           console.log(
             "[treasurer] hold approved → payment",
             holdId,
             result.txHash ?? "(no tx hash)",
+            "http",
+            result.status,
           );
           void maybeSyncLedger(config.ledgerPath);
+          if (!settled) {
+            sendJson(res, 502, {
+              ok: false,
+              error:
+                "Approve ran but settlement incomplete (need 2xx + txHash). Check CDP spend + endpoint ?wallet=.",
+              holdId,
+              status: result.status,
+              txHash: result.txHash,
+              walletAddress: result.walletAddress,
+            });
+            return;
+          }
           sendJson(res, 200, {
             ok: true,
             holdId,
