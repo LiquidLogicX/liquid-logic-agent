@@ -23,7 +23,7 @@ liquid-logic-agent/
 
 | Component | Role |
 |-----------|------|
-| Treasurer | CDP-managed wallet + `wrapFetchWithPayment`; allowlist / max / daily cap; JSONL ledger |
+| Treasurer | CDP-managed wallet + `wrapFetchWithPayment`; allowlist / max / daily cap; JSONL ledger; operator freeze HTTP |
 | Ledger publisher | Cron / GitHub Action → `latest.json`, daily JSON/HTML, social markdown drafts |
 | Audit | `createX402Server` seller; `$0.05` spend summary + `$0.001` allowance pre-flight |
 | Web | Public site; ledger embed; endpoint docs |

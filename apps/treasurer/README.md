@@ -34,6 +34,29 @@ npm run treasurer -- revoke
 
 `sync-ledger` **unions** the disk JSONL with GitHub `data/ledger.jsonl` (never replaces history).
 
+
+## Operator freeze (takeover step 2)
+
+Halts **all** outbound treasurer payments (any amount). Service keeps running (ledger sync, health). Auth is principal-only bearer — **not** x402.
+
+Freeze state is derived from the append-only ledger: last `frozen` without a later `unfrozen` ⇒ frozen (honored across restarts). `pay()` checks this before sending.
+
+```bash
+# Token from env only — never commit or paste the value into logs/PRs.
+# On the Render instance (SSH / Shell). Background workers have no public URL.
+export TREASURER_URL=http://127.0.0.1:${PORT:-10000}
+
+curl -sS -X POST "$TREASURER_URL/api/freeze" \
+  -H "Authorization: Bearer $LLX_OPERATOR_TOKEN"
+
+curl -sS -X POST "$TREASURER_URL/api/unfreeze" \
+  -H "Authorization: Bearer $LLX_OPERATOR_TOKEN"
+
+curl -sS "$TREASURER_URL/healthz"
+```
+
+Missing or wrong token → `401` / `403` (fail closed). Ledger events: `{ "type": "frozen", "timestamp": "..." }` and `{ "type": "unfrozen", "timestamp": "..." }`.
+
 ## Deploy (Render)
 
 - Blueprint: `apps/treasurer/render.yaml`

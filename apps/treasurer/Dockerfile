@@ -31,4 +31,6 @@ RUN mkdir -p /app/data && chown -R treasurer:treasurer /app/data
 USER treasurer
 VOLUME ["/app/data"]
 WORKDIR /app/apps/treasurer
+ENV PORT=10000
+EXPOSE 10000
 CMD ["node", "dist/worker.js"]
