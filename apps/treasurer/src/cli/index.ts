@@ -23,6 +23,7 @@ function usage(): never {
   ll-treasurer top-up <amountUsdc> [--tx <hash>] [--reason <text>]
   ll-treasurer revoke [--reason <text>]
   ll-treasurer pay <url> [--amount <usdc>] [--reason <text>]
+  ll-treasurer record-payment --endpoint <url> --amount <usdc> --tx <hash> [--wallet 0x…] [--reason <text>] [--timestamp <iso>]
   ll-treasurer print-wallet-address
   ll-treasurer sync-ledger
   ll-treasurer dump-ledger
@@ -187,6 +188,44 @@ async function main(): Promise<void> {
       break;
     }
 
+
+    case "record-payment": {
+      const endpoint = flag(rest, "--endpoint") ?? rest[0];
+      const amount = flag(rest, "--amount");
+      const tx = flag(rest, "--tx");
+      const wallet = flag(rest, "--wallet");
+      const reason = flag(rest, "--reason") ?? "x402 service payment";
+      const timestamp = flag(rest, "--timestamp");
+      if (!endpoint || !amount || !tx) {
+        console.error("record-payment requires --endpoint --amount --tx");
+        usage();
+      }
+      const added = ledger.recordPayment({
+        endpoint,
+        amountUsdc: amount,
+        network: config.network,
+        txHash: tx,
+        walletAddress: wallet,
+        reason,
+        timestamp,
+      });
+      console.log(
+        JSON.stringify(
+          {
+            ok: true,
+            added,
+            endpoint,
+            amountUsdc: amount,
+            txHash: tx,
+            basescanUrl: basescanTxUrl(tx),
+          },
+          null,
+          2,
+        ),
+      );
+      if (added) await maybeSyncLedger(config.ledgerPath);
+      break;
+    }
 
     case "dump-ledger": {
       const raw = ledger.readAll();

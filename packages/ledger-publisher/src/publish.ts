@@ -7,8 +7,10 @@ import "dotenv/config";
 import fs from "node:fs";
 import path from "node:path";
 import {
+  atomicToUsdc,
   basescanTxUrl,
   isPaymentEvent,
+  usdcToAtomic,
   type LedgerEvent,
   type PaymentEvent,
 } from "@liquid-logic/shared";
@@ -189,7 +191,17 @@ function main(): void {
     walletAddress: wallet ?? null,
     totalEvents: events.length,
     totalPayments: paymentsAll.length,
-    totalPaidUsdcApprox: paymentsAll.reduce((s, p) => s + Number(p.amountUsdc || 0), 0),
+    totalPaidUsdcApprox: Number(
+      atomicToUsdc(
+        paymentsAll.reduce((s, p) => {
+          try {
+            return s + usdcToAtomic(p.amountUsdc || "0");
+          } catch {
+            return s;
+          }
+        }, 0n),
+      ),
+    ),
     days,
     today,
     recentPayments: paymentsAll.slice(-20).map((p) => ({
@@ -235,6 +247,23 @@ function main(): void {
     );
   }
 
+  const mirrors = [
+    path.join(root, "apps/web/public/ledger"),
+    path.join(root, "apps/audit/public/ledger"),
+  ];
+  const mirrored: string[] = [];
+  for (const dest of mirrors) {
+    const destResolved = path.resolve(dest);
+    if (destResolved === path.resolve(outDir)) continue;
+    fs.mkdirSync(destResolved, { recursive: true });
+    for (const name of fs.readdirSync(outDir)) {
+      const src = path.join(outDir, name);
+      if (!fs.statSync(src).isFile()) continue;
+      fs.copyFileSync(src, path.join(destResolved, name));
+    }
+    mirrored.push(destResolved);
+  }
+
   console.log(
     JSON.stringify(
       {
@@ -243,6 +272,7 @@ function main(): void {
         days: days.length,
         outDir,
         draftsDir,
+        mirrored,
         note: "Social drafts written for human posting only — no auto-post.",
       },
       null,

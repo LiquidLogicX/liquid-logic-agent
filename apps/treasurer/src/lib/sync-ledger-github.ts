@@ -1,8 +1,13 @@
 /**
- * Push local TREASURER_LEDGER_PATH JSONL to GitHub data/ledger.jsonl.
- * Enables the publish-ledger Action to refresh public/ledger from live Render activity.
+ * Push TREASURER_LEDGER_PATH JSONL to GitHub data/ledger.jsonl.
+ * Union-merges with the remote file so a sparse Render disk cannot wipe history.
  */
 import fs from "node:fs";
+import {
+  mergeLedgerEvents,
+  parseLedgerJsonl,
+  serializeLedgerJsonl,
+} from "@liquid-logic/shared";
 
 export type LedgerSyncConfig = {
   ledgerPath: string;
@@ -18,6 +23,7 @@ export type LedgerSyncResult = {
   skipped?: boolean;
   commitSha?: string;
   message: string;
+  mergedEvents?: number;
 };
 
 function ghHeaders(token: string): Record<string, string> {
@@ -56,27 +62,55 @@ export async function syncLedgerToGitHub(
   if (!fs.existsSync(cfg.ledgerPath)) {
     return { ok: false, message: `ledger missing: ${cfg.ledgerPath}` };
   }
-  const content = fs.readFileSync(cfg.ledgerPath, "utf8");
-  if (!content.trim()) {
-    return { ok: true, skipped: true, message: "empty ledger — skip push" };
-  }
+  const localRaw = fs.readFileSync(cfg.ledgerPath, "utf8");
+  const localEvents = parseLedgerJsonl(localRaw);
 
   const apiBase = `https://api.github.com/repos/${cfg.repo}/contents/${destPath}`;
   const getUrl = `${apiBase}?ref=${encodeURIComponent(branch)}`;
   const getRes = await fetch(getUrl, { headers: ghHeaders(cfg.token) });
   let sha: string | undefined;
+  let remoteEvents = [] as ReturnType<typeof parseLedgerJsonl>;
   if (getRes.status === 200) {
-    const existing = (await getRes.json()) as { sha?: string; content?: string; encoding?: string };
+    const existing = (await getRes.json()) as {
+      sha?: string;
+      content?: string;
+      encoding?: string;
+    };
     sha = existing.sha;
     if (existing.content && existing.encoding === "base64") {
-      const remote = Buffer.from(existing.content.replace(/\n/g, ""), "base64").toString("utf8");
-      if (remote === content) {
-        return { ok: true, skipped: true, message: "ledger unchanged on GitHub" };
-      }
+      const remote = Buffer.from(
+        existing.content.replace(/\n/g, ""),
+        "base64",
+      ).toString("utf8");
+      remoteEvents = parseLedgerJsonl(remote);
     }
   } else if (getRes.status !== 404) {
     const t = await getRes.text();
-    return { ok: false, message: `GET ${destPath} failed: ${getRes.status} ${t.slice(0, 200)}` };
+    return {
+      ok: false,
+      message: `GET ${destPath} failed: ${getRes.status} ${t.slice(0, 200)}`,
+    };
+  }
+
+  const merged = mergeLedgerEvents(remoteEvents, localEvents);
+  const content = serializeLedgerJsonl(merged);
+  if (!content.trim()) {
+    return { ok: true, skipped: true, message: "empty ledger — skip push" };
+  }
+
+  const remoteSerialized = serializeLedgerJsonl(remoteEvents);
+  if (sha && remoteSerialized === content) {
+    return {
+      ok: true,
+      skipped: true,
+      mergedEvents: merged.length,
+      message: "ledger unchanged on GitHub (union match)",
+    };
+  }
+
+  // Recover history onto disk so daily-cap / dump see the full union.
+  if (serializeLedgerJsonl(localEvents) !== content) {
+    fs.writeFileSync(cfg.ledgerPath, content, "utf8");
   }
 
   const body: Record<string, unknown> = {
@@ -93,12 +127,16 @@ export async function syncLedgerToGitHub(
   });
   if (!putRes.ok) {
     const t = await putRes.text();
-    return { ok: false, message: `PUT ${destPath} failed: ${putRes.status} ${t.slice(0, 300)}` };
+    return {
+      ok: false,
+      message: `PUT ${destPath} failed: ${putRes.status} ${t.slice(0, 300)}`,
+    };
   }
   const putJson = (await putRes.json()) as { commit?: { sha?: string } };
   return {
     ok: true,
     commitSha: putJson.commit?.sha,
-    message: `synced ${destPath} → ${cfg.repo}@${branch}`,
+    mergedEvents: merged.length,
+    message: `synced ${destPath} → ${cfg.repo}@${branch} (${merged.length} events, union merge)`,
   };
 }

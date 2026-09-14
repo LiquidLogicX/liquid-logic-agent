@@ -1,0 +1,17 @@
+{
+  "day": "2026-09-14",
+  "events": [
+    {
+      "type": "payment",
+      "timestamp": "2026-09-14T00:12:29.000Z",
+      "endpoint": "https://audit.liquidlogicx.com/api/audit",
+      "amountUsdc": "0.05",
+      "asset": "USDC",
+      "network": "eip155:8453",
+      "txHash": "0x465910619fb6ba1fa3106b911098d435d4900e0bf2bce05b35f3c7e077643318",
+      "basescanUrl": "https://basescan.org/tx/0x465910619fb6ba1fa3106b911098d435d4900e0bf2bce05b35f3c7e077643318",
+      "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
+      "reason": "paid audit call"
+    }
+  ]
+}
