@@ -1,7 +1,11 @@
 /**
- * Minimal operator HTTP surface on the treasurer process.
+ * Operator HTTP surface on the treasurer process (public web service).
  * Auth: Authorization Bearer LLX_OPERATOR_TOKEN (not x402).
- * Routes: POST /api/freeze, POST /api/unfreeze, GET /healthz
+ * Routes:
+ *   POST /api/freeze | /api/unfreeze
+ *   GET  /api/holds
+ *   POST /api/hold/:id/approve | /api/hold/:id/deny
+ *   GET  /healthz
  */
 import http from "node:http";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -13,6 +17,13 @@ import {
   recordUnfrozen,
 } from "./freeze.js";
 import { requireOperatorBearer } from "./operator-auth.js";
+import {
+  expireStaleHolds,
+  getHoldResolution,
+  listPendingHolds,
+  recordDenied,
+} from "./hold.js";
+import { approveHold } from "./client.js";
 import {
   loadLedgerSyncConfigFromEnv,
   syncLedgerToGitHub,
@@ -44,13 +55,21 @@ async function maybeSyncLedger(ledgerPath: string): Promise<void> {
   if (!syncCfg) return;
   try {
     const result = await syncLedgerToGitHub(syncCfg);
-    console.log(`[treasurer] ledger sync (freeze-api): ${result.message}`);
+    console.log(`[treasurer] ledger sync (operator-api): ${result.message}`);
   } catch (err) {
     console.error(
-      "[treasurer] ledger sync (freeze-api) failed:",
+      "[treasurer] ledger sync (operator-api) failed:",
       err instanceof Error ? err.message : err,
     );
   }
+}
+
+function matchHoldAction(
+  path: string,
+): { holdId: string; action: "approve" | "deny" } | null {
+  const m = /^\/api\/hold\/([^/]+)\/(approve|deny)$/.exec(path);
+  if (!m) return null;
+  return { holdId: decodeURIComponent(m[1]!), action: m[2] as "approve" | "deny" };
 }
 
 export function startOperatorHttpServer(opts: {
@@ -59,7 +78,8 @@ export function startOperatorHttpServer(opts: {
   host?: string;
 }): http.Server {
   const { config } = opts;
-  const port = opts.port ?? Number(process.env.PORT ?? process.env.OPERATOR_HTTP_PORT ?? 10000);
+  const port =
+    opts.port ?? Number(process.env.PORT ?? process.env.OPERATOR_HTTP_PORT ?? 10000);
   const host = opts.host ?? process.env.OPERATOR_HTTP_HOST ?? "0.0.0.0";
   const ledger = new LedgerStore(config.ledgerPath);
 
@@ -70,10 +90,130 @@ export function startOperatorHttpServer(opts: {
 
     try {
       if (method === "GET" && (path === "/healthz" || path === "/health")) {
+        expireStaleHolds(ledger, config.holdTtlSeconds);
         sendJson(res, 200, {
           ok: true,
           service: "liquid-logic-treasurer",
           frozen: isPaymentsFrozen(ledger),
+          holdAboveUsdc: config.holdAboveUsdc,
+          holdTtlSeconds: config.holdTtlSeconds,
+          pendingHolds: listPendingHolds(ledger, config.holdTtlSeconds).length,
+        });
+        return;
+      }
+
+      const holdAction = matchHoldAction(path);
+      if (method === "POST" && holdAction) {
+        const auth = requireOperatorBearer(req.headers.authorization);
+        if (!auth.ok) {
+          sendJson(res, auth.status, { ok: false, error: auth.error });
+          return;
+        }
+        await readBody(req);
+
+        expireStaleHolds(ledger, config.holdTtlSeconds);
+        const { holdId, action } = holdAction;
+        const resolution = getHoldResolution(ledger.readAll(), holdId);
+
+        if (action === "deny") {
+          if (resolution === null) {
+            sendJson(res, 404, { ok: false, error: `Hold not found: ${holdId}` });
+            return;
+          }
+          if (resolution !== "pending") {
+            sendJson(res, 409, {
+              ok: false,
+              error: `Hold not pending (${resolution})`,
+              holdId,
+              resolution,
+            });
+            return;
+          }
+          const event = recordDenied(ledger, { holdId });
+          console.log("[treasurer] hold denied", holdId, event.timestamp);
+          void maybeSyncLedger(config.ledgerPath);
+          sendJson(res, 200, {
+            ok: true,
+            holdId,
+            type: "denied",
+            ts: event.timestamp,
+          });
+          return;
+        }
+
+        // approve
+        if (resolution === null) {
+          sendJson(res, 404, { ok: false, error: `Hold not found: ${holdId}` });
+          return;
+        }
+        if (resolution !== "pending") {
+          sendJson(res, 409, {
+            ok: false,
+            error: `Hold not pending (${resolution})`,
+            holdId,
+            resolution,
+          });
+          return;
+        }
+        if (isPaymentsFrozen(ledger)) {
+          sendJson(res, 423, {
+            ok: false,
+            error: "Payments frozen — unfreeze before approving holds",
+            holdId,
+          });
+          return;
+        }
+
+        try {
+          const result = await approveHold({
+            config,
+            ledger,
+            holdId,
+            approvedBy: "operator",
+          });
+          console.log(
+            "[treasurer] hold approved → payment",
+            holdId,
+            result.txHash ?? "(no tx hash)",
+          );
+          void maybeSyncLedger(config.ledgerPath);
+          sendJson(res, 200, {
+            ok: true,
+            holdId,
+            type: "payment",
+            status: result.status,
+            txHash: result.txHash,
+            walletAddress: result.walletAddress,
+            approvedBy: "operator",
+          });
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          console.error("[treasurer] hold approve failed:", message);
+          const status = message.startsWith("FROZEN:")
+            ? 423
+            : message.startsWith("GUARDRAIL:")
+              ? 400
+              : 500;
+          sendJson(res, status, { ok: false, error: message, holdId });
+        }
+        return;
+      }
+
+      if (method === "GET" && path === "/api/holds") {
+        const auth = requireOperatorBearer(req.headers.authorization);
+        if (!auth.ok) {
+          sendJson(res, auth.status, { ok: false, error: auth.error });
+          return;
+        }
+        const expired = expireStaleHolds(ledger, config.holdTtlSeconds);
+        if (expired.length) void maybeSyncLedger(config.ledgerPath);
+        const holds = listPendingHolds(ledger, config.holdTtlSeconds);
+        sendJson(res, 200, {
+          ok: true,
+          holdAboveUsdc: config.holdAboveUsdc,
+          holdTtlSeconds: config.holdTtlSeconds,
+          expiredJustNow: expired,
+          holds,
         });
         return;
       }
@@ -85,7 +225,7 @@ export function startOperatorHttpServer(opts: {
           return;
         }
 
-        // Drain body (optional JSON); ignore contents for step 2.
+        // Drain body (optional JSON); ignore contents for freeze.
         await readBody(req);
 
         if (path === "/api/freeze") {
@@ -144,7 +284,8 @@ export function startOperatorHttpServer(opts: {
 
   server.listen(port, host, () => {
     console.log(
-      `[treasurer] operator HTTP listening on http://${host}:${port} (POST /api/freeze|/api/unfreeze)`,
+      `[treasurer] operator HTTP listening on http://${host}:${port} ` +
+        `(freeze/unfreeze + holds; Bearer LLX_OPERATOR_TOKEN)`,
     );
   });
 
