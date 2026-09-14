@@ -3,7 +3,38 @@
  * Price: $0.05 USDC on Base (eip155:8453). Coinbase CDP facilitator via createX402Server.
  */
 import { createX402Server, type X402Server } from "@coinbase/cdp-sdk/x402";
+import { declareDiscoveryExtension } from "@x402/extensions/bazaar";
 import { AUDIT_PRICE_LABEL, NETWORK_BASE } from "@liquid-logic/shared";
+
+const AUDIT_DESCRIPTION =
+  "Liquid Logic Agent — wallet audit. Returns a structured USDC spend summary for an agent wallet from the public ledger. Site: https://liquidlogicx.com";
+
+const discovery = declareDiscoveryExtension({
+  method: "GET",
+  input: { wallet: "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D" },
+  inputSchema: {
+    properties: {
+      wallet: {
+        type: "string",
+        description: "Agent wallet address (0x…)",
+      },
+    },
+    required: ["wallet"],
+  },
+  output: {
+    example: {
+      walletAddress: "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
+      network: "eip155:8453",
+      asset: "USDC",
+      source: "public_ledger",
+      paymentCount: 1,
+      totalUsdc: 0.001,
+      destinations: [],
+      recent: [],
+      note: "Operating spend for x402 services (USDC on Base).",
+    },
+  },
+});
 
 let serverPromise: Promise<X402Server> | null = null;
 
@@ -35,12 +66,41 @@ export function getAuditX402Server(): Promise<X402Server> {
         "GET /api/audit": {
           price: AUDIT_PRICE_LABEL,
           networks: [NETWORK_BASE],
-          description: "Audit agent wallet — structured USDC spend summary from public ledger",
+          description: AUDIT_DESCRIPTION,
+          extensions: { ...discovery },
         },
         "POST /api/audit": {
           price: AUDIT_PRICE_LABEL,
           networks: [NETWORK_BASE],
-          description: "Audit agent wallet — structured USDC spend summary from public ledger",
+          description: AUDIT_DESCRIPTION,
+          extensions: {
+            ...declareDiscoveryExtension({
+              method: "POST",
+              input: { wallet: "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D" },
+              inputSchema: {
+                properties: {
+                  wallet: {
+                    type: "string",
+                    description: "Agent wallet address (0x…)",
+                  },
+                },
+                required: ["wallet"],
+              },
+              output: {
+                example: {
+                  walletAddress: "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
+                  network: "eip155:8453",
+                  asset: "USDC",
+                  source: "public_ledger",
+                  paymentCount: 1,
+                  totalUsdc: 0.001,
+                  destinations: [],
+                  recent: [],
+                  note: "Operating spend for x402 services (USDC on Base).",
+                },
+              },
+            }),
+          },
         },
       },
     });
