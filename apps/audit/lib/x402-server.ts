@@ -9,31 +9,42 @@ import { AUDIT_PRICE_LABEL, NETWORK_BASE } from "@liquid-logic/shared";
 const AUDIT_DESCRIPTION =
   "Liquid Logic Agent — wallet audit. Returns a structured USDC spend summary for an agent wallet from the public ledger. Site: https://liquidlogicx.com";
 
-const discovery = declareDiscoveryExtension({
-  method: "GET",
+const outputExample = {
+  example: {
+    walletAddress: "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
+    network: "eip155:8453",
+    asset: "USDC",
+    source: "public_ledger",
+    paymentCount: 1,
+    totalUsdc: 0.001,
+    destinations: [],
+    recent: [],
+    note: "Operating spend for x402 services (USDC on Base).",
+  },
+};
+
+const walletInputSchema = {
+  properties: {
+    wallet: {
+      type: "string",
+      description: "Agent wallet address (0x…)",
+    },
+  },
+  required: ["wallet"],
+};
+
+// method is inferred: query input => GET; bodyType => POST/body methods
+const getDiscovery = declareDiscoveryExtension({
   input: { wallet: "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D" },
-  inputSchema: {
-    properties: {
-      wallet: {
-        type: "string",
-        description: "Agent wallet address (0x…)",
-      },
-    },
-    required: ["wallet"],
-  },
-  output: {
-    example: {
-      walletAddress: "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
-      network: "eip155:8453",
-      asset: "USDC",
-      source: "public_ledger",
-      paymentCount: 1,
-      totalUsdc: 0.001,
-      destinations: [],
-      recent: [],
-      note: "Operating spend for x402 services (USDC on Base).",
-    },
-  },
+  inputSchema: walletInputSchema,
+  output: outputExample,
+});
+
+const postDiscovery = declareDiscoveryExtension({
+  bodyType: "json",
+  input: { wallet: "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D" },
+  inputSchema: walletInputSchema,
+  output: outputExample,
 });
 
 let serverPromise: Promise<X402Server> | null = null;
@@ -67,40 +78,13 @@ export function getAuditX402Server(): Promise<X402Server> {
           price: AUDIT_PRICE_LABEL,
           networks: [NETWORK_BASE],
           description: AUDIT_DESCRIPTION,
-          extensions: { ...discovery },
+          extensions: { ...getDiscovery },
         },
         "POST /api/audit": {
           price: AUDIT_PRICE_LABEL,
           networks: [NETWORK_BASE],
           description: AUDIT_DESCRIPTION,
-          extensions: {
-            ...declareDiscoveryExtension({
-              method: "POST",
-              input: { wallet: "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D" },
-              inputSchema: {
-                properties: {
-                  wallet: {
-                    type: "string",
-                    description: "Agent wallet address (0x…)",
-                  },
-                },
-                required: ["wallet"],
-              },
-              output: {
-                example: {
-                  walletAddress: "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
-                  network: "eip155:8453",
-                  asset: "USDC",
-                  source: "public_ledger",
-                  paymentCount: 1,
-                  totalUsdc: 0.001,
-                  destinations: [],
-                  recent: [],
-                  note: "Operating spend for x402 services (USDC on Base).",
-                },
-              },
-            }),
-          },
+          extensions: { ...postDiscovery },
         },
       },
     });
