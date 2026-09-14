@@ -1,18 +1,29 @@
 @import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Outfit:wght@300;400;500;600&display=swap");
 
 :root {
+  /* ground — unchanged */
   --navy: #0b1c2c;
   --navy-deep: #07141f;
   --navy-card: #122536;
-  --gold: #c4a35a;
-  --gold-soft: #e0c989;
   --cream: #f4efe4;
   --cream-ink: #1c2a36;
   --cream-muted: #5c6b78;
   --text: #eef3f7;
   --muted: #9eb0bf;
-  --line: rgba(196, 163, 90, 0.28);
   --radius: 14px;
+
+  /* brand accents — from the LLX mark */
+  --accent: #7b4bd8;        /* liquid purple — buttons, fills */
+  --accent-soft: #b98cf0;   /* lighter purple — links on navy */
+  --accent-deep: #4a2a8f;   /* shadow purple — gradients */
+  --metal: #c9d2dc;         /* chrome — stat numbers, rules */
+  --metal-dim: #8e9aa6;
+
+  /* aliases: existing rules keep working, no component edits needed */
+  --gold: var(--accent);
+  --gold-soft: var(--accent-soft);
+
+  --line: rgba(123, 75, 216, 0.30);
 }
 
 * { box-sizing: border-box; }
@@ -98,6 +109,23 @@ a:hover { text-decoration: underline; color: var(--gold); }
   grid-template-columns: 1.2fr 0.9fr;
   gap: 2rem;
   align-items: stretch;
+  position: relative;
+  overflow: hidden;
+}
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: auto -10% -55% auto;
+  width: 60%;
+  aspect-ratio: 1;
+  background: radial-gradient(
+    circle at 60% 40%,
+    var(--accent-deep) 0%,
+    transparent 62%
+  );
+  opacity: 0.55;
+  pointer-events: none;
+  filter: blur(18px);
 }
 
 @media (max-width: 860px) {
@@ -211,18 +239,18 @@ a:hover { text-decoration: underline; color: var(--gold); }
 .stat-value {
   font-family: "Cormorant Garamond", Georgia, serif;
   font-size: 1.55rem;
-  color: #fff;
+  color: var(--metal);
 }
 
-.stat-value a { color: var(--gold-soft); }
+.stat-value a { color: var(--accent-soft); }
 
 .cream {
   background: var(--cream);
   color: var(--cream-ink);
 }
 
-.cream a { color: #8a6a28; }
-.cream a:hover { color: #6d521c; }
+.cream a { color: var(--accent-deep); }
+.cream a:hover { color: var(--accent); }
 
 .cream-inner {
   max-width: 1100px;
@@ -419,13 +447,13 @@ main.page {
 }
 
 .plans-status.live {
-  background: rgba(196, 163, 90, 0.14);
+  background: rgba(123, 75, 216, 0.14);
   color: var(--gold);
 }
 
 .plans-status.built {
   background: rgba(11, 28, 44, 0.06);
-  color: #8a6a28;
+  color: var(--accent-deep);
   border-color: rgba(11, 28, 44, 0.12);
 }
 
@@ -477,7 +505,7 @@ main.page {
 }
 
 .cream-cards .cream-card a {
-  color: #8a6a28;
+  color: var(--accent-deep);
 }
 
 .plans-intent-card p {
