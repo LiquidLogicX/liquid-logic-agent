@@ -123,17 +123,17 @@ a:hover { text-decoration: underline; color: var(--gold); }
 .hero::after {
   content: "";
   position: absolute;
-  inset: auto -25% -55% auto;
-  width: 60%;
+  inset: auto -35% -65% auto;
+  width: 48%;
   aspect-ratio: 1;
   background: radial-gradient(
     circle at 60% 40%,
     var(--accent-deep) 0%,
-    transparent 62%
+    transparent 68%
   );
-  opacity: 0.32;
+  opacity: 0.18;
   pointer-events: none;
-  filter: blur(48px);
+  filter: blur(56px);
   z-index: 0;
 }
 
@@ -190,6 +190,7 @@ a:hover { text-decoration: underline; color: var(--gold); }
 
 .hero-panel {
   background: linear-gradient(160deg, var(--navy-card), #0e2233 70%);
+  isolation: isolate;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 1.35rem 1.4rem 1.5rem;
