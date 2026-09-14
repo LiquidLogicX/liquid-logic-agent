@@ -134,6 +134,12 @@ a:hover { text-decoration: underline; color: var(--gold); }
   opacity: 0.32;
   pointer-events: none;
   filter: blur(48px);
+  z-index: 0;
+}
+
+.hero > * {
+  position: relative;
+  z-index: 1;
 }
 
 @media (max-width: 860px) {
