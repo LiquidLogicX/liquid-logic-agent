@@ -1,8 +1,11 @@
 /**
  * Long-running worker process for Render Starter.
- * Payments via CLI / one-off jobs. Periodically syncs disk ledger → GitHub.
+ * - Periodic ledger sync → GitHub
+ * - Operator HTTP: POST /api/freeze | /api/unfreeze (Bearer LLX_OPERATOR_TOKEN)
+ * Payments via CLI / one-off jobs; pay() honors freeze state from the ledger.
  */
 import { loadConfig } from "./lib/config.js";
+import { startOperatorHttpServer } from "./lib/http-api.js";
 import {
   loadLedgerSyncConfigFromEnv,
   syncLedgerToGitHub,
@@ -35,6 +38,9 @@ async function runSync(label: string): Promise<void> {
 console.log(
   "[treasurer] worker up — CLI: node dist/cli/index.js <command>. USDC/x402 on Base only.",
 );
+
+const config = loadConfig();
+startOperatorHttpServer({ config });
 
 const intervalMs = Number(
   process.env.LEDGER_SYNC_INTERVAL_MS ?? DEFAULT_INTERVAL_MS,
