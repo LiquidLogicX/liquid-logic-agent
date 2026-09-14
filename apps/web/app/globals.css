@@ -131,7 +131,7 @@ a:hover { text-decoration: underline; color: var(--gold); }
     var(--accent-deep) 0%,
     transparent 68%
   );
-  opacity: 0.18;
+  opacity: 0.12;
   pointer-events: none;
   filter: blur(56px);
   z-index: 0;
