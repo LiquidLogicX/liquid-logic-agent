@@ -4,6 +4,7 @@
  * Routes:
  *   POST /api/freeze | /api/unfreeze
  *   GET  /api/holds
+ *   POST /api/hold/request
  *   POST /api/hold/:id/approve | /api/hold/:id/deny
  *   GET  /healthz
  */
@@ -23,7 +24,7 @@ import {
   listPendingHolds,
   recordDenied,
 } from "./hold.js";
-import { approveHold } from "./client.js";
+import { approveHold, requestHold } from "./client.js";
 import {
   loadLedgerSyncConfigFromEnv,
   syncLedgerToGitHub,
@@ -199,6 +200,66 @@ export function startOperatorHttpServer(opts: {
         return;
       }
 
+
+      if (method === "POST" && path === "/api/hold/request") {
+        const auth = requireOperatorBearer(req.headers.authorization);
+        if (!auth.ok) {
+          sendJson(res, auth.status, { ok: false, error: auth.error });
+          return;
+        }
+        const raw = await readBody(req);
+        let body: { url?: string; amountUsdc?: string; reason?: string } = {};
+        if (raw.trim()) {
+          try {
+            body = JSON.parse(raw) as typeof body;
+          } catch {
+            sendJson(res, 400, { ok: false, error: "Invalid JSON body" });
+            return;
+          }
+        }
+        const url = (body.url ?? "").trim();
+        const amountUsdc = (body.amountUsdc ?? "").trim();
+        if (!url || !amountUsdc) {
+          sendJson(res, 400, {
+            ok: false,
+            error: "Body requires url and amountUsdc",
+          });
+          return;
+        }
+        try {
+          const held = requestHold({
+            config,
+            ledger,
+            url,
+            amountUsdc,
+            reason: body.reason,
+          });
+          void maybeSyncLedger(config.ledgerPath);
+          sendJson(res, 200, {
+            ok: true,
+            type: "held",
+            holdId: held.holdId,
+            endpoint: held.endpoint,
+            amountUsdc: held.amountUsdc,
+            expiresAt: held.expiresAt,
+            holdTtlSeconds: config.holdTtlSeconds,
+          });
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          console.error("[treasurer] hold request failed:", message);
+          const status = message.startsWith("FROZEN:")
+            ? 423
+            : message.startsWith("GUARDRAIL:") ||
+                message.startsWith("HOLD_DISABLED:") ||
+                message.startsWith("HOLD_BELOW_THRESHOLD:") ||
+                message.startsWith("HOLD_BAD_AMOUNT:")
+              ? 400
+              : 500;
+          sendJson(res, status, { ok: false, error: message });
+        }
+        return;
+      }
+
       if (method === "GET" && path === "/api/holds") {
         const auth = requireOperatorBearer(req.headers.authorization);
         if (!auth.ok) {
@@ -285,7 +346,7 @@ export function startOperatorHttpServer(opts: {
   server.listen(port, host, () => {
     console.log(
       `[treasurer] operator HTTP listening on http://${host}:${port} ` +
-        `(freeze/unfreeze + holds; Bearer LLX_OPERATOR_TOKEN)`,
+        `(freeze/unfreeze + hold request/approve/deny; Bearer LLX_OPERATOR_TOKEN)`,
     );
   });
 
