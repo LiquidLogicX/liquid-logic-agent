@@ -156,6 +156,12 @@
       "reason": "hold-accept-approve-4",
       "holdId": "e801cdfc-1397-49df-af5e-bbba4c027393",
       "approvedBy": "operator"
+    },
+    {
+      "type": "denied",
+      "holdId": "39611fe1-6904-45a4-81a6-0ac0aa405719",
+      "timestamp": "2026-09-14T18:00:37.205Z",
+      "reason": "Operator denied hold"
     }
   ]
 }
