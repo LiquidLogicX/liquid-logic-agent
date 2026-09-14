@@ -56,6 +56,8 @@ export class LedgerStore {
     walletAddress?: string;
     reason?: string;
     timestamp?: string;
+    holdId?: string;
+    approvedBy?: string;
   }): boolean {
     const txHash = opts.txHash;
     if (txHash && this.hasTx(txHash)) return false;
@@ -70,6 +72,8 @@ export class LedgerStore {
       basescanUrl: txHash ? basescanTxUrl(txHash) : undefined,
       walletAddress: opts.walletAddress,
       reason: opts.reason ?? "x402 service payment",
+      holdId: opts.holdId,
+      approvedBy: opts.approvedBy,
     });
     return true;
   }
