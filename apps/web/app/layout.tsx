@@ -13,7 +13,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <header className="site-header">
           <a className="logo" href="/">
-            Liquid Logic X
+            Liquid Logic <span className="x">X</span>
           </a>
           <nav>
             <a href="/#ledger-live">Ledger</a>
