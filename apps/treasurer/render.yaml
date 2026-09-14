@@ -6,6 +6,8 @@
 # Deploy from repo root. After deploy, use Render Shell / one-off jobs for CLI:
 #   node dist/cli/index.js print-wallet-address
 #   node dist/cli/index.js pay <url>
+# Operator freeze (on the instance; background workers have no public URL):
+#   curl -X POST http://127.0.0.1:$PORT/api/freeze -H "Authorization: Bearer $LLX_OPERATOR_TOKEN"
 previewsEnabled: false
 services:
   - type: worker
@@ -40,6 +42,10 @@ services:
         value: data/ledger.jsonl
       - key: LEDGER_SYNC_INTERVAL_MS
         value: "300000"
+      - key: LLX_OPERATOR_TOKEN
+        sync: false
+      - key: PORT
+        value: "10000"
     disk:
       name: treasurer-ledger
       mountPath: /app/data
