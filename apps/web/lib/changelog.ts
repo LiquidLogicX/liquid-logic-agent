@@ -13,8 +13,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     title: "Ledger event type field (payment default)",
     detail:
       "Ledger writes always include an explicit type, defaulting to payment. Reserved held/denied/expired/frozen/unfrozen for takeover; audit spend still counts only payment (or missing type).",
-    href: "https://github.com/LiquidLogicX/liquid-logic-agent/pull/PLACEHOLDER",
-    hrefLabel: "PR #PLACEHOLDER",
+    href: "https://github.com/LiquidLogicX/liquid-logic-agent/pull/25",
+    hrefLabel: "PR #25",
   },
   {
     date: "2026-09-14",
