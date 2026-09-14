@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-09-14T17:56:45.980Z",
+  "generatedAt": "2026-09-14T17:59:54.040Z",
   "network": "eip155:8453",
   "asset": "USDC",
   "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
-  "totalEvents": 18,
-  "totalPayments": 9,
-  "totalPaidUsdcApprox": 0.303,
+  "totalEvents": 21,
+  "totalPayments": 10,
+  "totalPaidUsdcApprox": 0.353,
   "days": [
     "2026-09-13",
     "2026-09-14"
@@ -118,6 +118,20 @@
       "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
       "reason": "hold-accept-approve-vercel",
       "holdId": "ff756a7c-6d64-493d-9a75-7190cd072f96",
+      "approvedBy": "operator"
+    },
+    {
+      "type": "payment",
+      "timestamp": "2026-09-14T17:59:27.780Z",
+      "endpoint": "https://audit.liquidlogicx.com/api/audit",
+      "amountUsdc": "0.05",
+      "asset": "USDC",
+      "network": "eip155:8453",
+      "txHash": "0x5ae8ef780242dfd2f03a9f52a58fcec71a45e6aae6eb4b3a96107698c92411ea",
+      "basescanUrl": "https://basescan.org/tx/0x5ae8ef780242dfd2f03a9f52a58fcec71a45e6aae6eb4b3a96107698c92411ea",
+      "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
+      "reason": "hold-accept-approve-4",
+      "holdId": "e801cdfc-1397-49df-af5e-bbba4c027393",
       "approvedBy": "operator"
     }
   ]
