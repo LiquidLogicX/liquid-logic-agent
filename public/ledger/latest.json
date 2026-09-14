@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-09-14T17:54:45.657Z",
+  "generatedAt": "2026-09-14T17:55:37.364Z",
   "network": "eip155:8453",
   "asset": "USDC",
   "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
-  "totalEvents": 12,
-  "totalPayments": 7,
-  "totalPaidUsdcApprox": 0.203,
+  "totalEvents": 17,
+  "totalPayments": 9,
+  "totalPaidUsdcApprox": 0.303,
   "days": [
     "2026-09-13",
     "2026-09-14"
@@ -94,6 +94,30 @@
       "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
       "reason": "hold-accept-approve-1",
       "holdId": "7185ba1e-db19-42a6-a7a4-091b66aa8415",
+      "approvedBy": "operator"
+    },
+    {
+      "type": "payment",
+      "timestamp": "2026-09-14T17:54:56.731Z",
+      "endpoint": "https://audit.liquidlogicx.com/api/audit",
+      "amountUsdc": "0.05",
+      "asset": "USDC",
+      "network": "eip155:8453",
+      "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
+      "reason": "hold-accept-approve-2",
+      "holdId": "d22ecc42-aa2e-4a74-af16-02de803e4566",
+      "approvedBy": "operator"
+    },
+    {
+      "type": "payment",
+      "timestamp": "2026-09-14T17:55:13.299Z",
+      "endpoint": "https://liquid-logic-agent-audit.vercel.app/api/audit",
+      "amountUsdc": "0.05",
+      "asset": "USDC",
+      "network": "eip155:8453",
+      "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
+      "reason": "hold-accept-approve-vercel",
+      "holdId": "ff756a7c-6d64-493d-9a75-7190cd072f96",
       "approvedBy": "operator"
     }
   ]
