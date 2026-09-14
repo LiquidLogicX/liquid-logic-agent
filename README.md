@@ -23,7 +23,7 @@ liquid-logic-agent/
 
 | Component | Role |
 |-----------|------|
-| Treasurer | CDP-managed wallet + `wrapFetchWithPayment`; allowlist / max / daily cap; JSONL ledger; operator freeze HTTP |
+| Treasurer | CDP-managed wallet + `wrapFetchWithPayment`; allowlist / max / daily cap; JSONL ledger; operator freeze + hold HTTP |
 | Ledger publisher | Cron / GitHub Action → `latest.json`, daily JSON/HTML, social markdown drafts |
 | Audit | `createX402Server` seller; `$0.05` spend summary + `$0.001` allowance pre-flight |
 | Web | Public site; ledger embed; endpoint docs |
@@ -81,7 +81,7 @@ npm run dev -w @liquid-logic/web
 
 | App | Target | Notes |
 |-----|--------|-------|
-| Treasurer | Render Docker Blueprint `apps/treasurer/render.yaml` | Account `hello@liquidlogicx.com`, **Starter** plan |
+| Treasurer | Render Docker Blueprint `apps/treasurer/render.yaml` (**web** service) | Account `hello@liquidlogicx.com`, **Starter**; public HTTPS operator routes |
 | Audit | Vercel Hobby | Root `apps/audit`; `audit.liquidlogicx.com` — `/api/audit` + `/api/allowance` |
 | Web | Vercel Hobby | Root `apps/web`; custom domain **liquidlogicx.com** |
 

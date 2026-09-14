@@ -2,8 +2,8 @@
  * Append-only ledger event shapes (JSONL).
  * Framing: operating spend for services — never "treasury growth".
  *
- * Takeover types held / denied / expired remain reserved until later steps.
- * frozen / unfrozen are written by the treasurer operator freeze API (step 2).
+ * Takeover: held / denied / expired written by treasurer hold threshold (step 3).
+ * frozen / unfrozen written by treasurer operator freeze API (step 2).
  */
 
 /** Default when a row omits `type` (backward compatible with early payment rows). */
@@ -17,7 +17,7 @@ export type LedgerEventType =
   | "payment_failed"
   | "wallet_address"
   | "note"
-  // Takeover (freeze writers in treasurer; hold later)
+  // Takeover (freeze + hold writers in treasurer)
   | "held"
   | "denied"
   | "expired"
@@ -58,7 +58,7 @@ export interface PaymentEvent extends LedgerEventBase {
   network: "eip155:8453" | "eip155:84532";
   txHash?: string;
   basescanUrl?: string;
-  /** Present when payment followed an operator-approved hold (later). */
+  /** Present when payment followed an operator-approved hold. */
   holdId?: string;
   approvedBy?: string;
 }
@@ -80,7 +80,7 @@ export interface NoteEvent extends LedgerEventBase {
   message: string;
 }
 
-/** Schema reserved for takeover hold threshold — no writer in this PR. */
+/** Hold threshold — treasurer writes when amount ≥ HOLD_ABOVE_USDC. */
 export interface HeldEvent extends LedgerEventBase {
   type: "held";
   holdId: string;
@@ -90,13 +90,13 @@ export interface HeldEvent extends LedgerEventBase {
   network?: "eip155:8453" | "eip155:84532";
 }
 
-/** Schema reserved for operator deny — no writer in this PR. */
+/** Operator deny of a pending hold. */
 export interface DeniedEvent extends LedgerEventBase {
   type: "denied";
   holdId: string;
 }
 
-/** Schema reserved for hold TTL expiry — no writer in this PR. */
+/** Hold TTL auto-deny (mandatory; default HOLD_TTL_SECONDS=3600). */
 export interface ExpiredEvent extends LedgerEventBase {
   type: "expired";
   holdId: string;
