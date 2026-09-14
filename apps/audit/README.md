@@ -1,16 +1,25 @@
 # Audit (`apps/audit`)
 
-Vercel / Next.js App Router service exposing an **x402-paid** endpoint:
+Vercel / Next.js App Router service exposing **x402-paid** endpoints on Base
+(`eip155:8453`) via Coinbase CDP (`createX402Server`):
 
-- `GET|POST /api/audit`
-- **Price:** `$0.05` USDC
-- **Network:** Base `eip155:8453`
-- **Facilitator:** Coinbase CDP (`createX402Server`)
+| Route | Price | When to call |
+|-------|-------|----------------|
+| `GET/POST /api/audit` | `$0.05` USDC | Full spend summary (where USDC went) |
+| `GET/POST /api/allowance` | `$0.001` USDC | **Before spending** — can this wallet pay that endpoint, and what’s left under the daily cap? |
 
 ## Input / output
 
+**Audit**
+
 - Input: `?wallet=0x…` or JSON `{ "wallet": "0x…" }`
 - Output: structured spend summary from the public ledger (where USDC went)
+
+**Allowance pre-flight**
+
+- Input: `?wallet=0x…` and optional `?endpoint=https://…`
+- Output: `{ allowed, reason, remainingUsdc, capUsdc, spentUsdc, … }` from published treasurer policy + public ledger (UTC calendar day). Same allowlist / max-per-payment / daily-cap rules as `apps/treasurer` pay().
+- Omit `endpoint` for wallet-level remaining + allowlist summary.
 
 ## Env
 
@@ -31,4 +40,4 @@ Artifacts land in `acceptance/`. Settled payments append to repo-root `data/ledg
 
 `/api/audit` unions (1) local `public/ledger` + `data/ledger.jsonl`, (2) the live published ledger at `LEDGER_REMOTE_BASE_URL` (default `https://liquidlogicx.com`), and (3) the current settlement when the header is present. Events are keyed by tx hash so a sparse Render sync cannot wipe history twice.
 
-Bazaar `output.example` is `AUDIT_OUTPUT_EXAMPLE` in `lib/audit-output-example.ts` — same shape as a paid call for `0xEA24…167D`.
+Bazaar `output.example` for `/api/audit` is `AUDIT_OUTPUT_EXAMPLE`; for `/api/allowance` see `lib/allowance-output-example.ts`. Both must match a paid call for `0xEA24…167D`. Check with `npm run check-example` and `npm run check-allowance`.

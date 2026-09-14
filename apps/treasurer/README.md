@@ -13,15 +13,16 @@ Node.js TypeScript service that pays **USDC on Base** to allowlisted **x402** en
 
 - USDC only — hard fail on swap/buy non-USDC
 - Endpoint allowlist (`TREASURER_ALLOWLIST`)
-- Max per payment + cumulative daily cap
+- Max per payment + cumulative daily cap (UTC calendar day from the ledger)
 - Append-only JSONL ledger
+- Same evaluator as public `/api/allowance`: `@liquid-logic/shared` `evaluateAllowance` + `public/policy.json`
 
 ## CLI
 
 ```bash
 # from repo root (after npm install && npm run build -w @liquid-logic/shared)
 export CDP_API_KEY_ID=... CDP_API_KEY_SECRET=... CDP_WALLET_SECRET=...
-export TREASURER_ALLOWLIST=https://x402.vercel.app/protected
+export TREASURER_ALLOWLIST=https://audit.liquidlogicx.com/api/audit,https://x402uselessfacts.vercel.app/api/useless-fact
 npm run treasurer -- print-wallet-address
 npm run treasurer -- set-allowance --max 1.00 --daily 10.00
 npm run treasurer -- top-up 5.00 --tx 0x...
