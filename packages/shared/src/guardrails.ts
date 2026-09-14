@@ -50,6 +50,31 @@ export function assertUsdcOnlyOperation(opts: {
   }
 }
 
+function stripTrailingSlash(url: string): string {
+  return url.replace(/\/$/, "");
+}
+
+/**
+ * Same matching rules the treasurer uses at pay time:
+ * exact URL (trailing slash ignored) or allowlisted prefix + "/".
+ */
+export function isAllowlistedEndpoint(url: string, allowlist: string[]): boolean {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return false;
+  }
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+    return false;
+  }
+  const normalized = stripTrailingSlash(parsed.toString());
+  const allowed = allowlist.map(stripTrailingSlash);
+  return allowed.some(
+    (a) => normalized === a || normalized.startsWith(a + "/"),
+  );
+}
+
 /**
  * Normalize and validate an allowlisted HTTP(S) endpoint URL.
  */
@@ -66,13 +91,8 @@ export function assertAllowlistedEndpoint(
   if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
     throw new Error(`Endpoint must be http(s): ${url}`);
   }
-
-  const normalized = parsed.toString().replace(/\/$/, "");
-  const allowed = allowlist.map((u) => u.replace(/\/$/, ""));
-  const ok = allowed.some(
-    (a) => normalized === a || normalized.startsWith(a + "/"),
-  );
-  if (!ok) {
+  if (!isAllowlistedEndpoint(url, allowlist)) {
+    const allowed = allowlist.map(stripTrailingSlash);
     throw new Error(
       `GUARDRAIL: endpoint not on allowlist: ${url}. Allowed: ${allowed.join(", ") || "(empty)"}`,
     );

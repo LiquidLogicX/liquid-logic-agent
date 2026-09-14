@@ -1,9 +1,10 @@
 import { CdpX402Client } from "@coinbase/cdp-sdk/x402";
 import { wrapFetchWithPayment } from "@x402/fetch";
 import {
+  DEFAULT_TREASURER_POLICY,
+  TREASURER_WALLET_ADDRESS,
   assertAllowlistedEndpoint,
-  atomicToUsdc,
-  usdcToAtomic,
+  evaluateAllowance,
 } from "@liquid-logic/shared";
 import type { TreasurerConfig } from "./config.js";
 import { LedgerStore } from "./ledger-store.js";
@@ -105,25 +106,20 @@ export async function payEndpoint(opts: {
 
   const endpoint = assertAllowlistedEndpoint(opts.url, config.allowlist);
 
-  const spent = ledger.spentTodayAtomic();
-  if (spent >= config.dailyCapAtomic) {
-    throw new Error(
-      `GUARDRAIL: daily USDC cap reached (${atomicToUsdc(config.dailyCapAtomic)} USDC).`,
-    );
-  }
-
-  if (opts.maxAmountHintUsdc) {
-    const hint = usdcToAtomic(opts.maxAmountHintUsdc);
-    if (hint > config.maxPerPaymentAtomic) {
-      throw new Error(
-        `GUARDRAIL: amount ${opts.maxAmountHintUsdc} exceeds max per payment ${config.maxPerPaymentUsdc} USDC.`,
-      );
-    }
-    if (spent + hint > config.dailyCapAtomic) {
-      throw new Error(
-        `GUARDRAIL: payment would exceed daily cap (${config.dailyCapUsdc} USDC).`,
-      );
-    }
+  const preview = evaluateAllowance({
+    policy: {
+      ...DEFAULT_TREASURER_POLICY,
+      allowlist: config.allowlist,
+      maxPerPaymentUsdc: config.maxPerPaymentUsdc,
+      dailyCapUsdc: config.dailyCapUsdc,
+    },
+    events: ledger.readAll(),
+    walletAddress: TREASURER_WALLET_ADDRESS,
+    endpoint,
+    amountUsdc: opts.maxAmountHintUsdc,
+  });
+  if (!preview.allowed) {
+    throw new Error(`GUARDRAIL: ${preview.reason}`);
   }
 
   const client = createX402PayClient(config);
