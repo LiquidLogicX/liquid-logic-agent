@@ -116,6 +116,12 @@
       "reason": "hold-accept-approve-vercel",
       "holdId": "ff756a7c-6d64-493d-9a75-7190cd072f96",
       "approvedBy": "operator"
+    },
+    {
+      "type": "expired",
+      "holdId": "1ab2420d-1083-4a25-8dfb-5154b447542e",
+      "timestamp": "2026-09-14T17:56:20.582Z",
+      "reason": "Hold TTL elapsed — auto-deny"
     }
   ]
 }
