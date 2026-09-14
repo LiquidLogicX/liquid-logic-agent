@@ -7,6 +7,41 @@ export default function DocsPage() {
       <h1>Endpoint docs</h1>
 
       <section className="card">
+        <h2>Allowance pre-flight</h2>
+        <p>
+          <code>
+            GET|POST {auditUrl}/api/allowance
+          </code>
+        </p>
+        <ul>
+          <li>
+            Price: <strong>$0.001 USDC</strong> (cheaper than audit)
+          </li>
+          <li>
+            Network: Base (<code>eip155:8453</code>)
+          </li>
+          <li>Facilitator: Coinbase CDP</li>
+          <li>
+            Call <strong>before spending</strong>: can this wallet pay that x402
+            URL, and how much USDC remains under the treasurer daily cap?
+          </li>
+          <li>
+            Input: wallet (required), endpoint (optional). Omit endpoint for
+            remaining + allowlist summary.
+          </li>
+          <li>
+            Policy source: published treasurer allowlist / max per payment /
+            UTC daily cap (same rules as the treasurer CLI). No per-endpoint cap.
+          </li>
+        </ul>
+        <pre>{`# Before paying an endpoint
+GET ${auditUrl}/api/allowance?wallet=0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D&endpoint=https://audit.liquidlogicx.com/api/audit
+
+# Wallet-level remaining + allowlist
+GET ${auditUrl}/api/allowance?wallet=0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D`}</pre>
+      </section>
+
+      <section className="card">
         <h2>Audit my agent wallet</h2>
         <p>
           <code>

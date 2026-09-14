@@ -1,0 +1,14 @@
+{
+  "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
+  "allowlist": [
+    "https://audit.liquidlogicx.com/api/audit",
+    "https://liquid-logic-agent-audit.vercel.app/api/audit",
+    "https://x402uselessfacts.vercel.app/api/useless-fact"
+  ],
+  "maxPerPaymentUsdc": "1.00",
+  "dailyCapUsdc": "10.00",
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "spentWindow": "utc_calendar_day",
+  "note": "Operating spend limits for the Liquid Logic Agent treasurer. Mirrors production Render TREASURER_* env. Not a treasury or growth product."
+}

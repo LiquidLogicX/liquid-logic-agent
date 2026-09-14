@@ -65,13 +65,14 @@ export default function HomePage() {
             </ul>
           </div>
           <div className="card">
-            <h3>Paid audit</h3>
+            <h3>Paid audit + pre-flight</h3>
             <p>
-              Structured spend summary for an agent wallet —{" "}
-              <strong>$0.05 USDC</strong> via x402 on Base.
+              Spend summary — <strong>$0.05 USDC</strong>. Allowance pre-flight
+              (call before spending) — <strong>$0.001 USDC</strong>. Both via
+              x402 on Base.
             </p>
             <p style={{ marginTop: "0.75rem" }}>
-              <code>{`GET ${auditUrl}/api/audit?wallet=0x…`}</code>
+              <code>{`GET ${auditUrl}/api/allowance?wallet=0x…`}</code>
             </p>
           </div>
         </div>

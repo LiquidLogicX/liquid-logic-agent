@@ -1,8 +1,10 @@
 import {
+  DEFAULT_TREASURER_POLICY,
   NETWORK_BASE,
   NETWORK_BASE_SEPOLIA,
   USDC_BASE_MAINNET,
   USDC_BASE_SEPOLIA,
+  parseAllowlist,
   usdcToAtomic,
 } from "@liquid-logic/shared";
 import path from "node:path";
@@ -26,13 +28,14 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): TreasurerConfi
   const environment: "production" | "development" =
     rawEnv === "development" ? "development" : "production";
 
-  const allowlist = (env.TREASURER_ALLOWLIST ?? "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
+  // Fail-closed: empty TREASURER_ALLOWLIST means pay nothing.
+  // Caps fall back to the published production policy (same numbers as Render).
+  const allowlist = parseAllowlist(env.TREASURER_ALLOWLIST);
 
-  const maxPerPaymentUsdc = env.TREASURER_MAX_PER_PAYMENT_USDC ?? "1.00";
-  const dailyCapUsdc = env.TREASURER_DAILY_CAP_USDC ?? "10.00";
+  const maxPerPaymentUsdc =
+    env.TREASURER_MAX_PER_PAYMENT_USDC ?? DEFAULT_TREASURER_POLICY.maxPerPaymentUsdc;
+  const dailyCapUsdc =
+    env.TREASURER_DAILY_CAP_USDC ?? DEFAULT_TREASURER_POLICY.dailyCapUsdc;
 
   const ledgerPath = path.resolve(
     env.TREASURER_LEDGER_PATH ?? "./data/ledger.jsonl",

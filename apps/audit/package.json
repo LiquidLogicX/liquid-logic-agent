@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start -p 3001",
     "paid-call": "node --import tsx scripts/paid-audit-call.ts",
-    "check-example": "LEDGER_SKIP_REMOTE=1 node --import tsx scripts/check-example.ts"
+    "paid-allowance": "node --import tsx scripts/paid-allowance-call.ts",
+    "check-example": "LEDGER_SKIP_REMOTE=1 node --import tsx scripts/check-example.ts",
+    "check-allowance": "LEDGER_SKIP_REMOTE=1 node --import tsx scripts/check-allowance.ts"
   },
   "dependencies": {
     "@coinbase/cdp-sdk": "^1.55.0",
