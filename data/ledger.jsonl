@@ -12,3 +12,4 @@
 {"type":"denied","holdId":"f5285d71-0e27-4859-9bca-241f5da74087","timestamp":"2026-09-14T17:53:43.170Z","reason":"Operator denied hold"}
 {"type":"held","holdId":"1ab2420d-1083-4a25-8dfb-5154b447542e","timestamp":"2026-09-14T17:54:48.586Z","endpoint":"https://audit.liquidlogicx.com/api/audit","amountUsdc":"0.05","asset":"USDC","network":"eip155:8453","reason":"hold-accept-expire-1"}
 {"type":"held","holdId":"d22ecc42-aa2e-4a74-af16-02de803e4566","timestamp":"2026-09-14T17:54:54.511Z","endpoint":"https://audit.liquidlogicx.com/api/audit","amountUsdc":"0.05","asset":"USDC","network":"eip155:8453","reason":"hold-accept-approve-2"}
+{"type":"payment","timestamp":"2026-09-14T17:54:56.731Z","endpoint":"https://audit.liquidlogicx.com/api/audit","amountUsdc":"0.05","asset":"USDC","network":"eip155:8453","walletAddress":"0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D","reason":"hold-accept-approve-2","holdId":"d22ecc42-aa2e-4a74-af16-02de803e4566","approvedBy":"operator"}
