@@ -43,6 +43,16 @@ export class LedgerStore {
     return sum;
   }
 
+  hasTx(txHash: string): boolean {
+    const key = txHash.toLowerCase();
+    return this.readAll().some(
+      (e) =>
+        (e.type === "payment" || e.type === "top_up") &&
+        "txHash" in e &&
+        e.txHash?.toLowerCase() === key,
+    );
+  }
+
   recordPayment(opts: {
     endpoint: string;
     amountUsdc: string;
@@ -50,11 +60,13 @@ export class LedgerStore {
     txHash?: string;
     walletAddress?: string;
     reason?: string;
-  }): void {
+    timestamp?: string;
+  }): boolean {
     const txHash = opts.txHash;
+    if (txHash && this.hasTx(txHash)) return false;
     this.append({
       type: "payment",
-      timestamp: new Date().toISOString(),
+      timestamp: opts.timestamp ?? new Date().toISOString(),
       endpoint: opts.endpoint,
       amountUsdc: opts.amountUsdc,
       asset: "USDC",
@@ -64,5 +76,6 @@ export class LedgerStore {
       walletAddress: opts.walletAddress,
       reason: opts.reason ?? "x402 service payment",
     });
+    return true;
   }
 }

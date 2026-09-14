@@ -29,10 +29,15 @@ jobs:
           SOCIAL_DRAFTS_DIR: drafts/social
           AGENT_WALLET_ADDRESS: ${{ secrets.AGENT_WALLET_ADDRESS }}
         run: npm run publish-ledger
+      - name: Mirror into web + audit public/ledger
+        run: |
+          mkdir -p apps/web/public/ledger apps/audit/public/ledger
+          cp -a public/ledger/. apps/web/public/ledger/
+          cp -a public/ledger/. apps/audit/public/ledger/
       - name: Commit artifacts (if changed)
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/ledger drafts/social
+          git add public/ledger apps/web/public/ledger apps/audit/public/ledger drafts/social
           git diff --staged --quiet || git commit -m "chore(ledger): publish public ledger and social drafts"
           git push || true
