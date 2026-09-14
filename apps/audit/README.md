@@ -25,7 +25,7 @@ export WALLET_TO_AUDIT=0xYourAgentWallet
 npm run paid-call -w @liquid-logic/audit
 ```
 
-Artifacts land in `acceptance/`.
+Artifacts land in `acceptance/`. Settled payments append to repo-root `data/ledger.jsonl` (canonical treasurer sync path), not `apps/audit/data/`.
 
 ## Ledger source
 
