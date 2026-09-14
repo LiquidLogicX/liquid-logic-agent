@@ -13,8 +13,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     title: "Operator freeze / unfreeze",
     detail:
       "Treasurer POST /api/freeze and /api/unfreeze (Bearer LLX_OPERATOR_TOKEN) halt and resume all outbound payments. Freeze state persists in the ledger across restarts; pay() fails closed while frozen.",
-    href: "https://github.com/LiquidLogicX/liquid-logic-agent/pull/PLACEHOLDER",
-    hrefLabel: "PR #PLACEHOLDER",
+    href: "https://github.com/LiquidLogicX/liquid-logic-agent/pull/26",
+    hrefLabel: "PR #26",
   },
   {
     date: "2026-09-14",
