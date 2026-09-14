@@ -10,6 +10,14 @@ export type ChangelogEntry = {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     date: "2026-09-14",
+    title: "Ledger event type field (payment default)",
+    detail:
+      "Ledger writes always include an explicit type, defaulting to payment. Reserved held/denied/expired/frozen/unfrozen for takeover; audit spend still counts only payment (or missing type).",
+    href: "https://github.com/LiquidLogicX/liquid-logic-agent/pull/PLACEHOLDER",
+    hrefLabel: "PR #PLACEHOLDER",
+  },
+  {
+    date: "2026-09-14",
     title: "Allowance pre-flight endpoint",
     detail:
       "Agents can pay $0.001 USDC to ask whether the treasurer wallet may pay an x402 URL and how much remains under the UTC daily cap — before spending $0.05 on a full audit.",

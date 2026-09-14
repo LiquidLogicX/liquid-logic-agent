@@ -10,6 +10,7 @@ import {
   atomicToUsdc,
   basescanTxUrl,
   isPaymentEvent,
+  parseLedgerJsonl,
   usdcToAtomic,
   type LedgerEvent,
   type PaymentEvent,
@@ -17,17 +18,7 @@ import {
 
 function loadEvents(filePath: string): LedgerEvent[] {
   if (!fs.existsSync(filePath)) return [];
-  const events: LedgerEvent[] = [];
-  for (const line of fs.readFileSync(filePath, "utf8").split("\n")) {
-    const t = line.trim();
-    if (!t) continue;
-    try {
-      events.push(JSON.parse(t) as LedgerEvent);
-    } catch {
-      /* skip */
-    }
-  }
-  return events;
+  return parseLedgerJsonl(fs.readFileSync(filePath, "utf8"));
 }
 
 function dayKey(iso: string): string {
