@@ -18,6 +18,14 @@ export const BASESCAN_ADDRESS = "https://basescan.org/address/";
 export const AUDIT_PRICE_USDC = "0.05";
 export const AUDIT_PRICE_LABEL = "$0.05";
 
+/** Allowance pre-flight — cheaper than audit so agents can ask before spending. */
+export const ALLOWANCE_PRICE_USDC = "0.001";
+export const ALLOWANCE_PRICE_LABEL = "$0.001";
+
+/** CDP-managed Liquid Logic Agent treasurer (Base). */
+export const TREASURER_WALLET_ADDRESS =
+  "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D" as const;
+
 /** Atomic units: USDC has 6 decimals. */
 export function usdcToAtomic(amount: string | number): bigint {
   const s = String(amount).trim();
