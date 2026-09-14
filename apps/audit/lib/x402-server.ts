@@ -5,22 +5,13 @@
 import { createX402Server, type X402Server } from "@coinbase/cdp-sdk/x402";
 import { declareDiscoveryExtension } from "@x402/extensions/bazaar";
 import { AUDIT_PRICE_LABEL, NETWORK_BASE } from "@liquid-logic/shared";
+import { AUDIT_OUTPUT_EXAMPLE } from "./audit-output-example";
 
 const AUDIT_DESCRIPTION =
   "Liquid Logic Agent — wallet audit. Returns a structured USDC spend summary for an agent wallet from the public ledger. Site: https://liquidlogicx.com";
 
 const outputExample = {
-  example: {
-    walletAddress: "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
-    network: "eip155:8453",
-    asset: "USDC",
-    source: "public_ledger",
-    paymentCount: 1,
-    totalUsdc: 0.001,
-    destinations: [],
-    recent: [],
-    note: "Operating spend for x402 services (USDC on Base).",
-  },
+  example: AUDIT_OUTPUT_EXAMPLE,
 };
 
 const walletInputSchema = {

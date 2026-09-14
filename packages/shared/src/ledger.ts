@@ -77,3 +77,62 @@ export type LedgerEvent =
 export function isPaymentEvent(e: LedgerEvent): e is PaymentEvent {
   return e.type === "payment";
 }
+
+/** Stable identity for union-merge (tx hash when present; otherwise full row). */
+export function ledgerEventKey(e: LedgerEvent): string {
+  if ((e.type === "payment" || e.type === "top_up") && "txHash" in e && e.txHash) {
+    return `${e.type}:${e.txHash.toLowerCase()}`;
+  }
+  if (e.type === "wallet_address" && e.walletAddress) {
+    return `${e.type}:${e.walletAddress.toLowerCase()}`;
+  }
+  return JSON.stringify(e);
+}
+
+export function parseLedgerJsonl(raw: string): LedgerEvent[] {
+  const events: LedgerEvent[] = [];
+  for (const line of raw.split("\n")) {
+    const t = line.trim();
+    if (!t) continue;
+    try {
+      events.push(JSON.parse(t) as LedgerEvent);
+    } catch {
+      /* skip corrupt lines */
+    }
+  }
+  return events;
+}
+
+export function serializeLedgerJsonl(events: LedgerEvent[]): string {
+  if (events.length === 0) return "";
+  return events.map((e) => JSON.stringify(e)).join("\n") + "\n";
+}
+
+/** Prefer the record with more populated fields when keys collide. */
+function richer(a: LedgerEvent, b: LedgerEvent): LedgerEvent {
+  const score = (e: LedgerEvent) => JSON.stringify(e).length;
+  return score(b) > score(a) ? b : a;
+}
+
+/** Union events from one or more logs; sort by timestamp. Later lists overwrite on richer. */
+export function mergeLedgerEvents(...lists: LedgerEvent[][]): LedgerEvent[] {
+  const map = new Map<string, LedgerEvent>();
+  for (const list of lists) {
+    for (const e of list) {
+      const k = ledgerEventKey(e);
+      const prev = map.get(k);
+      map.set(k, prev ? richer(prev, e) : e);
+    }
+  }
+  return [...map.values()].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+}
+
+/** Strip query/hash so the same resource is one destination. */
+export function resourceEndpoint(url: string): string {
+  try {
+    const u = new URL(url);
+    return `${u.origin}${u.pathname}`.replace(/\/$/, "") || url;
+  } catch {
+    return url.replace(/[?#].*$/, "").replace(/\/$/, "");
+  }
+}
