@@ -123,9 +123,9 @@ a:hover { text-decoration: underline; color: var(--gold); }
     var(--accent-deep) 0%,
     transparent 62%
   );
-  opacity: 0.55;
+  opacity: 0.32;
   pointer-events: none;
-  filter: blur(32px);
+  filter: blur(48px);
 }
 
 @media (max-width: 860px) {
