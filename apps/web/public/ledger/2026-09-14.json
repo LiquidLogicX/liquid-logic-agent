@@ -46,6 +46,22 @@
       "reason": "hold-accept-approve-1",
       "holdId": "7185ba1e-db19-42a6-a7a4-091b66aa8415",
       "approvedBy": "operator"
+    },
+    {
+      "type": "held",
+      "holdId": "f5285d71-0e27-4859-9bca-241f5da74087",
+      "timestamp": "2026-09-14T17:53:43.028Z",
+      "endpoint": "https://audit.liquidlogicx.com/api/audit",
+      "amountUsdc": "0.05",
+      "asset": "USDC",
+      "network": "eip155:8453",
+      "reason": "hold-accept-deny-1"
+    },
+    {
+      "type": "denied",
+      "holdId": "f5285d71-0e27-4859-9bca-241f5da74087",
+      "timestamp": "2026-09-14T17:53:43.170Z",
+      "reason": "Operator denied hold"
     }
   ]
 }
