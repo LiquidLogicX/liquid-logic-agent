@@ -19,6 +19,16 @@ import {
   sleep,
 } from "./hold.js";
 
+/** Ensure audit-style endpoints receive ?wallet= for required queryParams. */
+function withWalletQuery(endpoint: string, walletAddress: string): string {
+  const u = new URL(endpoint);
+  if (!u.searchParams.get("wallet")) {
+    u.searchParams.set("wallet", walletAddress);
+  }
+  return u.toString();
+}
+
+
 export function createX402PayClient(config: TreasurerConfig): CdpX402Client {
   assertPaymentAsset(config);
 
@@ -155,10 +165,11 @@ export async function executePayment(opts: {
   const client = createX402PayClient(config);
   const { evmAddress } = await client.getAddresses();
   const fetchWithPayment = wrapFetchWithPayment(globalThis.fetch, client as never);
+  const payUrl = withWalletQuery(endpoint, evmAddress);
 
   let response: Response;
   try {
-    response = await fetchWithPayment(endpoint);
+    response = await fetchWithPayment(payUrl);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     ledger.append({
