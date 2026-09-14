@@ -1,5 +1,11 @@
 import type { LedgerEvent } from "@liquid-logic/shared";
-import { basescanTxUrl, sumSpentTodayAtomic } from "@liquid-logic/shared";
+import {
+  basescanTxUrl,
+  DEFAULT_LEDGER_EVENT_TYPE,
+  normalizeLedgerEvent,
+  parseLedgerJsonl,
+  sumSpentTodayAtomic,
+} from "@liquid-logic/shared";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -11,24 +17,20 @@ export class LedgerStore {
     }
   }
 
+  /** Append a ledger row; always writes an explicit `type` (default `payment`). */
   append(event: LedgerEvent): void {
-    const line = JSON.stringify(event);
+    const normalized =
+      normalizeLedgerEvent({
+        ...event,
+        type: event.type ?? DEFAULT_LEDGER_EVENT_TYPE,
+      }) ?? ({ ...event, type: DEFAULT_LEDGER_EVENT_TYPE } as LedgerEvent);
+    const line = JSON.stringify(normalized);
     fs.appendFileSync(this.filePath, line + "\n", "utf8");
   }
 
   readAll(): LedgerEvent[] {
     const raw = fs.readFileSync(this.filePath, "utf8");
-    const events: LedgerEvent[] = [];
-    for (const line of raw.split("\n")) {
-      const t = line.trim();
-      if (!t) continue;
-      try {
-        events.push(JSON.parse(t) as LedgerEvent);
-      } catch {
-        // skip corrupt lines
-      }
-    }
-    return events;
+    return parseLedgerJsonl(raw);
   }
 
   /** Sum USDC payment amounts for the UTC calendar day of `now`. */
