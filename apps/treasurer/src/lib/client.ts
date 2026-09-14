@@ -333,6 +333,62 @@ export async function payEndpoint(opts: {
   });
 }
 
+/**
+ * Operator-initiated hold: write `held` on the live ledger (same disk as approve/deny).
+ * Does not pay and does not block — operator must approve, deny, or wait for TTL expiry.
+ */
+export function requestHold(opts: {
+  config: TreasurerConfig;
+  ledger: LedgerStore;
+  url: string;
+  amountUsdc: string;
+  reason?: string;
+}): { holdId: string; endpoint: string; amountUsdc: string; expiresAt: string } {
+  const { config, ledger } = opts;
+  if (isPaymentsFrozen(ledger)) {
+    throw new Error(
+      "FROZEN: outbound payments halted by operator freeze (POST /api/unfreeze to resume)",
+    );
+  }
+  if (!config.holdAboveUsdc) {
+    throw new Error(
+      "HOLD_DISABLED: set HOLD_ABOVE_USDC to enable holds (or use CLI pay for immediate spend)",
+    );
+  }
+  const amount = opts.amountUsdc.trim();
+  if (!amount || Number.isNaN(Number(amount)) || Number(amount) <= 0) {
+    throw new Error("HOLD_BAD_AMOUNT: amountUsdc must be a positive USDC string");
+  }
+  if (!amountMeetsHoldThreshold(amount, config.holdAboveUsdc)) {
+    throw new Error(
+      `HOLD_BELOW_THRESHOLD: ${amount} USDC < HOLD_ABOVE_USDC=${config.holdAboveUsdc}`,
+    );
+  }
+  expireStaleHolds(ledger, config.holdTtlSeconds);
+  const endpoint = assertAllowlistedEndpoint(opts.url, config.allowlist);
+  const held = recordHeld(ledger, {
+    endpoint,
+    amountUsdc: amount,
+    network: config.network,
+    reason:
+      opts.reason ??
+      `Hold request: ${amount} USDC ≥ HOLD_ABOVE_USDC=${config.holdAboveUsdc}`,
+  });
+  const expiresAt = new Date(
+    Date.parse(held.timestamp) + config.holdTtlSeconds * 1000,
+  ).toISOString();
+  console.log(
+    `[treasurer] HELD ${held.holdId} endpoint=${endpoint} amount=${amount} USDC ` +
+      `(TTL ${config.holdTtlSeconds}s) — approve/deny via operator HTTP`,
+  );
+  return {
+    holdId: held.holdId,
+    endpoint,
+    amountUsdc: amount,
+    expiresAt,
+  };
+}
+
 /** Approve a pending hold: execute payment and append payment with holdId + approvedBy. */
 export async function approveHold(opts: {
   config: TreasurerConfig;
