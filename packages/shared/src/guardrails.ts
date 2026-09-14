@@ -68,8 +68,16 @@ export function isAllowlistedEndpoint(url: string, allowlist: string[]): boolean
   if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
     return false;
   }
-  const normalized = stripTrailingSlash(parsed.toString());
-  const allowed = allowlist.map(stripTrailingSlash);
+  // Ignore query/hash so ?wallet=… still matches an allowlisted path.
+  const normalized = stripTrailingSlash(`${parsed.origin}${parsed.pathname}`);
+  const allowed = allowlist.map((entry) => {
+    try {
+      const a = new URL(entry);
+      return stripTrailingSlash(`${a.origin}${a.pathname}`);
+    } catch {
+      return stripTrailingSlash(entry);
+    }
+  });
   return allowed.some(
     (a) => normalized === a || normalized.startsWith(a + "/"),
   );
