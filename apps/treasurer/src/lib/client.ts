@@ -9,6 +9,7 @@ import {
 import type { TreasurerConfig } from "./config.js";
 import { LedgerStore } from "./ledger-store.js";
 import { assertPaymentAsset } from "./usdc-guard.js";
+import { isPaymentsFrozen } from "./freeze.js";
 
 export function createX402PayClient(config: TreasurerConfig): CdpX402Client {
   assertPaymentAsset(config);
@@ -103,6 +104,12 @@ export async function payEndpoint(opts: {
 }): Promise<{ status: number; body: string; txHash?: string; walletAddress: string }> {
   const { config, ledger } = opts;
   assertPaymentAsset(config);
+
+  if (isPaymentsFrozen(ledger)) {
+    throw new Error(
+      "FROZEN: outbound payments halted by operator freeze (POST /api/unfreeze to resume)",
+    );
+  }
 
   const endpoint = assertAllowlistedEndpoint(opts.url, config.allowlist);
 

@@ -10,6 +10,14 @@ export type ChangelogEntry = {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     date: "2026-09-14",
+    title: "Operator freeze / unfreeze",
+    detail:
+      "Treasurer POST /api/freeze and /api/unfreeze (Bearer LLX_OPERATOR_TOKEN) halt and resume all outbound payments. Freeze state persists in the ledger across restarts; pay() fails closed while frozen.",
+    href: "https://github.com/LiquidLogicX/liquid-logic-agent/pull/PLACEHOLDER",
+    hrefLabel: "PR #PLACEHOLDER",
+  },
+  {
+    date: "2026-09-14",
     title: "Ledger event type field (payment default)",
     detail:
       "Ledger writes always include an explicit type, defaulting to payment. Reserved held/denied/expired/frozen/unfrozen for takeover; audit spend still counts only payment (or missing type).",

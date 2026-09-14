@@ -2,9 +2,8 @@
  * Append-only ledger event shapes (JSONL).
  * Framing: operating spend for services — never "treasury growth".
  *
- * Takeover types (held / denied / expired / frozen / unfrozen) are reserved
- * in the schema so parsers and summaries can ignore them until writers land.
- * Do not invent hold/freeze behavior here — step 1 is type + default only.
+ * Takeover types held / denied / expired remain reserved until later steps.
+ * frozen / unfrozen are written by the treasurer operator freeze API (step 2).
  */
 
 /** Default when a row omits `type` (backward compatible with early payment rows). */
@@ -18,7 +17,7 @@ export type LedgerEventType =
   | "payment_failed"
   | "wallet_address"
   | "note"
-  // Takeover (writers land in later PRs)
+  // Takeover (freeze writers in treasurer; hold later)
   | "held"
   | "denied"
   | "expired"
@@ -103,12 +102,12 @@ export interface ExpiredEvent extends LedgerEventBase {
   holdId: string;
 }
 
-/** Schema reserved for operator freeze — no writer in this PR. */
+/** Operator freeze — stops outbound treasurer payments until unfrozen. */
 export interface FrozenEvent extends LedgerEventBase {
   type: "frozen";
 }
 
-/** Schema reserved for operator unfreeze — no writer in this PR. */
+/** Operator unfreeze — resumes outbound treasurer payments. */
 export interface UnfrozenEvent extends LedgerEventBase {
   type: "unfrozen";
 }
@@ -136,6 +135,21 @@ export function isPaymentEvent(e: { type?: string }): e is PaymentEvent {
   const t = e.type == null || e.type === "" ? DEFAULT_LEDGER_EVENT_TYPE : e.type;
   return t === "payment";
 }
+
+
+/**
+ * Freeze state from the append-only ledger: last `frozen` without a later
+ * `unfrozen` means outbound payments must halt. Restarts honor this.
+ */
+export function isFrozenFromLedger(events: readonly { type?: string }[]): boolean {
+  for (let i = events.length - 1; i >= 0; i--) {
+    const t = events[i]?.type;
+    if (t === "frozen") return true;
+    if (t === "unfrozen") return false;
+  }
+  return false;
+}
+
 
 /** Ensure every row has an explicit `type` (default `payment`). */
 export function normalizeLedgerEvent(raw: unknown): LedgerEvent | null {
