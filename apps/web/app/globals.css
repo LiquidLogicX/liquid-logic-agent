@@ -123,15 +123,16 @@ a:hover { text-decoration: underline; color: var(--gold); }
 .hero::after {
   content: "";
   position: absolute;
-  inset: auto -35% -65% auto;
-  width: 48%;
+  /* top / right — keep clear of the ledger card and stats band */
+  inset: -20% -40% auto auto;
+  width: 42%;
   aspect-ratio: 1;
   background: radial-gradient(
     circle at 60% 40%,
     var(--accent-deep) 0%,
-    transparent 68%
+    transparent 70%
   );
-  opacity: 0.12;
+  opacity: 0.08;
   pointer-events: none;
   filter: blur(56px);
   z-index: 0;
@@ -257,7 +258,10 @@ a:hover { text-decoration: underline; color: var(--gold); }
   color: var(--metal);
 }
 
-.stat-value a { color: var(--accent-soft); }
+.stat-value a {
+  color: var(--accent-soft);
+  text-shadow: none;
+}
 
 .cream {
   background: var(--cream);
