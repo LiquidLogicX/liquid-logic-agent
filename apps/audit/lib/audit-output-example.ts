@@ -10,8 +10,8 @@ export const AUDIT_OUTPUT_EXAMPLE: SpendSummary = {
   network: "eip155:8453",
   asset: "USDC",
   source: "public_ledger",
-  paymentCount: 5,
-  totalUsdc: 0.103,
+  paymentCount: 6,
+  totalUsdc: 0.153,
   destinations: [
     {
       endpoint: "https://x402uselessfacts.vercel.app/api/useless-fact",
@@ -61,8 +61,8 @@ export const AUDIT_OUTPUT_EXAMPLE: SpendSummary = {
     },
     {
       endpoint: "https://audit.liquidlogicx.com/api/audit",
-      count: 1,
-      totalUsdc: 0.05,
+      count: 2,
+      totalUsdc: 0.1,
       examples: [
         {
           amountUsdc: "0.05",
@@ -71,6 +71,14 @@ export const AUDIT_OUTPUT_EXAMPLE: SpendSummary = {
           basescanUrl:
             "https://basescan.org/tx/0x465910619fb6ba1fa3106b911098d435d4900e0bf2bce05b35f3c7e077643318",
           timestamp: "2026-09-14T00:12:29.000Z",
+        },
+        {
+          amountUsdc: "0.05",
+          txHash:
+            "0xa2013bf05ced393b8a678debd04711189cbded68fb57063bc80d28fd4cddbe90",
+          basescanUrl:
+            "https://basescan.org/tx/0xa2013bf05ced393b8a678debd04711189cbded68fb57063bc80d28fd4cddbe90",
+          timestamp: "2026-09-14T01:07:28.169Z",
         },
       ],
     },
@@ -124,6 +132,16 @@ export const AUDIT_OUTPUT_EXAMPLE: SpendSummary = {
       basescanUrl:
         "https://basescan.org/tx/0x465910619fb6ba1fa3106b911098d435d4900e0bf2bce05b35f3c7e077643318",
       timestamp: "2026-09-14T00:12:29.000Z",
+      reason: "paid audit call",
+    },
+    {
+      endpoint: "https://audit.liquidlogicx.com/api/audit",
+      amountUsdc: "0.05",
+      txHash:
+        "0xa2013bf05ced393b8a678debd04711189cbded68fb57063bc80d28fd4cddbe90",
+      basescanUrl:
+        "https://basescan.org/tx/0xa2013bf05ced393b8a678debd04711189cbded68fb57063bc80d28fd4cddbe90",
+      timestamp: "2026-09-14T01:07:28.169Z",
       reason: "paid audit call",
     },
   ],

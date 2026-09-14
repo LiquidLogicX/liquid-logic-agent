@@ -12,9 +12,50 @@
 import "dotenv/config";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { CdpX402Client } from "@coinbase/cdp-sdk/x402";
 import { wrapFetchWithPayment } from "@x402/fetch";
 import { AUDIT_PRICE_USDC, basescanTxUrl } from "@liquid-logic/shared";
+
+function findRepoRoot(): string {
+  const markers = ["apps/treasurer", "packages/ledger-publisher"];
+  const starts = [
+    process.cwd(),
+    path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../.."),
+  ];
+  for (const start of starts) {
+    let dir = start;
+    for (let i = 0; i < 8; i++) {
+      if (
+        markers.every((m) => fs.existsSync(path.join(dir, m))) ||
+        fs.existsSync(path.join(dir, "GUARDRAILS.md"))
+      ) {
+        return dir;
+      }
+      const parent = path.dirname(dir);
+      if (parent === dir) break;
+      dir = parent;
+    }
+  }
+  return process.cwd();
+}
+
+/** Canonical JSONL the treasurer GitHub sync publishes — never apps/audit/data. */
+function canonicalLedgerPath(): string {
+  const root = findRepoRoot();
+  const canonical = path.join(root, "data/ledger.jsonl");
+  const env = (process.env.LEDGER_JSONL_PATH ?? process.env.TREASURER_LEDGER_PATH)?.trim();
+  const abs = env
+    ? path.isAbsolute(env)
+      ? env
+      : path.resolve(root, env)
+    : canonical;
+  const sidecarDir = path.join(root, "apps/audit/data");
+  if (abs === path.join(sidecarDir, "ledger.jsonl") || abs.startsWith(sidecarDir + path.sep)) {
+    return canonical;
+  }
+  return abs;
+}
 
 function extractTxHash(res: Response): string | undefined {
   const raw = res.headers.get("payment-response") ?? res.headers.get("x-payment-response");
@@ -48,9 +89,7 @@ function appendLedgerPayment(opts: {
   txHash?: string;
   walletAddress: string;
 }): void {
-  const ledgerPath = process.env.LEDGER_JSONL_PATH ?? process.env.TREASURER_LEDGER_PATH;
-  if (!ledgerPath) return;
-  const abs = path.resolve(ledgerPath);
+  const abs = canonicalLedgerPath();
   fs.mkdirSync(path.dirname(abs), { recursive: true });
   if (opts.txHash) {
     try {
