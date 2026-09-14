@@ -1,0 +1,10 @@
+{
+  "serviceId": "srv-dak06f1594qs73dru9l0",
+  "name": "liquid-logic-treasurer-web",
+  "type": "web_service",
+  "publicBaseUrl": "https://liquid-logic-treasurer-web.onrender.com",
+  "ownerId": "tea-dajega6k1f9s73davh00",
+  "dashboard": "https://dashboard.render.com/web/srv-dak06f1594qs73dru9l0",
+  "legacyWorkerServiceId": "srv-dajek2bm8hqs7380dap0",
+  "note": "Path A: public web service for operator hold/freeze HTTPS. Suspend legacy worker after cutover."
+}

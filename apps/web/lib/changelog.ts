@@ -13,8 +13,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     title: "Hold threshold + approve/deny/expire",
     detail:
       "Payments at/above HOLD_ABOVE_USDC write held and wait for phone-reachable Bearer approve/deny, or mandatory TTL auto-deny (expired). Treasurer is a public Render web service for operator HTTPS.",
-    href: "https://github.com/LiquidLogicX/liquid-logic-agent/pull/HOLD_PR",
-    hrefLabel: "PR #HOLD_PR",
+    href: "https://github.com/LiquidLogicX/liquid-logic-agent/pull/27",
+    hrefLabel: "PR #27",
   },
   {
     date: "2026-09-14",
