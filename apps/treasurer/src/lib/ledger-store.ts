@@ -1,5 +1,5 @@
 import type { LedgerEvent } from "@liquid-logic/shared";
-import { basescanTxUrl, isPaymentEvent, usdcToAtomic } from "@liquid-logic/shared";
+import { basescanTxUrl, sumSpentTodayAtomic } from "@liquid-logic/shared";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -33,14 +33,7 @@ export class LedgerStore {
 
   /** Sum USDC payment amounts for the UTC calendar day of `now`. */
   spentTodayAtomic(now = new Date()): bigint {
-    const day = now.toISOString().slice(0, 10);
-    let sum = 0n;
-    for (const e of this.readAll()) {
-      if (!isPaymentEvent(e)) continue;
-      if (!e.timestamp.startsWith(day)) continue;
-      sum += usdcToAtomic(e.amountUsdc);
-    }
-    return sum;
+    return sumSpentTodayAtomic(this.readAll(), now);
   }
 
   hasTx(txHash: string): boolean {

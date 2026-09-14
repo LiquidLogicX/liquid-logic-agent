@@ -8,6 +8,13 @@ const nextConfig: NextConfig = {
       "../../public/ledger/**/*",
       "../../data/ledger.jsonl",
     ],
+    "/api/allowance": [
+      "./public/ledger/**/*",
+      "./public/policy.json",
+      "../../public/ledger/**/*",
+      "../../public/policy.json",
+      "../../data/ledger.jsonl",
+    ],
   },
 };
 

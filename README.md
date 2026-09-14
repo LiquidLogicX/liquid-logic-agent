@@ -1,6 +1,6 @@
 # Liquid Logic Agent
 
-Monorepo for the **Liquid Logic** autonomous agent: pays **USDC on Base** to allowlisted **x402** service endpoints, publishes a verifiable spend ledger, and sells a **$0.05 USDC** wallet-audit API.
+Monorepo for the **Liquid Logic** autonomous agent: pays **USDC on Base** to allowlisted **x402** service endpoints, publishes a verifiable spend ledger, sells a **$0.05 USDC** wallet-audit API, and a **$0.001 USDC** allowance pre-flight.
 
 **Repo:** [LiquidLogicX/liquid-logic-agent](https://github.com/LiquidLogicX/liquid-logic-agent)  
 **Not** `liquid-logic-x` (Sepolia FHE contracts) — do not mix scopes.
@@ -25,7 +25,7 @@ liquid-logic-agent/
 |-----------|------|
 | Treasurer | CDP-managed wallet + `wrapFetchWithPayment`; allowlist / max / daily cap; JSONL ledger |
 | Ledger publisher | Cron / GitHub Action → `latest.json`, daily JSON/HTML, social markdown drafts |
-| Audit | `createX402Server` seller; structured “where USDC went” summary |
+| Audit | `createX402Server` seller; `$0.05` spend summary + `$0.001` allowance pre-flight |
 | Web | Public site; ledger embed; endpoint docs |
 
 **Networks:** production omits development env → **Base mainnet**. Set `CDP_X402_ENVIRONMENT=development` only for Base Sepolia testing.
@@ -82,7 +82,7 @@ npm run dev -w @liquid-logic/web
 | App | Target | Notes |
 |-----|--------|-------|
 | Treasurer | Render Docker Blueprint `apps/treasurer/render.yaml` | Account `hello@liquidlogicx.com`, **Starter** plan |
-| Audit | Vercel Hobby | Root `apps/audit`; domain e.g. `audit.liquidlogicx.com` |
+| Audit | Vercel Hobby | Root `apps/audit`; `audit.liquidlogicx.com` — `/api/audit` + `/api/allowance` |
 | Web | Vercel Hobby | Root `apps/web`; custom domain **liquidlogicx.com** |
 
 Do **not** deploy until secrets and logins exist — see `BLOCKERS.md`.
