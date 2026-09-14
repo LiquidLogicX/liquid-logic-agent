@@ -16,7 +16,7 @@ function safeEqual(a: string, b: string): boolean {
 }
 
 /**
- * Principal-only bearer auth for operator freeze/unfreeze.
+ * Principal-only bearer auth for operator freeze/unfreeze and hold approve/deny/list.
  * Fail closed: missing configured token or missing/wrong Authorization → 401/403.
  * Never logs the token value.
  */

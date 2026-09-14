@@ -1,22 +1,27 @@
-# Render Blueprint — Liquid Logic Treasurer
+# Render Blueprint — Liquid Logic Treasurer (public web service)
 # Account: hello@liquidlogicx.com
 # Instance / plan: starter
 # Network: Base mainnet (omit CDP_X402_ENVIRONMENT). Development uses Base Sepolia.
 #
-# Deploy from repo root. After deploy, use Render Shell / one-off jobs for CLI:
+# Path A (chosen): web service so phone can hit HTTPS hold approve/deny with
+# Bearer LLX_OPERATOR_TOKEN. Background workers are not publicly reachable;
+# hold approve must execute CDP payments on this process (not via Vercel/x402).
+#
+# Deploy from repo root. CLI / one-off jobs:
 #   node dist/cli/index.js print-wallet-address
-#   node dist/cli/index.js pay <url>
-# Operator freeze (on the instance; background workers have no public URL):
-#   curl -X POST http://127.0.0.1:$PORT/api/freeze -H "Authorization: Bearer $LLX_OPERATOR_TOKEN"
+#   node dist/cli/index.js pay <url> --amount 0.05
+# Operator (public):
+#   curl -X POST https://$HOST/api/hold/$ID/approve -H "Authorization: Bearer $LLX_OPERATOR_TOKEN"
 previewsEnabled: false
 services:
-  - type: worker
+  - type: web
     name: liquid-logic-treasurer
     runtime: docker
     plan: starter
     dockerfilePath: ./apps/treasurer/Dockerfile
     dockerContext: .
     region: oregon
+    healthCheckPath: /healthz
     envVars:
       - key: CDP_API_KEY_ID
         sync: false
@@ -46,6 +51,11 @@ services:
         sync: false
       - key: PORT
         value: "10000"
+      # Unset = holds disabled. Set e.g. "0.05" to hold audit-sized payments.
+      - key: HOLD_ABOVE_USDC
+        sync: false
+      - key: HOLD_TTL_SECONDS
+        value: "3600"
     disk:
       name: treasurer-ledger
       mountPath: /app/data

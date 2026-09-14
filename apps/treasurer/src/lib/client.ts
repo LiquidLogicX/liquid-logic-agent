@@ -10,6 +10,14 @@ import type { TreasurerConfig } from "./config.js";
 import { LedgerStore } from "./ledger-store.js";
 import { assertPaymentAsset } from "./usdc-guard.js";
 import { isPaymentsFrozen } from "./freeze.js";
+import {
+  amountMeetsHoldThreshold,
+  expireStaleHolds,
+  findHeldEvent,
+  getHoldResolution,
+  recordHeld,
+  sleep,
+} from "./hold.js";
 
 export function createX402PayClient(config: TreasurerConfig): CdpX402Client {
   assertPaymentAsset(config);
@@ -95,13 +103,28 @@ function extractTxHash(response: Response): string | undefined {
   return undefined;
 }
 
-export async function payEndpoint(opts: {
+export type PayResult = {
+  status: number;
+  body: string;
+  txHash?: string;
+  walletAddress: string;
+  holdId?: string;
+  held?: boolean;
+};
+
+/**
+ * Execute an x402 payment (no hold gate). Caller must enforce freeze / allowlist /
+ * allowance / hold resolution. Used by operator approve and by payEndpoint.
+ */
+export async function executePayment(opts: {
   config: TreasurerConfig;
   ledger: LedgerStore;
   url: string;
   reason?: string;
   maxAmountHintUsdc?: string;
-}): Promise<{ status: number; body: string; txHash?: string; walletAddress: string }> {
+  holdId?: string;
+  approvedBy?: string;
+}): Promise<PayResult> {
   const { config, ledger } = opts;
   assertPaymentAsset(config);
 
@@ -151,6 +174,10 @@ export async function payEndpoint(opts: {
 
   const txHash = extractTxHash(response);
   const amountUsdc = opts.maxAmountHintUsdc ?? "unknown";
+  const paymentMeta = {
+    holdId: opts.holdId,
+    approvedBy: opts.approvedBy,
+  };
   // Prefer hint; if unknown, still record the attempt for ops visibility.
   if (amountUsdc !== "unknown") {
     ledger.recordPayment({
@@ -160,6 +187,7 @@ export async function payEndpoint(opts: {
       txHash,
       walletAddress: evmAddress,
       reason: opts.reason,
+      ...paymentMeta,
     });
   } else {
     ledger.recordPayment({
@@ -169,9 +197,178 @@ export async function payEndpoint(opts: {
       txHash,
       walletAddress: evmAddress,
       reason: opts.reason ?? "x402 payment (amount from settlement; see BaseScan)",
+      ...paymentMeta,
     });
   }
 
   const body = await response.text();
-  return { status: response.status, body, txHash, walletAddress: evmAddress };
+  return {
+    status: response.status,
+    body,
+    txHash,
+    walletAddress: evmAddress,
+    holdId: opts.holdId,
+  };
+}
+
+/**
+ * Pay an allowlisted endpoint, respecting freeze + hold threshold.
+ * At/above HOLD_ABOVE_USDC: write `held`, wait for operator approve/deny/expire (TTL).
+ */
+export async function payEndpoint(opts: {
+  config: TreasurerConfig;
+  ledger: LedgerStore;
+  url: string;
+  reason?: string;
+  maxAmountHintUsdc?: string;
+  /** When true, skip hold threshold (operator approve path uses executePayment). */
+  skipHoldCheck?: boolean;
+  holdId?: string;
+  approvedBy?: string;
+  /** Poll interval while waiting on a hold (ms). */
+  holdPollMs?: number;
+}): Promise<PayResult> {
+  const { config, ledger } = opts;
+
+  if (isPaymentsFrozen(ledger)) {
+    throw new Error(
+      "FROZEN: outbound payments halted by operator freeze (POST /api/unfreeze to resume)",
+    );
+  }
+
+  expireStaleHolds(ledger, config.holdTtlSeconds);
+
+  const endpoint = assertAllowlistedEndpoint(opts.url, config.allowlist);
+  const amount = opts.maxAmountHintUsdc;
+
+  if (
+    !opts.skipHoldCheck &&
+    config.holdAboveUsdc &&
+    amount &&
+    amountMeetsHoldThreshold(amount, config.holdAboveUsdc)
+  ) {
+    const held = recordHeld(ledger, {
+      endpoint,
+      amountUsdc: amount,
+      network: config.network,
+      reason:
+        opts.reason ??
+        `Hold: ${amount} USDC ≥ HOLD_ABOVE_USDC=${config.holdAboveUsdc}`,
+    });
+    console.log(
+      `[treasurer] HELD ${held.holdId} endpoint=${endpoint} amount=${amount} USDC ` +
+        `(TTL ${config.holdTtlSeconds}s) — approve/deny via operator HTTP`,
+    );
+
+    const deadline =
+      Date.parse(held.timestamp) + config.holdTtlSeconds * 1000 + 2_000;
+    const pollMs = opts.holdPollMs ?? 2_000;
+
+    while (Date.now() < deadline) {
+      expireStaleHolds(ledger, config.holdTtlSeconds);
+      const resolution = getHoldResolution(ledger.readAll(), held.holdId);
+      if (resolution === "paid") {
+        const events = ledger.readAll();
+        const payment = [...events]
+          .reverse()
+          .find((e) => e.type === "payment" && e.holdId === held.holdId);
+        return {
+          status: 200,
+          body: JSON.stringify({
+            ok: true,
+            held: false,
+            holdId: held.holdId,
+            approved: true,
+            payment,
+          }),
+          txHash:
+            payment && "txHash" in payment
+              ? (payment.txHash as string | undefined)
+              : undefined,
+          walletAddress:
+            (payment && "walletAddress" in payment
+              ? (payment.walletAddress as string | undefined)
+              : undefined) ?? "",
+          holdId: held.holdId,
+        };
+      }
+      if (resolution === "denied") {
+        throw new Error(`HOLD_DENIED: hold ${held.holdId} denied by operator`);
+      }
+      if (resolution === "expired") {
+        throw new Error(
+          `HOLD_EXPIRED: hold ${held.holdId} auto-denied after TTL ${config.holdTtlSeconds}s`,
+        );
+      }
+      await sleep(pollMs);
+    }
+
+    // Final expiry sweep if the loop timed out without a writer race.
+    expireStaleHolds(ledger, config.holdTtlSeconds);
+    const finalRes = getHoldResolution(ledger.readAll(), held.holdId);
+    if (finalRes === "paid") {
+      return {
+        status: 200,
+        body: JSON.stringify({ ok: true, holdId: held.holdId, approved: true }),
+        walletAddress: "",
+        holdId: held.holdId,
+      };
+    }
+    if (finalRes === "denied") {
+      throw new Error(`HOLD_DENIED: hold ${held.holdId} denied by operator`);
+    }
+    throw new Error(
+      `HOLD_EXPIRED: hold ${held.holdId} auto-denied after TTL ${config.holdTtlSeconds}s`,
+    );
+  }
+
+  return executePayment({
+    config,
+    ledger,
+    url: endpoint,
+    reason: opts.reason,
+    maxAmountHintUsdc: amount,
+    holdId: opts.holdId,
+    approvedBy: opts.approvedBy,
+  });
+}
+
+/** Approve a pending hold: execute payment and append payment with holdId + approvedBy. */
+export async function approveHold(opts: {
+  config: TreasurerConfig;
+  ledger: LedgerStore;
+  holdId: string;
+  approvedBy?: string;
+}): Promise<PayResult> {
+  const { config, ledger, holdId } = opts;
+  expireStaleHolds(ledger, config.holdTtlSeconds);
+
+  const resolution = getHoldResolution(ledger.readAll(), holdId);
+  if (resolution === null) {
+    throw new Error(`HOLD_NOT_FOUND: ${holdId}`);
+  }
+  if (resolution === "paid") {
+    throw new Error(`HOLD_ALREADY_PAID: ${holdId}`);
+  }
+  if (resolution === "denied") {
+    throw new Error(`HOLD_ALREADY_DENIED: ${holdId}`);
+  }
+  if (resolution === "expired") {
+    throw new Error(`HOLD_ALREADY_EXPIRED: ${holdId}`);
+  }
+
+  const held = findHeldEvent(ledger.readAll(), holdId);
+  if (!held) {
+    throw new Error(`HOLD_NOT_FOUND: ${holdId}`);
+  }
+
+  return executePayment({
+    config,
+    ledger,
+    url: held.endpoint,
+    maxAmountHintUsdc: held.amountUsdc,
+    reason: held.reason ?? `Operator-approved hold ${holdId}`,
+    holdId,
+    approvedBy: opts.approvedBy ?? "operator",
+  });
 }

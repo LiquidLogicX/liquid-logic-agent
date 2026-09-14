@@ -8,6 +8,11 @@ import {
   usdcToAtomic,
 } from "@liquid-logic/shared";
 import path from "node:path";
+import {
+  DEFAULT_HOLD_TTL_SECONDS,
+  loadHoldAboveUsdc,
+  loadHoldTtlSeconds,
+} from "./hold.js";
 
 export interface TreasurerConfig {
   /** Omit / empty = Base mainnet. "development" = Base Sepolia (local testing only). */
@@ -21,6 +26,13 @@ export interface TreasurerConfig {
   usdcAddress: typeof USDC_BASE_MAINNET | typeof USDC_BASE_SEPOLIA;
   network: typeof NETWORK_BASE | typeof NETWORK_BASE_SEPOLIA;
   walletAccountName: string;
+  /**
+   * Unset = holds disabled (pay as today).
+   * When set, amounts at/above this USDC value are held for operator approve/deny/expire.
+   */
+  holdAboveUsdc: string | null;
+  /** Mandatory TTL for unanswered holds (default 3600). Auto-deny → ledger type `expired`. */
+  holdTtlSeconds: number;
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): TreasurerConfig {
@@ -42,6 +54,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): TreasurerConfi
   );
 
   const isDev = environment === "development";
+  const holdAboveUsdc = loadHoldAboveUsdc(env);
+  const holdTtlSeconds = loadHoldTtlSeconds(env);
 
   return {
     environment,
@@ -54,5 +68,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): TreasurerConfi
     usdcAddress: isDev ? USDC_BASE_SEPOLIA : USDC_BASE_MAINNET,
     network: isDev ? NETWORK_BASE_SEPOLIA : NETWORK_BASE,
     walletAccountName: env.TREASURER_WALLET_ACCOUNT_NAME ?? "x402-client-wallet-1",
+    holdAboveUsdc,
+    holdTtlSeconds:
+      Number.isFinite(holdTtlSeconds) && holdTtlSeconds >= 1
+        ? holdTtlSeconds
+        : DEFAULT_HOLD_TTL_SECONDS,
   };
 }
