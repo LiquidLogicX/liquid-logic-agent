@@ -234,10 +234,19 @@ a:hover { text-decoration: underline; color: var(--gold); }
 .hero-panel--empty {
   padding: 0.85rem 1.1rem 1rem;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  align-self: start;
 }
 
 .hero-panel--empty .hero-panel-kicker {
-  margin-bottom: 0.45rem;
+  margin-bottom: 0.55rem;
+}
+
+.hero-panel-grid--solo {
+  margin-bottom: 0.65rem;
+}
+
+.hero-panel--empty .kpi-value {
+  font-size: 1.65rem;
 }
 
 .hero-panel-empty-msg {
