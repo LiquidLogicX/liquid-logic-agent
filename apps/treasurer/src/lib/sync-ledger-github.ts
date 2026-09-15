@@ -2,10 +2,16 @@
  * Push TREASURER_LEDGER_PATH JSONL to GitHub data/ledger.jsonl.
  * Union-merges with the remote file so a sparse Render disk cannot wipe history.
  *
- * LEDGER_LAUNCH_RESET=1 — replace disk from remote and skip push (day-one genesis).
+ * LAUNCH_GENESIS_RESET (note on remote): local/disk events with timestamp
+ * strictly before the marker are excluded from the merge that is pushed.
+ * The Render disk file is never rewritten by this filter (operator may wipe
+ * separately). Post-marker local events still union-merge and push.
+ *
+ * LEDGER_LAUNCH_RESET=1 without a remote marker: skip push; do not rewrite disk.
  */
 import fs from "node:fs";
 import {
+  localEventsForGenesisAwareMerge,
   mergeLedgerEvents,
   parseLedgerJsonl,
   serializeLedgerJsonl,
@@ -56,6 +62,31 @@ export function loadLedgerSyncConfigFromEnv(
   };
 }
 
+/**
+ * Pure merge used by sync + tests: when remote has LAUNCH_GENESIS_RESET,
+ * drop local events before the marker timestamp, then union-merge.
+ * Does not touch any filesystem.
+ */
+export function mergeLedgerForGitHubPush(
+  remoteEvents: ReturnType<typeof parseLedgerJsonl>,
+  localEvents: ReturnType<typeof parseLedgerJsonl>,
+): {
+  merged: ReturnType<typeof parseLedgerJsonl>;
+  markerTimestamp?: string;
+  droppedLocal: number;
+} {
+  const { marker, localForMerge } = localEventsForGenesisAwareMerge(
+    localEvents,
+    remoteEvents,
+  );
+  const merged = mergeLedgerEvents(remoteEvents, localForMerge);
+  return {
+    merged,
+    markerTimestamp: marker?.timestamp,
+    droppedLocal: localEvents.length - localForMerge.length,
+  };
+}
+
 export async function syncLedgerToGitHub(
   cfg: LedgerSyncConfig,
 ): Promise<LedgerSyncResult> {
@@ -66,6 +97,8 @@ export async function syncLedgerToGitHub(
   }
   const localRaw = fs.readFileSync(cfg.ledgerPath, "utf8");
   const localEvents = parseLedgerJsonl(localRaw);
+  // Snapshot for "disk untouched" checks — we never write for genesis filter.
+  const diskBefore = localRaw;
 
   const apiBase = `https://api.github.com/repos/${cfg.repo}/contents/${destPath}`;
   const getUrl = `${apiBase}?ref=${encodeURIComponent(branch)}`;
@@ -94,45 +127,27 @@ export async function syncLedgerToGitHub(
     };
   }
 
-  // Launch reset: remote (GitHub genesis) is authoritative. Write remote → disk
-  // and do NOT union-push local phantoms back to GitHub.
-  // Triggers: LEDGER_LAUNCH_RESET=1 OR remote contains type=note message=LAUNCH_GENESIS_RESET
-  // (auto one-time when remote is intentionally shorter than local disk).
   const envLaunchReset =
     process.env.LEDGER_LAUNCH_RESET === "1" ||
     process.env.LEDGER_LAUNCH_RESET?.toLowerCase() === "true";
-  const remoteHasLaunchMarker = remoteEvents.some(
-    (e) =>
-      e.type === "note" &&
-      "message" in e &&
-      typeof (e as { message?: string }).message === "string" &&
-      (e as { message: string }).message.includes("LAUNCH_GENESIS_RESET"),
-  );
-  // While the launch marker is on GitHub, remote is authoritative — never
-  // union-push a longer Render disk (that is how pre-launch phantoms return).
-  const launchReset = envLaunchReset || remoteHasLaunchMarker;
 
-  if (launchReset) {
-    const remoteContent = serializeLedgerJsonl(remoteEvents);
-    if (!remoteContent.trim()) {
-      return {
-        ok: false,
-        message:
-          "LEDGER_LAUNCH_RESET / launch marker set but remote ledger empty — abort",
-      };
-    }
-    if (serializeLedgerJsonl(localEvents) !== remoteContent) {
-      fs.writeFileSync(cfg.ledgerPath, remoteContent, "utf8");
-    }
+  const { merged, markerTimestamp, droppedLocal } = mergeLedgerForGitHubPush(
+    remoteEvents,
+    localEvents,
+  );
+
+  // Env-only reset without a remote marker: refuse to push (cannot filter by
+  // timestamp). Disk stays untouched — operator must publish the marker or wipe.
+  if (envLaunchReset && !markerTimestamp) {
     return {
       ok: true,
       skipped: true,
       mergedEvents: remoteEvents.length,
-      message: `launch-reset: disk ← remote ${destPath} (${remoteEvents.length} events; marker=${remoteHasLaunchMarker} env=${envLaunchReset}); skipped push`,
+      message:
+        "LEDGER_LAUNCH_RESET=1 but no LAUNCH_GENESIS_RESET on remote — skipped push; disk untouched",
     };
   }
 
-  const merged = mergeLedgerEvents(remoteEvents, localEvents);
   const content = serializeLedgerJsonl(merged);
   if (!content.trim()) {
     return { ok: true, skipped: true, message: "empty ledger — skip push" };
@@ -140,16 +155,27 @@ export async function syncLedgerToGitHub(
 
   const remoteSerialized = serializeLedgerJsonl(remoteEvents);
   if (sha && remoteSerialized === content) {
+    // Integrity: never rewrite disk on the genesis-aware path.
+    if (fs.readFileSync(cfg.ledgerPath, "utf8") !== diskBefore) {
+      return {
+        ok: false,
+        message: "internal error: disk changed unexpectedly during sync",
+      };
+    }
     return {
       ok: true,
       skipped: true,
       mergedEvents: merged.length,
-      message: "ledger unchanged on GitHub (union match)",
+      message: markerTimestamp
+        ? `ledger unchanged on GitHub (genesis filter dropped ${droppedLocal} local pre-marker event(s); marker@${markerTimestamp})`
+        : "ledger unchanged on GitHub (union match)",
     };
   }
 
-  // Recover history onto disk so daily-cap / dump see the full union.
-  if (serializeLedgerJsonl(localEvents) !== content) {
+  // When a genesis marker is present, do NOT write the merged union back onto
+  // Render disk (that would truncate or reshape operator history). Push only.
+  // Without a marker, recover full union onto disk so daily-cap / dump see it.
+  if (!markerTimestamp && serializeLedgerJsonl(localEvents) !== content) {
     fs.writeFileSync(cfg.ledgerPath, content, "utf8");
   }
 
@@ -177,6 +203,8 @@ export async function syncLedgerToGitHub(
     ok: true,
     commitSha: putJson.commit?.sha,
     mergedEvents: merged.length,
-    message: `synced ${destPath} → ${cfg.repo}@${branch} (${merged.length} events, union merge)`,
+    message: markerTimestamp
+      ? `synced ${destPath} → ${cfg.repo}@${branch} (${merged.length} events; genesis filter dropped ${droppedLocal} local pre-marker; disk untouched)`
+      : `synced ${destPath} → ${cfg.repo}@${branch} (${merged.length} events, union merge)`,
   };
 }

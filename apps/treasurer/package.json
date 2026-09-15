@@ -18,7 +18,8 @@
     "revoke": "npm run cli -- revoke",
     "pay": "npm run cli -- pay",
     "print-wallet-address": "npm run cli -- print-wallet-address",
-    "test:payment-guard": "node --import tsx scripts/assert-payment-requires-hash.mts"
+    "test:payment-guard": "node --import tsx scripts/assert-payment-requires-hash.mts",
+    "test:genesis-reset-merge": "node --import tsx scripts/assert-genesis-reset-merge.mts"
   },
   "dependencies": {
     "@coinbase/cdp-sdk": "^1.55.0",
