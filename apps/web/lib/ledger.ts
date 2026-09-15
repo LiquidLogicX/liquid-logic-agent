@@ -112,6 +112,23 @@ export function eventTypeLabel(type: string): string {
   }
 }
 
+
+/** Short destination for UI: host · last path segment (full URL stays in title/tooltip). */
+export function endpointShortLabel(endpoint: string): string {
+  try {
+    const u = new URL(endpoint);
+    const parts = u.pathname.split("/").filter(Boolean);
+    const last = parts[parts.length - 1] ?? "";
+    return last ? `${u.host} · ${last}` : u.host;
+  } catch {
+    return endpoint;
+  }
+}
+
+export function isSelfTestReason(reason: string | undefined): boolean {
+  return reason === "self-test";
+}
+
 /** Cache-busting fetch for published ledger JSON (proof page must not serve stale CDN). */
 export async function fetchLedgerLatest(
   base = "",
