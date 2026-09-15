@@ -230,6 +230,36 @@ a:hover { text-decoration: underline; color: var(--gold); }
 }
 
 .hero-panel-recent p { margin: 0.2rem 0 0.55rem; color: var(--text); }
+
+.hero-panel--empty {
+  padding: 0.85rem 1.1rem 1rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.hero-panel--empty .hero-panel-kicker {
+  margin-bottom: 0.45rem;
+}
+
+.hero-panel-empty-msg {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.hero-panel-payment-list {
+  list-style: none;
+  margin: 0.35rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.hero-panel-payment-list li p {
+  margin: 0.15rem 0 0.35rem;
+}
+
 .small { font-size: 0.88rem; }
 .muted { color: var(--muted); }
 
