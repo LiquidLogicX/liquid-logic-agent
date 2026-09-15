@@ -52,15 +52,21 @@ export class LedgerStore {
     endpoint: string;
     amountUsdc: string;
     network: "eip155:8453" | "eip155:84532";
-    txHash?: string;
+    /** Required — never append a payment row without an on-chain hash. */
+    txHash: string;
     walletAddress?: string;
     reason?: string;
     timestamp?: string;
     holdId?: string;
     approvedBy?: string;
   }): boolean {
-    const txHash = opts.txHash;
-    if (txHash && this.hasTx(txHash)) return false;
+    const txHash = opts.txHash?.trim();
+    if (!txHash || !/^0x[a-fA-F0-9]{64}$/.test(txHash)) {
+      throw new Error(
+        "LEDGER: refuse payment row without a non-empty 0x…64 txHash",
+      );
+    }
+    if (this.hasTx(txHash)) return false;
     this.append({
       type: "payment",
       timestamp: opts.timestamp ?? new Date().toISOString(),
@@ -69,7 +75,7 @@ export class LedgerStore {
       asset: "USDC",
       network: opts.network,
       txHash,
-      basescanUrl: txHash ? basescanTxUrl(txHash) : undefined,
+      basescanUrl: basescanTxUrl(txHash),
       walletAddress: opts.walletAddress,
       reason: opts.reason ?? "x402 service payment",
       holdId: opts.holdId,

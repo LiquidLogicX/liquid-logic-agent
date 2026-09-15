@@ -18,6 +18,7 @@ import {
   recordHeld,
   sleep,
 } from "./hold.js";
+import { checkPaymentSettlement } from "./payment-settlement.js";
 
 /** Ensure audit-style endpoints receive ?wallet= for required queryParams. */
 function withWalletQuery(endpoint: string, walletAddress: string): string {
@@ -183,34 +184,55 @@ export async function executePayment(opts: {
     throw err;
   }
 
-  const txHash = extractTxHash(response);
+  const extracted = extractTxHash(response);
+  const settlement = checkPaymentSettlement({
+    status: response.status,
+    txHash: extracted,
+  });
   const amountUsdc = opts.maxAmountHintUsdc ?? "unknown";
   const paymentMeta = {
     holdId: opts.holdId,
     approvedBy: opts.approvedBy,
   };
-  // Prefer hint; if unknown, still record the attempt for ops visibility.
-  if (amountUsdc !== "unknown") {
-    ledger.recordPayment({
+
+  // NEVER append type=payment without a real txHash + HTTP 2xx.
+  if (!settlement.settled || !settlement.txHash) {
+    const error =
+      settlement.error ??
+      `HTTP ${response.status}; missing txHash — refusing payment ledger row`;
+    ledger.append({
+      type: "payment_failed",
+      timestamp: new Date().toISOString(),
       endpoint,
-      amountUsdc,
-      network: config.network,
-      txHash,
+      amountUsdc: amountUsdc !== "unknown" ? amountUsdc : undefined,
+      error,
       walletAddress: evmAddress,
       reason: opts.reason,
-      ...paymentMeta,
     });
-  } else {
-    ledger.recordPayment({
-      endpoint,
-      amountUsdc: "0",
-      network: config.network,
-      txHash,
+    const body = await response.text();
+    return {
+      status: response.status,
+      body,
+      txHash: settlement.txHash,
       walletAddress: evmAddress,
-      reason: opts.reason ?? "x402 payment (amount from settlement; see BaseScan)",
-      ...paymentMeta,
-    });
+      holdId: opts.holdId,
+    };
   }
+
+  const txHash = settlement.txHash;
+  ledger.recordPayment({
+    endpoint,
+    amountUsdc: amountUsdc !== "unknown" ? amountUsdc : "0",
+    network: config.network,
+    txHash,
+    walletAddress: evmAddress,
+    reason:
+      opts.reason ??
+      (amountUsdc === "unknown"
+        ? "x402 payment (amount from settlement; see BaseScan)"
+        : undefined),
+    ...paymentMeta,
+  });
 
   const body = await response.text();
   return {
