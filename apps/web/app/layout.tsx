@@ -26,8 +26,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         {children}
         <footer className="site-footer">
           <p>
-            USDC on Base for x402 services only. No custom token. No investment
-            product. Plans describes intent, not a commitment.
+            USDC on Base for x402 services. $LLX is the Liquid Logic Agent token
+            on Virtuals (Base). It is not an investment product — no returns,
+            yield, buybacks, or price support are promised. Plans describes
+            intent, not a commitment.
           </p>
           <p className="site-footer-x">
             <a href="https://x.com/LiquidLogicX" rel="me noopener noreferrer">

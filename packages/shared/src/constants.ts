@@ -1,4 +1,4 @@
-/** Base mainnet USDC (Circle). Never invent another token. */
+/** Base mainnet USDC (Circle). Agent spend is USDC only; do not invent a substitute payment asset. */
 export const USDC_BASE_MAINNET =
   "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" as const;
 
