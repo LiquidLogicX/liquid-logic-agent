@@ -1,0 +1,11 @@
+{
+  "day": "2026-09-15",
+  "events": [
+    {
+      "type": "note",
+      "timestamp": "2026-09-15T04:16:00.000Z",
+      "message": "LAUNCH_GENESIS_RESET",
+      "reason": "Day-one launch truncate — prefer this remote over longer Render disk until disk is wiped"
+    }
+  ]
+}

@@ -95,12 +95,22 @@ export async function syncLedgerToGitHub(
   }
 
   // Launch reset: remote (GitHub genesis) is authoritative. Write remote → disk
-  // and do NOT union-push local phantoms back to GitHub. Use once after a
-  // day-one truncate, then unset LEDGER_LAUNCH_RESET (prefer also wiping disk
-  // via write-launch-genesis.mjs on Render).
-  const launchReset =
+  // and do NOT union-push local phantoms back to GitHub.
+  // Triggers: LEDGER_LAUNCH_RESET=1 OR remote contains type=note message=LAUNCH_GENESIS_RESET
+  // (auto one-time when remote is intentionally shorter than local disk).
+  const envLaunchReset =
     process.env.LEDGER_LAUNCH_RESET === "1" ||
     process.env.LEDGER_LAUNCH_RESET?.toLowerCase() === "true";
+  const remoteHasLaunchMarker = remoteEvents.some(
+    (e) =>
+      e.type === "note" &&
+      "message" in e &&
+      typeof (e as { message?: string }).message === "string" &&
+      (e as { message: string }).message.includes("LAUNCH_GENESIS_RESET"),
+  );
+  // While the launch marker is on GitHub, remote is authoritative — never
+  // union-push a longer Render disk (that is how pre-launch phantoms return).
+  const launchReset = envLaunchReset || remoteHasLaunchMarker;
 
   if (launchReset) {
     const remoteContent = serializeLedgerJsonl(remoteEvents);
@@ -108,15 +118,17 @@ export async function syncLedgerToGitHub(
       return {
         ok: false,
         message:
-          "LEDGER_LAUNCH_RESET set but remote ledger empty — abort (refusing to wipe from empty remote)",
+          "LEDGER_LAUNCH_RESET / launch marker set but remote ledger empty — abort",
       };
     }
-    fs.writeFileSync(cfg.ledgerPath, remoteContent, "utf8");
+    if (serializeLedgerJsonl(localEvents) !== remoteContent) {
+      fs.writeFileSync(cfg.ledgerPath, remoteContent, "utf8");
+    }
     return {
       ok: true,
       skipped: true,
       mergedEvents: remoteEvents.length,
-      message: `LEDGER_LAUNCH_RESET: replaced disk with remote ${destPath} (${remoteEvents.length} events); did not push local`,
+      message: `launch-reset: disk ← remote ${destPath} (${remoteEvents.length} events; marker=${remoteHasLaunchMarker} env=${envLaunchReset}); skipped push`,
     };
   }
 
