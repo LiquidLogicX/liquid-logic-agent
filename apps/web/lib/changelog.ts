@@ -13,8 +13,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     title: "Launch genesis + payment hash gate",
     detail:
       "executePayment refuses type=payment without a real txHash (writes payment_failed instead). Ledger truncated to day-one genesis (wallet + BaseScan top-up). Public /ledger fetches live with no-store and renders hold/freeze types distinctly.",
-    href: "https://github.com/LiquidLogicX/liquid-logic-agent/tree/fix/launch-ledger-no-phantom-hash",
-    hrefLabel: "Branch fix/launch-ledger-no-phantom-hash",
+    href: "https://github.com/LiquidLogicX/liquid-logic-agent/pull/30",
+    hrefLabel: "PR #30",
   },
   {
     date: "2026-09-14",
