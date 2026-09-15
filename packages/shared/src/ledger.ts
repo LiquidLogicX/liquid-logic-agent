@@ -240,3 +240,56 @@ export function resourceEndpoint(url: string): string {
     return url.replace(/[?#].*$/, "").replace(/\/$/, "");
   }
 }
+
+/** Message substring that marks day-one launch truncate on the public ledger. */
+export const LAUNCH_GENESIS_RESET_MESSAGE = "LAUNCH_GENESIS_RESET";
+
+/**
+ * Find the LAUNCH_GENESIS_RESET note (earliest if several).
+ * Used to cut pre-reset phantoms out of union-merge inputs.
+ */
+export function findLaunchGenesisResetMarker(
+  events: readonly LedgerEvent[],
+): NoteEvent | undefined {
+  const markers = events.filter(
+    (e): e is NoteEvent =>
+      e.type === "note" &&
+      typeof e.message === "string" &&
+      e.message.includes(LAUNCH_GENESIS_RESET_MESSAGE),
+  );
+  if (markers.length === 0) return undefined;
+  return [...markers].sort((a, b) => a.timestamp.localeCompare(b.timestamp))[0];
+}
+
+/**
+ * Drop events timestamped strictly before the LAUNCH_GENESIS_RESET marker.
+ *
+ * Rule: keep event iff `event.timestamp >= marker.timestamp`.
+ * No marker → return `events` unchanged.
+ *
+ * Intended for merge/push only — callers must not rewrite Render disk with
+ * the filtered list. Remote genesis rows that pre-date the marker stay via
+ * the remote side of the union; local pre-marker phantoms are excluded.
+ */
+export function excludeEventsBeforeGenesisReset(
+  events: readonly LedgerEvent[],
+  marker: Pick<NoteEvent, "timestamp"> | undefined,
+): LedgerEvent[] {
+  if (!marker?.timestamp) return [...events];
+  return events.filter((e) => e.timestamp >= marker.timestamp);
+}
+
+/**
+ * Prepare local (disk) events for GitHub union-merge when a launch marker
+ * exists on remote: strip anything before the marker timestamp.
+ */
+export function localEventsForGenesisAwareMerge(
+  localEvents: readonly LedgerEvent[],
+  remoteEvents: readonly LedgerEvent[],
+): { marker: NoteEvent | undefined; localForMerge: LedgerEvent[] } {
+  const marker = findLaunchGenesisResetMarker(remoteEvents);
+  return {
+    marker,
+    localForMerge: excludeEventsBeforeGenesisReset(localEvents, marker),
+  };
+}
