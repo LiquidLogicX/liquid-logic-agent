@@ -19,6 +19,14 @@ export interface SpendSummary {
   source: "public_ledger";
   paymentCount: number;
   totalUsdc: number;
+  /** Count of held ledger rows (operator hold threshold). */
+  held: number;
+  /** Count of operator-denied holds. */
+  denied: number;
+  /** Count of TTL-expired holds. */
+  expired: number;
+  /** Cumulative seconds the agent was frozen (frozen→unfrozen pairs + open freeze). */
+  frozenSeconds: number;
   destinations: Array<{
     endpoint: string;
     count: number;
@@ -159,12 +167,41 @@ export async function loadLedgerEvents(
   return mergeLedgerEvents(remote, local, extras);
 }
 
+
+/** Sum freeze intervals: each frozen→unfrozen pair, plus open freeze to `now`. */
+export function computeFrozenSeconds(
+  events: readonly LedgerEvent[],
+  now = new Date(),
+): number {
+  let total = 0;
+  let open: number | null = null;
+  const sorted = [...events].sort((a, b) =>
+    a.timestamp.localeCompare(b.timestamp),
+  );
+  for (const e of sorted) {
+    if (e.type === "frozen") {
+      const t = Date.parse(e.timestamp);
+      if (!Number.isNaN(t)) open = t;
+    } else if (e.type === "unfrozen" && open != null) {
+      const t = Date.parse(e.timestamp);
+      if (!Number.isNaN(t) && t >= open) total += Math.floor((t - open) / 1000);
+      open = null;
+    }
+  }
+  if (open != null) {
+    total += Math.max(0, Math.floor((now.getTime() - open) / 1000));
+  }
+  return total;
+}
+
 export function buildSpendSummary(
   walletAddress: string,
   events: LedgerEvent[],
 ): SpendSummary {
   const addr = walletAddress.toLowerCase();
   const payments = events.filter(isPaymentEvent).filter((p) => {
+    // Settled spend only — phantom / hashless payment rows do not count.
+    if (!p.txHash || !/^0x[a-fA-F0-9]{64}$/i.test(p.txHash)) return false;
     if (!p.walletAddress) return true;
     return p.walletAddress.toLowerCase() === addr;
   });
@@ -196,6 +233,10 @@ export function buildSpendSummary(
     source: "public_ledger",
     paymentCount: payments.length,
     totalUsdc: sumUsdc(payments),
+    held: events.filter((e) => e.type === "held").length,
+    denied: events.filter((e) => e.type === "denied").length,
+    expired: events.filter((e) => e.type === "expired").length,
+    frozenSeconds: computeFrozenSeconds(events),
     destinations,
     recent: payments.slice(-25).map((p) => ({
       endpoint: resourceEndpoint(p.endpoint),

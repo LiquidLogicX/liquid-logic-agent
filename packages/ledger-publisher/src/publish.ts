@@ -51,9 +51,19 @@ function renderDayHtml(day: string, events: LedgerEvent[]): string {
         "amountUsdc" in e && e.amountUsdc ? `${escapeHtml(String(e.amountUsdc))} USDC` : "—";
       const endpoint =
         "endpoint" in e && e.endpoint ? escapeHtml(String(e.endpoint)) : escapeHtml(e.type);
-      return `<tr>
+      const typeClass =
+        e.type === "payment"
+          ? "type-payment"
+          : e.type === "held"
+            ? "type-held"
+            : e.type === "denied" || e.type === "expired" || e.type === "payment_failed"
+              ? "type-ops-neg"
+              : e.type === "frozen" || e.type === "unfrozen"
+                ? "type-freeze"
+                : "type-other";
+      return `<tr class="${typeClass}">
   <td>${escapeHtml(e.timestamp)}</td>
-  <td>${escapeHtml(e.type)}</td>
+  <td><span class="badge ${typeClass}">${escapeHtml(e.type)}</span></td>
   <td>${endpoint}</td>
   <td>${amount}</td>
   <td>${tx}</td>
@@ -67,19 +77,28 @@ function renderDayHtml(day: string, events: LedgerEvent[]): string {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Liquid Logic Agent ledger — ${escapeHtml(day)}</title>
+  <title>Liquid Logic X ledger — ${escapeHtml(day)}</title>
   <style>
     body { font-family: ui-sans-serif, system-ui, sans-serif; margin: 2rem; color: #0f172a; background: #f8fafc; }
     h1 { font-size: 1.25rem; }
     table { width: 100%; border-collapse: collapse; background: #fff; }
     th, td { border: 1px solid #e2e8f0; padding: 0.5rem 0.75rem; text-align: left; font-size: 0.875rem; }
     th { background: #f1f5f9; }
-    a { color: #2563eb; }
+    a { color: #6d28d9; }
     .note { color: #64748b; font-size: 0.875rem; margin-bottom: 1rem; }
+    .badge { display: inline-block; padding: 0.1rem 0.45rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+    .type-payment .badge, .badge.type-payment { background: #e2e8f0; color: #0f172a; }
+    .type-held .badge, .badge.type-held { background: #ede9fe; color: #5b21b6; }
+    .type-ops-neg .badge, .badge.type-ops-neg { background: #f1f5f9; color: #475569; }
+    .type-freeze .badge, .badge.type-freeze { background: #ddd6fe; color: #4c1d95; }
+    .type-other .badge, .badge.type-other { background: #f8fafc; color: #334155; }
+    tr.type-held { background: #f5f3ff; }
+    tr.type-ops-neg { background: #f8fafc; }
+    tr.type-freeze { background: #faf5ff; }
   </style>
 </head>
 <body>
-  <h1>Operating spend ledger — ${escapeHtml(day)}</h1>
+  <h1>Liquid Logic X — operating spend ledger — ${escapeHtml(day)}</h1>
   <p class="note">USDC on Base for x402 services only. Every tx links to BaseScan when a hash exists. Not investment advice; no treasury-growth framing.</p>
   <table>
     <thead>
@@ -106,7 +125,7 @@ function renderSocialDraft(
     ``,
     `## Suggested text`,
     ``,
-    `Liquid Logic Agent operating spend (${day}, USDC on Base / x402 services only):`,
+    `Liquid Logic X operating spend (${day}, USDC on Base / x402 services only):`,
     ``,
   ];
 
@@ -174,7 +193,9 @@ function main(): void {
   const today = new Date().toISOString().slice(0, 10);
   const days = [...byDay.keys()].sort();
 
-  const paymentsAll = events.filter(isPaymentEvent);
+  const paymentsAll = events.filter(isPaymentEvent).filter(
+    (p) => Boolean(p.txHash && /^0x[a-fA-F0-9]{64}$/i.test(p.txHash)),
+  );
   const latest = {
     generatedAt: new Date().toISOString(),
     network: "eip155:8453",
@@ -199,6 +220,18 @@ function main(): void {
       ...p,
       basescanUrl: p.txHash ? basescanTxUrl(p.txHash) : p.basescanUrl,
     })),
+    recentEvents: events.slice(-40).map((e) => {
+      if ("txHash" in e && e.txHash) {
+        return {
+          ...e,
+          basescanUrl:
+            "basescanUrl" in e && e.basescanUrl
+              ? e.basescanUrl
+              : basescanTxUrl(e.txHash),
+        };
+      }
+      return e;
+    }),
   };
 
   fs.writeFileSync(path.join(outDir, "latest.json"), JSON.stringify(latest, null, 2) + "\n");
