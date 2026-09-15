@@ -134,6 +134,9 @@ export function LedgerLive() {
               </li>
             ) : null}
           </ul>
+          <p className="muted small ledger-reset-note">
+            Ledger reset for launch on September 15, 2026. Earlier test payments are listed in the changelog.
+          </p>
         ) : (
           <p className="muted">No published summary yet.</p>
         )}
