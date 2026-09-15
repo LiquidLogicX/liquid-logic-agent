@@ -12,6 +12,7 @@ const FORBIDDEN = [
 
 /**
  * Hard-fail if a code path would swap/buy non-USDC or use growth framing.
+ * Agent spends USDC only and does not buy/sell/hold $LLX ($LLX is a separate Virtuals token).
  * Call before any outbound payment or asset transfer helper.
  */
 export function assertUsdcOnlyOperation(opts: {
@@ -23,7 +24,7 @@ export function assertUsdcOnlyOperation(opts: {
   const symbol = (opts.assetSymbol ?? "USDC").toUpperCase();
   if (symbol !== "USDC") {
     throw new Error(
-      `GUARDRAIL: only USDC is allowed (got ${symbol}). Never invent or buy another token.`,
+      `GUARDRAIL: only USDC is allowed for agent spend (got ${symbol}). Agent never buys/sells/holds $LLX.`,
     );
   }
 
