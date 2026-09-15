@@ -1,138 +1,30 @@
 {
-  "generatedAt": "2026-09-15T00:33:45.576Z",
+  "generatedAt": "2026-09-15T04:13:50.740Z",
   "network": "eip155:8453",
   "asset": "USDC",
   "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
-  "totalEvents": 22,
-  "totalPayments": 10,
-  "totalPaidUsdcApprox": 0.353,
+  "totalEvents": 2,
+  "totalPayments": 0,
+  "totalPaidUsdcApprox": 0,
   "days": [
-    "2026-09-13",
-    "2026-09-14"
+    "2026-09-13"
   ],
   "today": "2026-09-15",
-  "recentPayments": [
+  "recentPayments": [],
+  "recentEvents": [
     {
-      "type": "payment",
-      "timestamp": "2026-09-13T15:23:37.000Z",
-      "endpoint": "https://x402uselessfacts.vercel.app/api/useless-fact",
-      "amountUsdc": "0.001",
-      "asset": "USDC",
-      "network": "eip155:8453",
-      "txHash": "0x4f940314772fc825f077caa13d36debea8f5dac4843d93e6b8cb740b3d1fb7fe",
-      "basescanUrl": "https://basescan.org/tx/0x4f940314772fc825f077caa13d36debea8f5dac4843d93e6b8cb740b3d1fb7fe",
+      "type": "wallet_address",
+      "timestamp": "2026-09-13T14:11:07.316Z",
       "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
-      "reason": "x402 service payment"
+      "reason": "CDP-managed x402 payer address"
     },
     {
-      "type": "payment",
-      "timestamp": "2026-09-13T15:24:39.000Z",
-      "endpoint": "https://x402uselessfacts.vercel.app/api/useless-fact",
-      "amountUsdc": "0.001",
-      "asset": "USDC",
-      "network": "eip155:8453",
-      "txHash": "0xacf34818767a8a5a17b4790bb3778af2787b8ea28a06774c3678ec0567293e8e",
-      "basescanUrl": "https://basescan.org/tx/0xacf34818767a8a5a17b4790bb3778af2787b8ea28a06774c3678ec0567293e8e",
-      "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
-      "reason": "Task A acceptance: Base mainnet x402 USDC pay"
-    },
-    {
-      "type": "payment",
-      "timestamp": "2026-09-13T18:06:49.000Z",
-      "endpoint": "https://liquid-logic-agent-audit.vercel.app/api/audit",
-      "amountUsdc": "0.05",
-      "asset": "USDC",
-      "network": "eip155:8453",
-      "txHash": "0x9e69f6d6a0e2b7fe3997733398a6f7986adeb3f64066b421fa38c77d6f051c74",
-      "basescanUrl": "https://basescan.org/tx/0x9e69f6d6a0e2b7fe3997733398a6f7986adeb3f64066b421fa38c77d6f051c74",
-      "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
-      "reason": "paid audit call"
-    },
-    {
-      "type": "payment",
-      "timestamp": "2026-09-13T20:02:13.000Z",
-      "endpoint": "https://x402uselessfacts.vercel.app/api/useless-fact",
-      "amountUsdc": "0.001",
-      "asset": "USDC",
-      "network": "eip155:8453",
-      "txHash": "0xc0435a64d28df9cc773d13d5e074a5f9764d3c98090e4630c78d86391fce869c",
-      "basescanUrl": "https://basescan.org/tx/0xc0435a64d28df9cc773d13d5e074a5f9764d3c98090e4630c78d86391fce869c",
-      "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
-      "reason": "sync-acceptance"
-    },
-    {
-      "type": "payment",
-      "timestamp": "2026-09-14T00:12:29.000Z",
-      "endpoint": "https://audit.liquidlogicx.com/api/audit",
-      "amountUsdc": "0.05",
-      "asset": "USDC",
-      "network": "eip155:8453",
-      "txHash": "0x465910619fb6ba1fa3106b911098d435d4900e0bf2bce05b35f3c7e077643318",
-      "basescanUrl": "https://basescan.org/tx/0x465910619fb6ba1fa3106b911098d435d4900e0bf2bce05b35f3c7e077643318",
-      "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
-      "reason": "paid audit call"
-    },
-    {
-      "type": "payment",
-      "timestamp": "2026-09-14T01:07:28.169Z",
-      "endpoint": "https://audit.liquidlogicx.com/api/audit",
-      "amountUsdc": "0.05",
-      "asset": "USDC",
-      "network": "eip155:8453",
-      "txHash": "0xa2013bf05ced393b8a678debd04711189cbded68fb57063bc80d28fd4cddbe90",
-      "basescanUrl": "https://basescan.org/tx/0xa2013bf05ced393b8a678debd04711189cbded68fb57063bc80d28fd4cddbe90",
-      "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
-      "reason": "paid audit call"
-    },
-    {
-      "type": "payment",
-      "timestamp": "2026-09-14T17:53:42.894Z",
-      "endpoint": "https://audit.liquidlogicx.com/api/audit",
-      "amountUsdc": "0.05",
-      "asset": "USDC",
-      "network": "eip155:8453",
-      "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
-      "reason": "hold-accept-approve-1",
-      "holdId": "7185ba1e-db19-42a6-a7a4-091b66aa8415",
-      "approvedBy": "operator"
-    },
-    {
-      "type": "payment",
-      "timestamp": "2026-09-14T17:54:56.731Z",
-      "endpoint": "https://audit.liquidlogicx.com/api/audit",
-      "amountUsdc": "0.05",
-      "asset": "USDC",
-      "network": "eip155:8453",
-      "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
-      "reason": "hold-accept-approve-2",
-      "holdId": "d22ecc42-aa2e-4a74-af16-02de803e4566",
-      "approvedBy": "operator"
-    },
-    {
-      "type": "payment",
-      "timestamp": "2026-09-14T17:55:13.299Z",
-      "endpoint": "https://liquid-logic-agent-audit.vercel.app/api/audit",
-      "amountUsdc": "0.05",
-      "asset": "USDC",
-      "network": "eip155:8453",
-      "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
-      "reason": "hold-accept-approve-vercel",
-      "holdId": "ff756a7c-6d64-493d-9a75-7190cd072f96",
-      "approvedBy": "operator"
-    },
-    {
-      "type": "payment",
-      "timestamp": "2026-09-14T17:59:27.780Z",
-      "endpoint": "https://audit.liquidlogicx.com/api/audit",
-      "amountUsdc": "0.05",
-      "asset": "USDC",
-      "network": "eip155:8453",
-      "txHash": "0x5ae8ef780242dfd2f03a9f52a58fcec71a45e6aae6eb4b3a96107698c92411ea",
-      "basescanUrl": "https://basescan.org/tx/0x5ae8ef780242dfd2f03a9f52a58fcec71a45e6aae6eb4b3a96107698c92411ea",
-      "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
-      "reason": "hold-accept-approve-4",
-      "holdId": "e801cdfc-1397-49df-af5e-bbba4c027393",
-      "approvedBy": "operator"
+      "type": "top_up",
+      "timestamp": "2026-09-13T15:20:07.000Z",
+      "amountUsdc": "5.00",
+      "txHash": "0x86725a32173f31957011a2a7b6a8136d48ed8074ac436396472adf3b7ce96310",
+      "basescanUrl": "https://basescan.org/tx/0x86725a32173f31957011a2a7b6a8136d48ed8074ac436396472adf3b7ce96310",
+      "reason": "USDC top-up from OKX (on-chain funding tx)"
     }
   ]
 }

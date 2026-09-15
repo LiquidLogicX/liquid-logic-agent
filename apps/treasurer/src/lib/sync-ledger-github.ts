@@ -1,6 +1,8 @@
 /**
  * Push TREASURER_LEDGER_PATH JSONL to GitHub data/ledger.jsonl.
  * Union-merges with the remote file so a sparse Render disk cannot wipe history.
+ *
+ * LEDGER_LAUNCH_RESET=1 — replace disk from remote and skip push (day-one genesis).
  */
 import fs from "node:fs";
 import {
@@ -89,6 +91,32 @@ export async function syncLedgerToGitHub(
     return {
       ok: false,
       message: `GET ${destPath} failed: ${getRes.status} ${t.slice(0, 200)}`,
+    };
+  }
+
+  // Launch reset: remote (GitHub genesis) is authoritative. Write remote → disk
+  // and do NOT union-push local phantoms back to GitHub. Use once after a
+  // day-one truncate, then unset LEDGER_LAUNCH_RESET (prefer also wiping disk
+  // via write-launch-genesis.mjs on Render).
+  const launchReset =
+    process.env.LEDGER_LAUNCH_RESET === "1" ||
+    process.env.LEDGER_LAUNCH_RESET?.toLowerCase() === "true";
+
+  if (launchReset) {
+    const remoteContent = serializeLedgerJsonl(remoteEvents);
+    if (!remoteContent.trim()) {
+      return {
+        ok: false,
+        message:
+          "LEDGER_LAUNCH_RESET set but remote ledger empty — abort (refusing to wipe from empty remote)",
+      };
+    }
+    fs.writeFileSync(cfg.ledgerPath, remoteContent, "utf8");
+    return {
+      ok: true,
+      skipped: true,
+      mergedEvents: remoteEvents.length,
+      message: `LEDGER_LAUNCH_RESET: replaced disk with remote ${destPath} (${remoteEvents.length} events); did not push local`,
     };
   }
 

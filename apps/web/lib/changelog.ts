@@ -9,6 +9,14 @@ export type ChangelogEntry = {
 /** Backward-looking only. Every link must resolve to a real commit, PR, or tx. */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: "2026-09-15",
+    title: "Launch genesis + payment hash gate",
+    detail:
+      "executePayment refuses type=payment without a real txHash (writes payment_failed instead). Ledger truncated to day-one genesis (wallet + BaseScan top-up). Public /ledger fetches live with no-store and renders hold/freeze types distinctly.",
+    href: "https://github.com/LiquidLogicX/liquid-logic-agent/pull/30",
+    hrefLabel: "PR #30",
+  },
+  {
     date: "2026-09-14",
     title: "Hold threshold + approve/deny/expire",
     detail:
