@@ -1,21 +1,23 @@
 import { HeroLedgerPanel } from "@/components/HeroLedgerPanel";
 import { StatsBand } from "@/components/StatsBand";
 import { CHANGELOG } from "@/lib/changelog";
+import { llxContractAddress } from "@/lib/llx";
 
 const auditUrl =
   process.env.NEXT_PUBLIC_AUDIT_URL ?? "https://audit.liquidlogicx.com";
 
 export default function HomePage() {
+  const llx = llxContractAddress();
   return (
     <>
       <section className="hero">
         <div className="hero-copy">
           <h1>Operating spend for agent services — on Base, in USDC.</h1>
           <p className="lede">
-            Liquid Logic Agent pays allowlisted{" "}
-            <strong>x402</strong> endpoints with <strong>USDC on Base</strong>.
+            Liquid Logic Agent pays allowlisted x402 endpoints with USDC on Base.
             Caps and an append-only public ledger keep every payment checkable on
-            BaseScan. Services only — not a token, fund, or treasury product.
+            BaseScan. The agent spends USDC on services only — it never buys,
+            sells, or holds $LLX.
           </p>
           <div className="hero-actions">
             <a className="btn btn-primary" href="/ledger">
@@ -30,6 +32,16 @@ export default function HomePage() {
       </section>
 
       <StatsBand />
+
+      <section className="section" id="llx">
+        <h2>$LLX</h2>
+        <p className="section-lede">
+          $LLX launches on Virtuals on Base on September 18, 2026. The audit
+          endpoint and all treasurer spending settle in USDC. The public ledger
+          tracks USDC spend only.
+        </p>
+        {llx ? <p className="mono llx-contract">{llx}</p> : null}
+      </section>
 
       <section className="cream" id="changelog">
         <div className="cream-inner">

@@ -5,13 +5,13 @@ These rules are **non-negotiable**. They apply to code, comments, logs, copy, RE
 ## USDC only (Base)
 
 - The only payment asset is **USDC on Base** (`eip155:8453`).
-- Never invent a custom token.
-- Never buy, swap into, or hold any asset other than USDC (ETH for gas only as required by the network — never as a treasury position).
-- If a feature seems to need a custom token: **STOP** and open a `BLOCKER` instead of inventing one.
+- The treasurer never buys, sells, or holds $LLX. $LLX is a separate Virtuals token; it is not used for x402 settlement.
+- Never buy, swap into, or hold any asset other than USDC for operating spend (ETH for gas only as required by the network — never as a spend position).
+- If a feature would make the treasurer spend or hold $LLX: **STOP** and open a `BLOCKER`.
 
-## No growth / yield / investment framing
+## Operating spend only
 
-- Do **not** describe balances, spend, or operations as “treasury growth,” yield, APY, investment, appreciation, or similar.
+- Do **not** describe balances, spend, or operations as “treasury growth,” APY, appreciation, or similar.
 - Copy and logs must frame activity as **operating spend for services** (x402 endpoints).
 
 ## Services only

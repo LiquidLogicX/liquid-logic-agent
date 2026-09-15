@@ -89,7 +89,7 @@ Do **not** deploy until secrets and logins exist — see `BLOCKERS.md`.
 
 ## What we never do
 
-- Invent or trade any token other than USDC
-- Frame spend as treasury growth / yield / investment
+- Buy, sell, or hold $LLX in the treasurer (operating spend is USDC only)
+- Frame spend as treasury growth
 - Auto-post to Twitter/X/LinkedIn (drafts only)
 - Touch Sepolia FHE / `liquid-logic-x` from this repo
