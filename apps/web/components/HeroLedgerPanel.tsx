@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import {
   type LedgerLatest,
   type LedgerPayment,
+  endpointShortLabel,
+  isSelfTestReason,
   paymentBasescan,
   shortAddr,
 } from "@/lib/ledger";
@@ -70,14 +72,21 @@ export function HeroLedgerPanel() {
           <ul className="hero-panel-payment-list">
             {recentPayments.map((p, i) => {
               const scan = paymentBasescan(p);
+              const label = p.endpoint ? endpointShortLabel(p.endpoint) : null;
               return (
                 <li key={`${p.txHash ?? p.timestamp}-${i}`}>
-                  <p>
+                  <p className="hero-panel-payment-line">
                     <strong>{p.amountUsdc} USDC</strong>
-                    {p.endpoint ? (
+                    {isSelfTestReason(p.reason) ? (
+                      <span className="tag-self-test">Self-test</span>
+                    ) : null}
+                    {label ? (
                       <>
                         {" "}
-                        → <span className="mono truncate">{p.endpoint}</span>
+                        →{" "}
+                        <span className="endpoint-label" title={p.endpoint}>
+                          {label}
+                        </span>
                       </>
                     ) : null}
                   </p>
