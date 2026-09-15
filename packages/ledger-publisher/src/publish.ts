@@ -99,7 +99,7 @@ function renderDayHtml(day: string, events: LedgerEvent[]): string {
 </head>
 <body>
   <h1>Liquid Logic X — operating spend ledger — ${escapeHtml(day)}</h1>
-  <p class="note">USDC on Base for x402 services only. Every tx links to BaseScan when a hash exists. Not investment advice; no treasury-growth framing.</p>
+  <p class="note">USDC on Base for x402 services only. Every tx links to BaseScan when a hash exists. The public ledger tracks USDC spend only.</p>
   <table>
     <thead>
       <tr><th>Time (UTC)</th><th>Type</th><th>Endpoint / detail</th><th>Amount</th><th>BaseScan</th><th>Reason</th></tr>
