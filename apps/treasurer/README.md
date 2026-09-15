@@ -36,6 +36,10 @@ npm run treasurer -- revoke
 
 `sync-ledger` **unions** the disk JSONL with GitHub `data/ledger.jsonl` (never replaces history).
 
+**Launch reset:** set `LEDGER_LAUNCH_RESET=1` once after a day-one genesis truncate so sync **replaces** the Render disk from GitHub and refuses to push local phantoms. Prefer also running `node apps/treasurer/scripts/write-launch-genesis.mjs` as a Render one-off against `TREASURER_LEDGER_PATH=/app/data/ledger.jsonl`, then unset `LEDGER_LAUNCH_RESET`.
+
+**Payment rows:** `executePayment` / `recordPayment` never append `type=payment` without a non-empty `0x…64` txHash and HTTP 2xx; failures append `payment_failed` instead.
+
 ## Operator freeze (takeover step 2)
 
 Halts **all** outbound treasurer payments (any amount). Service keeps running (ledger sync, health, holds). Auth is principal-only bearer — **not** x402.
