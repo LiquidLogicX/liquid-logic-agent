@@ -141,6 +141,7 @@ a:hover { text-decoration: underline; color: var(--gold); }
 .hero > * {
   position: relative;
   z-index: 1;
+  min-width: 0;
 }
 
 @media (max-width: 860px) {
@@ -196,6 +197,11 @@ a:hover { text-decoration: underline; color: var(--gold); }
   border-radius: var(--radius);
   padding: 1.35rem 1.4rem 1.5rem;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+  align-self: start;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .hero-panel-kicker {
@@ -263,10 +269,50 @@ a:hover { text-decoration: underline; color: var(--gold); }
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  min-width: 0;
 }
 
-.hero-panel-payment-list li p {
+.hero-panel-payment-list li {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.hero-panel-payment-list li p,
+.hero-panel-payment-line {
   margin: 0.15rem 0 0.35rem;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.hero-panel-recent {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.endpoint-label {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.tag-self-test {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  color: var(--navy-deep);
+  background: var(--metal);
+  border: 1px solid var(--line);
+}
+
+.ledger-reset-note {
+  margin: 0.85rem 0 0;
+  max-width: 40rem;
+  overflow-wrap: anywhere;
 }
 
 .small { font-size: 0.88rem; }
@@ -699,6 +745,8 @@ main.page {
 
 .ledger-event-body {
   font-size: 0.95rem;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
 .ledger-event-reason {

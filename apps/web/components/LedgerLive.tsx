@@ -3,22 +3,26 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
+  endpointShortLabel,
   eventTypeLabel,
   fetchLedgerLatest,
   isNonPaymentType,
+  isSelfTestReason,
   paymentBasescan,
   shortAddr,
   type LedgerEventRow,
   type LedgerLatest,
 } from "@/lib/ledger";
 
-function detailFor(e: LedgerEventRow): string {
-  if (e.endpoint) return e.endpoint;
-  if (e.message) return e.message;
-  if (e.error) return e.error;
-  if (e.holdId) return `hold ${e.holdId}`;
-  if (e.walletAddress) return e.walletAddress;
-  return e.reason ?? "—";
+function detailFor(e: LedgerEventRow): { label: string; title?: string } {
+  if (e.endpoint) {
+    return { label: endpointShortLabel(e.endpoint), title: e.endpoint };
+  }
+  if (e.message) return { label: e.message };
+  if (e.error) return { label: e.error };
+  if (e.holdId) return { label: `hold ${e.holdId}` };
+  if (e.walletAddress) return { label: e.walletAddress };
+  return { label: e.reason ?? "—" };
 }
 
 function EventRow({ e }: { e: LedgerEventRow }) {
@@ -46,8 +50,18 @@ function EventRow({ e }: { e: LedgerEventRow }) {
         ) : amount && type !== "payment" ? (
           <span className="muted">{amount}</span>
         ) : null}
+        {type === "payment" && isSelfTestReason(e.reason) ? (
+          <span className="tag-self-test">Self-test</span>
+        ) : null}
         {amount && type === "payment" ? " → " : amount ? " · " : null}
-        <span className="mono truncate">{detailFor(e)}</span>
+        {(() => {
+          const d = detailFor(e);
+          return (
+            <span className="endpoint-label" title={d.title}>
+              {d.label}
+            </span>
+          );
+        })()}
       </div>
       {e.reason && type !== "payment" ? (
         <p className="muted small ledger-event-reason">{e.reason}</p>
@@ -116,29 +130,24 @@ export function LedgerLive() {
         ) : error && !latest ? (
           <p className="muted">{error}</p>
         ) : latest ? (
-          <>
-            <ul>
-              <li>Generated: {latest.generatedAt ?? "—"}</li>
-              <li>Events: {latest.totalEvents ?? 0}</li>
-              <li>Payments: {latest.totalPayments ?? 0}</li>
-              <li>Approx USDC paid: {latest.totalPaidUsdcApprox ?? 0}</li>
-              {latest.walletAddress ? (
-                <li>
-                  Wallet:{" "}
-                  <a
-                    href={`https://basescan.org/address/${latest.walletAddress}`}
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
-                    {latest.walletAddress}
-                  </a>
-                </li>
-              ) : null}
-            </ul>
-            <p className="muted small ledger-reset-note">
-              Ledger reset for launch on September 15, 2026. Earlier test payments are listed in the changelog.
-            </p>
-          </>
+          <ul>
+            <li>Generated: {latest.generatedAt ?? "—"}</li>
+            <li>Events: {latest.totalEvents ?? 0}</li>
+            <li>Payments: {latest.totalPayments ?? 0}</li>
+            <li>Approx USDC paid: {latest.totalPaidUsdcApprox ?? 0}</li>
+            {latest.walletAddress ? (
+              <li>
+                Wallet:{" "}
+                <a
+                  href={`https://basescan.org/address/${latest.walletAddress}`}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  {latest.walletAddress}
+                </a>
+              </li>
+            ) : null}
+          </ul>
         ) : (
           <p className="muted">No published summary yet.</p>
         )}
