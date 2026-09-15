@@ -89,7 +89,8 @@ Do **not** deploy until secrets and logins exist — see `BLOCKERS.md`.
 
 ## What we never do
 
-- Invent or trade any token other than USDC
+- Spend, buy, sell, or hold anything other than USDC for agent operations (ETH for gas only). `$LLX` is a separate Virtuals token; the agent does not buy, sell, or hold it.
+- Invent or publish a `$LLX` contract address until one is provided
 - Frame spend as treasury growth / yield / investment
 - Auto-post to Twitter/X/LinkedIn (drafts only)
 - Touch Sepolia FHE / `liquid-logic-x` from this repo
