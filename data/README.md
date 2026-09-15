@@ -12,6 +12,7 @@ history. Keep only:
 
 1. `wallet_address` for `0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D`
 2. `top_up` 5.00 USDC with BaseScan-backed tx `0x86725a…6310`
+3. Optional `note` with `message: LAUNCH_GENESIS_RESET` so treasurer sync auto-replaces a longer Render disk from GitHub (no phantom push)
 
 ### Preventing phantom resurrection (Render disk)
 
