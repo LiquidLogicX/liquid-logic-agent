@@ -48,58 +48,53 @@ export function HeroLedgerPanel() {
       aria-label="Live ledger summary"
     >
       <p className="hero-panel-kicker">Live from ledger</p>
+      <div className={`hero-panel-grid${isEmpty ? " hero-panel-grid--solo" : ""}`}>
+        <div>
+          <span className="kpi-label">Total USDC spent</span>
+          <span className="kpi-value">
+            {Number(latest.totalPaidUsdcApprox ?? 0).toLocaleString(undefined, {
+              maximumFractionDigits: 6,
+            })}
+          </span>
+        </div>
+        <div>
+          <span className="kpi-label">Payments</span>
+          <span className="kpi-value">{totalPayments}</span>
+        </div>
+      </div>
       {isEmpty ? (
         <p className="hero-panel-empty-msg">{EMPTY_COPY}</p>
       ) : (
-        <>
-          <div className="hero-panel-grid">
-            <div>
-              <span className="kpi-label">Total USDC spent</span>
-              <span className="kpi-value">
-                {Number(latest.totalPaidUsdcApprox ?? 0).toLocaleString(
-                  undefined,
-                  {
-                    maximumFractionDigits: 6,
-                  },
-                )}
-              </span>
-            </div>
-            <div>
-              <span className="kpi-label">Payments</span>
-              <span className="kpi-value">{totalPayments}</span>
-            </div>
-          </div>
-          <div className="hero-panel-recent">
-            <span className="kpi-label">Latest payments</span>
-            <ul className="hero-panel-payment-list">
-              {recentPayments.map((p, i) => {
-                const scan = paymentBasescan(p);
-                return (
-                  <li key={`${p.txHash ?? p.timestamp}-${i}`}>
-                    <p>
-                      <strong>{p.amountUsdc} USDC</strong>
-                      {p.endpoint ? (
-                        <>
-                          {" "}
-                          → <span className="mono truncate">{p.endpoint}</span>
-                        </>
-                      ) : null}
+        <div className="hero-panel-recent">
+          <span className="kpi-label">Latest payments</span>
+          <ul className="hero-panel-payment-list">
+            {recentPayments.map((p, i) => {
+              const scan = paymentBasescan(p);
+              return (
+                <li key={`${p.txHash ?? p.timestamp}-${i}`}>
+                  <p>
+                    <strong>{p.amountUsdc} USDC</strong>
+                    {p.endpoint ? (
+                      <>
+                        {" "}
+                        → <span className="mono truncate">{p.endpoint}</span>
+                      </>
+                    ) : null}
+                  </p>
+                  {scan ? (
+                    <a href={scan} rel="noopener noreferrer" target="_blank">
+                      BaseScan {p.txHash ? shortAddr(p.txHash) : "tx"}
+                    </a>
+                  ) : (
+                    <p className="muted small">
+                      No transaction hash recorded yet.
                     </p>
-                    {scan ? (
-                      <a href={scan} rel="noopener noreferrer" target="_blank">
-                        BaseScan {p.txHash ? shortAddr(p.txHash) : "tx"}
-                      </a>
-                    ) : (
-                      <p className="muted small">
-                        No transaction hash recorded yet.
-                      </p>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        </>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       )}
     </aside>
   );

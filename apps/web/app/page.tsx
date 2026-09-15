@@ -38,7 +38,7 @@ export default function HomePage() {
       <section className="section" id="llx">
         <h2>$LLX</h2>
         <p className="section-body">
-          $LLX launches on Virtuals on Base on September 18, 2026. The audit
+          $LLX launches on Virtuals on Base on September 16, 2026. The audit
           endpoint and all treasurer spending settle in USDC. The public ledger
           tracks USDC spend only.
         </p>
