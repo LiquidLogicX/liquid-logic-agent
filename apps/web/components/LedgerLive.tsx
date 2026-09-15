@@ -116,27 +116,29 @@ export function LedgerLive() {
         ) : error && !latest ? (
           <p className="muted">{error}</p>
         ) : latest ? (
-          <ul>
-            <li>Generated: {latest.generatedAt ?? "—"}</li>
-            <li>Events: {latest.totalEvents ?? 0}</li>
-            <li>Payments: {latest.totalPayments ?? 0}</li>
-            <li>Approx USDC paid: {latest.totalPaidUsdcApprox ?? 0}</li>
-            {latest.walletAddress ? (
-              <li>
-                Wallet:{" "}
-                <a
-                  href={`https://basescan.org/address/${latest.walletAddress}`}
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  {latest.walletAddress}
-                </a>
-              </li>
-            ) : null}
-          </ul>
-          <p className="muted small ledger-reset-note">
-            Ledger reset for launch on September 15, 2026. Earlier test payments are listed in the changelog.
-          </p>
+          <>
+            <ul>
+              <li>Generated: {latest.generatedAt ?? "—"}</li>
+              <li>Events: {latest.totalEvents ?? 0}</li>
+              <li>Payments: {latest.totalPayments ?? 0}</li>
+              <li>Approx USDC paid: {latest.totalPaidUsdcApprox ?? 0}</li>
+              {latest.walletAddress ? (
+                <li>
+                  Wallet:{" "}
+                  <a
+                    href={`https://basescan.org/address/${latest.walletAddress}`}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    {latest.walletAddress}
+                  </a>
+                </li>
+              ) : null}
+            </ul>
+            <p className="muted small ledger-reset-note">
+              Ledger reset for launch on September 15, 2026. Earlier test payments are listed in the changelog.
+            </p>
+          </>
         ) : (
           <p className="muted">No published summary yet.</p>
         )}
