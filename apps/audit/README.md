@@ -40,4 +40,4 @@ Artifacts land in `acceptance/`. Settled payments append to repo-root `data/ledg
 
 `/api/audit` unions (1) local `public/ledger` + `data/ledger.jsonl`, (2) the live published ledger at `LEDGER_REMOTE_BASE_URL` (default `https://liquidlogicx.com`), and (3) the current settlement when the header is present. Events are keyed by tx hash so a sparse Render sync cannot wipe history twice.
 
-Bazaar `output.example` for `/api/audit` is `AUDIT_OUTPUT_EXAMPLE`; for `/api/allowance` see `lib/allowance-output-example.ts`. Both must match a paid call for `0xEA24…167D`. Check with `npm run check-example` and `npm run check-allowance`.
+Bazaar `output.example` for `/api/audit` is derived at module load from local ledger files (`public/ledger` + `data/ledger.jsonl`) via `buildAuditOutputExample()` — not hand-typed counts. For `/api/allowance` see `lib/allowance-output-example.ts`. Check with `npm run check-example` and `npm run check-allowance`.
