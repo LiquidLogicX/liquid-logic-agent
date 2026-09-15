@@ -1,17 +1,30 @@
 {
-  "generatedAt": "2026-09-15T18:26:13.512Z",
+  "generatedAt": "2026-09-15T20:39:16.920Z",
   "network": "eip155:8453",
   "asset": "USDC",
   "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
-  "totalEvents": 3,
-  "totalPayments": 0,
-  "totalPaidUsdcApprox": 0,
+  "totalEvents": 4,
+  "totalPayments": 1,
+  "totalPaidUsdcApprox": 0.001,
   "days": [
     "2026-09-13",
     "2026-09-15"
   ],
   "today": "2026-09-15",
-  "recentPayments": [],
+  "recentPayments": [
+    {
+      "type": "payment",
+      "timestamp": "2026-09-15T20:38:56.825Z",
+      "endpoint": "https://audit.liquidlogicx.com/api/allowance?wallet=0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
+      "amountUsdc": "0.001",
+      "asset": "USDC",
+      "network": "eip155:8453",
+      "txHash": "0x93a15735c5b82fb8c9fdc0f7db5d56916a14f6ee4ef343000a29fd55c4bcaf4c",
+      "basescanUrl": "https://basescan.org/tx/0x93a15735c5b82fb8c9fdc0f7db5d56916a14f6ee4ef343000a29fd55c4bcaf4c",
+      "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
+      "reason": "self-test"
+    }
+  ],
   "recentEvents": [
     {
       "type": "wallet_address",
@@ -32,6 +45,18 @@
       "timestamp": "2026-09-15T04:16:00.000Z",
       "message": "LAUNCH_GENESIS_RESET",
       "reason": "Day-one launch truncate — prefer this remote over longer Render disk until disk is wiped"
+    },
+    {
+      "type": "payment",
+      "timestamp": "2026-09-15T20:38:56.825Z",
+      "endpoint": "https://audit.liquidlogicx.com/api/allowance?wallet=0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
+      "amountUsdc": "0.001",
+      "asset": "USDC",
+      "network": "eip155:8453",
+      "txHash": "0x93a15735c5b82fb8c9fdc0f7db5d56916a14f6ee4ef343000a29fd55c4bcaf4c",
+      "basescanUrl": "https://basescan.org/tx/0x93a15735c5b82fb8c9fdc0f7db5d56916a14f6ee4ef343000a29fd55c4bcaf4c",
+      "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
+      "reason": "self-test"
     }
   ]
 }
