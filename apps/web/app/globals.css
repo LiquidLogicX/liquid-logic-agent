@@ -363,6 +363,23 @@ a:hover { text-decoration: underline; color: var(--gold); }
   margin: 0 0 0.75rem;
 }
 
+.section-body {
+  margin: 0;
+  max-width: 42rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.llx-contract {
+  margin: 1rem 0 0;
+  font-size: 0.95rem;
+}
+
+.llx-contract a {
+  color: var(--gold-soft);
+  word-break: break-all;
+}
+
 .card-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

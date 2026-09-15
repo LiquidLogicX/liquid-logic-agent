@@ -5,6 +5,10 @@ import { CHANGELOG } from "@/lib/changelog";
 const auditUrl =
   process.env.NEXT_PUBLIC_AUDIT_URL ?? "https://audit.liquidlogicx.com";
 
+/** Set only when the live Virtuals/$LLX contract is known. Unset = render nothing. */
+const llxContractAddress =
+  process.env.NEXT_PUBLIC_LLX_CONTRACT_ADDRESS?.trim() || undefined;
+
 export default function HomePage() {
   return (
     <>
@@ -12,10 +16,10 @@ export default function HomePage() {
         <div className="hero-copy">
           <h1>Operating spend for agent services — on Base, in USDC.</h1>
           <p className="lede">
-            Liquid Logic Agent pays allowlisted{" "}
-            <strong>x402</strong> endpoints with <strong>USDC on Base</strong>.
+            Liquid Logic Agent pays allowlisted x402 endpoints with USDC on Base.
             Caps and an append-only public ledger keep every payment checkable on
-            BaseScan. Services only — not a token, fund, or treasury product.
+            BaseScan. The agent spends USDC on services only — it never buys,
+            sells, or holds $LLX.
           </p>
           <div className="hero-actions">
             <a className="btn btn-primary" href="/ledger">
@@ -30,6 +34,27 @@ export default function HomePage() {
       </section>
 
       <StatsBand />
+
+      <section className="section" id="llx">
+        <h2>$LLX</h2>
+        <p className="section-body">
+          $LLX launches on Virtuals on Base on September 18, 2026. The audit
+          endpoint and all treasurer spending settle in USDC. The public ledger
+          tracks USDC spend only.
+        </p>
+        {llxContractAddress ? (
+          <p className="llx-contract mono">
+            <a
+              href={`https://basescan.org/token/${llxContractAddress}`}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              {llxContractAddress}
+            </a>
+          </p>
+        ) : null}
+      </section>
+
 
       <section className="cream" id="changelog">
         <div className="cream-inner">
