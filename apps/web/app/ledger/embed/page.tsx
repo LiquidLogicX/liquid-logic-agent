@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Ledger embed",
+  robots: { index: false },
+};
+
 export default function LedgerEmbed() {
   return (
     <iframe
@@ -7,7 +14,7 @@ export default function LedgerEmbed() {
         width: "100%",
         minHeight: "400px",
         border: "0",
-        background: "#fff",
+        background: "var(--sheet, #fff)",
       }}
     />
   );
