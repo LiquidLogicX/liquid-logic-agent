@@ -4,7 +4,7 @@ export const LLX_CONTRACT =
 
 export const LLX_BASESCAN = `https://basescan.org/token/${LLX_CONTRACT}`;
 
-export const LLX_VIRTUALS = `https://app.virtuals.io/prototypes/${LLX_CONTRACT}`;
+export const LLX_VIRTUALS = "https://app.virtuals.io/virtuals/141523";
 
 export const TREASURER_WALLET =
   "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D";
