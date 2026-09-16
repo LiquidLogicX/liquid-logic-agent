@@ -10,6 +10,22 @@ export type ChangelogEntry = {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     date: "2026-09-15",
+    title: "Allowance endpoint allowlisted",
+    detail:
+      "audit.liquidlogicx.com/api/allowance added to the published treasurer allowlist so pre-flight checks can be paid on Base.",
+    href: "https://github.com/LiquidLogicX/liquid-logic-agent/pull/38",
+    hrefLabel: "PR #38",
+  },
+  {
+    date: "2026-09-15",
+    title: "Launch self-test payment",
+    detail:
+      "One 0.001 USDC call to the allowance endpoint after the ledger reset.",
+    href: "https://basescan.org/tx/0x93a15735c5b82fb8c9fdc0f7db5d56916a14f6ee4ef343000a29fd55c4bcaf4c",
+    hrefLabel: "BaseScan",
+  },
+  {
+    date: "2026-09-15",
     title: "Launch genesis + payment hash gate",
     detail:
       "executePayment refuses type=payment without a real txHash (writes payment_failed instead). Ledger truncated to day-one genesis (wallet + BaseScan top-up). Public /ledger fetches live with no-store and renders hold/freeze types distinctly.",
