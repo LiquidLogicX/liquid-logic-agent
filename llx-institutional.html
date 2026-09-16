@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Liquid Logic X — Spending controls for autonomous agents</title>
+<meta name="description" content="Capped, allowlisted USDC spending for AI agents on Base, with every payment published and verifiable on BaseScan.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F4F5F7; --sheet:#FFFFFF; --ink:#18202F; --slate:#566074;
+  --rule:#D6DAE1; --rule-strong:#AEB5C2; --violet:#4E3FB3; --violet-soft:#ECEAF8;
+  --ok:#2A6F52; --ok-soft:#E3F0EA; --warn:#8A5A12;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"Public Sans",-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#121722; --sheet:#1A2130; --ink:#E7EAF0; --slate:#9AA3B5;
+  --rule:#2C3546; --rule-strong:#475166; --violet:#A89CF0; --violet-soft:#262546;
+  --ok:#6FC39C; --ok-soft:#1B3329; --warn:#E0B060;}}
+:root[data-theme="dark"]{
+  --paper:#121722; --sheet:#1A2130; --ink:#E7EAF0; --slate:#9AA3B5;
+  --rule:#2C3546; --rule-strong:#475166; --violet:#A89CF0; --violet-soft:#262546;
+  --ok:#6FC39C; --ok-soft:#1B3329; --warn:#E0B060;}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 16px/1.6 var(--sans);font-variant-numeric:tabular-nums}
+a{color:var(--violet);text-underline-offset:3px}
+a:focus-visible,button:focus-visible{outline:2px solid var(--violet);outline-offset:3px;border-radius:2px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+.mono{font-family:var(--mono);font-size:.86em;word-break:break-all}
+
+/* header */
+header.top{background:var(--sheet);border-bottom:1px solid var(--rule)}
+header.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:64px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-weight:600}
+.mark{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--violet);display:grid;place-items:center;font:600 10px/1 var(--sans);letter-spacing:.02em;color:var(--ink)}
+.mark b{color:var(--violet);font-weight:600}
+nav.primary{display:flex;gap:22px;flex-wrap:wrap;font-size:14px}
+nav.primary a{color:var(--slate);text-decoration:none}
+nav.primary a:hover{color:var(--ink)}
+.status{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--ok);background:var(--ok-soft);padding:4px 10px;border-radius:999px}
+.status i{width:7px;height:7px;border-radius:50%;background:currentColor}
+
+/* hero: the policy is the headline */
+.hero{padding:64px 0 56px;border-bottom:1px solid var(--rule)}
+.hero .wrap{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start}
+h1,h2,h3{font-family:var(--serif);font-weight:600;letter-spacing:-.01em;margin:0}
+h1{font-size:clamp(34px,4.4vw,50px);line-height:1.08;max-width:14ch}
+.lede{font-size:18px;color:var(--slate);max-width:46ch;margin:22px 0 28px;line-height:1.65}
+.actions{display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-block;padding:11px 18px;border-radius:4px;font:500 15px/1 var(--sans);text-decoration:none;border:1px solid var(--ink)}
+.btn.primary{background:var(--ink);color:var(--sheet)}
+.btn.secondary{color:var(--ink)}
+
+.termsheet{background:var(--sheet);border:1px solid var(--rule-strong);border-top:4px solid var(--violet);padding:26px 28px 20px}
+.termsheet h2{font-size:20px}
+.termsheet .asof{font-size:13px;color:var(--slate);margin:4px 0 16px}
+dl.terms{margin:0;display:grid;grid-template-columns:auto 1fr}
+dl.terms dt,dl.terms dd{padding:11px 0;border-top:1px solid var(--rule);margin:0}
+dl.terms dt{color:var(--slate);font-size:14px;padding-right:18px}
+dl.terms dd{text-align:right;font-weight:500}
+.termsheet .src{font-size:13px;color:var(--slate);margin-top:14px;border-top:1px solid var(--rule);padding-top:12px}
+
+/* sections */
+section{padding:64px 0;border-bottom:1px solid var(--rule)}
+.sec-head{display:grid;grid-template-columns:260px 1fr;gap:48px}
+.sec-head h2{font-size:28px;line-height:1.2}
+.sec-head p.intro{color:var(--slate);margin:10px 0 0;font-size:15px;max-width:30ch}
+
+.controls{margin:0;display:grid;grid-template-columns:1fr 1fr;column-gap:40px}
+.controls div{padding:18px 0;border-top:1px solid var(--rule)}
+.controls dt{font-weight:600;margin-bottom:4px}
+.controls dd{margin:0;color:var(--slate);font-size:15px;max-width:52ch}
+.controls .ev{display:block;margin-top:6px;font-size:13px}
+
+.tablewrap{overflow-x:auto;background:var(--sheet);border:1px solid var(--rule)}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:620px}
+th{text-align:left;font-weight:500;color:var(--slate);padding:12px 16px;border-bottom:1px solid var(--rule-strong);background:var(--paper)}
+td{padding:13px 16px;border-bottom:1px solid var(--rule);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right}
+.tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:3px;background:var(--violet-soft);color:var(--violet)}
+.summary{display:flex;gap:40px;flex-wrap:wrap;margin:0 0 20px}
+.summary div{min-width:140px}
+.summary span{display:block;font-size:13px;color:var(--slate)}
+.summary strong{font-family:var(--serif);font-size:26px;font-weight:600}
+.note{font-size:13px;color:var(--slate);margin-top:12px}
+
+.token-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:32px;align-items:start}
+.disclosure{background:var(--sheet);border:1px solid var(--rule);border-left:4px solid var(--warn);padding:20px 22px;font-size:15px}
+.disclosure h3{font-size:18px;margin-bottom:8px}
+.disclosure p{margin:0 0 10px;color:var(--slate)}
+.ca{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px}
+button.copy{font:500 13px var(--sans);padding:5px 10px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);border-radius:3px;cursor:pointer}
+
+.research{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--rule)}
+.research article{padding:20px 20px 20px 0}
+.research article+article{padding-left:20px;border-left:1px solid var(--rule)}
+.research .stage{font-size:13px;color:var(--slate)}
+.research h3{font-size:18px;margin:4px 0 6px}
+.research p{margin:0;font-size:15px;color:var(--slate)}
+
+ol.log{list-style:none;margin:0;padding:0}
+ol.log li{display:grid;grid-template-columns:120px 1fr auto;gap:20px;padding:14px 0;border-top:1px solid var(--rule)}
+ol.log time{color:var(--slate);font-size:14px}
+ol.log strong{display:block;font-weight:600}
+ol.log span.d{color:var(--slate);font-size:14px}
+ol.log a{font-size:13px;white-space:nowrap}
+
+footer{padding:40px 0 56px;font-size:13px;color:var(--slate)}
+footer .wrap{display:grid;grid-template-columns:2fr 1fr;gap:40px}
+footer p{margin:0 0 10px;max-width:70ch}
+
+@media (max-width:860px){
+  .hero .wrap,.sec-head,.token-grid,footer .wrap{grid-template-columns:1fr;gap:28px}
+  .controls{grid-template-columns:1fr}
+  .research{grid-template-columns:1fr}
+  .research article,.research article+article{padding:18px 0;border-left:0;border-top:1px solid var(--rule)}
+  ol.log li{grid-template-columns:1fr;gap:4px}
+  nav.primary{gap:14px;font-size:13px}
+  .hero{padding:40px 0}
+  section{padding:44px 0}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#"><span class="mark">LL<b>X</b></span>Liquid Logic X</a>
+    <nav class="primary" aria-label="Primary">
+      <a href="#controls">Controls</a>
+      <a href="#ledger">Ledger</a>
+      <a href="#endpoints">Endpoints</a>
+      <a href="#llx">$LLX</a>
+      <a href="#research">Research</a>
+      <a href="#changelog">Changelog</a>
+    </nav>
+    <span class="status"><i></i>Treasurer operating</span>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="wrap">
+    <div>
+      <h1>Spending controls for autonomous agents.</h1>
+      <p class="lede">Liquid Logic Agent pays approved x402 services in USDC on Base, inside published limits. Every settled payment is recorded on a public ledger and can be checked on BaseScan.</p>
+      <div class="actions">
+        <a class="btn primary" href="#ledger">View the ledger</a>
+        <a class="btn secondary" href="#endpoints">Read endpoint docs</a>
+      </div>
+    </div>
+
+    <aside class="termsheet" aria-labelledby="ts-title">
+      <h2 id="ts-title">Current spending policy</h2>
+      <p class="asof">Published at liquidlogicx.com/policy.json</p>
+      <dl class="terms">
+        <dt>Network</dt><dd>Base mainnet</dd>
+        <dt>Settlement asset</dt><dd>USDC</dd>
+        <dt>Maximum per payment</dt><dd>1.00 USDC</dd>
+        <dt>Daily limit</dt><dd>10.00 USDC per UTC day</dd>
+        <dt>Approved destinations</dt><dd>4 endpoints</dd>
+        <dt>Treasurer wallet</dt><dd><a class="mono" href="https://basescan.org/address/0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D">0xEA24…167D</a></dd>
+      </dl>
+      <p class="src">Payments outside these limits are refused. The agent spends USDC on services only and never buys, sells or holds $LLX.</p>
+    </aside>
+  </div>
+</div>
+
+<section id="controls">
+  <div class="wrap sec-head">
+    <div>
+      <h2>Controls</h2>
+      <p class="intro">What stops the agent from spending more, or somewhere else, than it should.</p>
+    </div>
+    <dl class="controls">
+      <div><dt>Allowlist</dt><dd>The agent can only pay endpoints on the published list. Anything else is rejected before a payment is signed.</dd></div>
+      <div><dt>Per-payment and daily limits</dt><dd>Each payment is capped, and total spend resets each UTC day.</dd></div>
+      <div><dt>Hold for approval</dt><dd>Payments above a set threshold wait for an operator to approve or deny. Unanswered holds are denied automatically.<a class="ev" href="https://github.com/LiquidLogicX/liquid-logic-agent/pull/27">Shipped in PR #27</a></dd></div>
+      <div><dt>Operator freeze</dt><dd>An operator can halt all outgoing payments at once. The freeze survives restarts and fails closed.<a class="ev" href="https://github.com/LiquidLogicX/liquid-logic-agent/pull/26">Shipped in PR #26</a></dd></div>
+      <div><dt>Proof of payment</dt><dd>A payment is only recorded with a real on-chain transaction hash. Failed attempts are logged as failures, never as payments.<a class="ev" href="https://github.com/LiquidLogicX/liquid-logic-agent/pull/30">Shipped in PR #30</a></dd></div>
+      <div><dt>Public ledger</dt><dd>Payments, holds, denials and freezes are published as separate, append-only record types.<a class="ev" href="https://github.com/LiquidLogicX/liquid-logic-agent/pull/25">Shipped in PR #25</a></dd></div>
+    </dl>
+  </div>
+</section>
+
+<section id="ledger">
+  <div class="wrap sec-head">
+    <div>
+      <h2>Public ledger</h2>
+      <p class="intro">Reset for launch on September 15, 2026. Earlier test payments are listed in the changelog.</p>
+    </div>
+    <div>
+      <div class="summary">
+        <div><span>Payments</span><strong>1</strong></div>
+        <div><span>Total paid</span><strong>0.001 USDC</strong></div>
+        <div><span>Last updated</span><strong>Sep 16, 00:31 UTC</strong></div>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Time (UTC)</th><th>Type</th><th>Destination</th><th class="num">Amount</th><th>Transaction</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Sep 15, 20:38</td>
+              <td>Payment <span class="tag">Self-test</span></td>
+              <td title="https://audit.liquidlogicx.com/api/allowance">audit.liquidlogicx.com · allowance</td>
+              <td class="num">0.001 USDC</td>
+              <td><a class="mono" href="https://basescan.org/tx/0x93a15735c5b82fb8c9fdc0f7db5d56916a14f6ee4ef343000a29fd55c4bcaf4c">0x93a1…af4c</a></td>
+            </tr>
+            <tr>
+              <td>Sep 13, 15:20</td>
+              <td>Top-up</td>
+              <td>Treasurer wallet</td>
+              <td class="num">5.00 USDC</td>
+              <td><a class="mono" href="https://basescan.org/tx/0x86725a32173f31957011a2a7b6a8136d48ed8074ac436396472adf3b7ce96310">0x8672…6310</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Design snapshot. The live site reads <a href="https://liquidlogicx.com/ledger/latest.json">latest.json</a> on every load.</p>
+    </div>
+  </div>
+</section>
+
+<section id="endpoints">
+  <div class="wrap sec-head">
+    <div>
+      <h2>Endpoints</h2>
+      <p class="intro">Paid per call over x402. No account or API key. Settled in USDC on Base through the Coinbase CDP facilitator.</p>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Endpoint</th><th>What it returns</th><th class="num">Price</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">GET /api/allowance</td><td>Whether a wallet may pay a given x402 URL, and how much remains under today's limit. Call it before spending.</td><td class="num">0.001 USDC</td></tr>
+          <tr><td class="mono">GET /api/audit</td><td>A spend summary for an agent wallet: destinations, totals and BaseScan links.</td><td class="num">0.05 USDC</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="llx">
+  <div class="wrap sec-head">
+    <div>
+      <h2>$LLX</h2>
+      <p class="intro">The Liquid Logic Agent token on Virtuals, on Base.</p>
+    </div>
+    <div class="token-grid">
+      <dl class="terms" style="background:var(--sheet);border:1px solid var(--rule);padding:4px 20px">
+        <dt>Launch</dt><dd>September 16, 2026, 12:40 PM PT</dd>
+        <dt>Platform</dt><dd>Virtuals, Base</dd>
+        <dt>Total supply</dt><dd>1,000,000,000</dd>
+        <dt>Liquidity pool</dt><dd>100% of supply</dd>
+        <dt>Team allocation</dt><dd>None</dd>
+        <dt>Liquidity lock</dt><dd>10 years after graduation</dd>
+        <dt>Contract</dt>
+        <dd><div class="ca" style="justify-content:flex-end">
+          <a class="mono" id="ca" href="https://basescan.org/token/0xB9Dd507a5b352783b25e14c9b6E77D9f0067380f">0xB9Dd507a5b352783b25e14c9b6E77D9f0067380f</a>
+          <button class="copy" type="button" data-copy="0xB9Dd507a5b352783b25e14c9b6E77D9f0067380f">Copy</button>
+        </div></dd>
+      </dl>
+      <div class="disclosure">
+        <h3>Please read</h3>
+        <p>This is the only official $LLX contract. Check the address before buying.</p>
+        <p>$LLX is not an investment product. No returns, yield, buybacks or price support are promised.</p>
+        <p>The agent's spending and the endpoints settle in USDC only. The agent never buys, sells or holds $LLX, and the public ledger tracks USDC only.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="research">
+  <div class="wrap sec-head">
+    <div>
+      <h2>Research</h2>
+      <p class="intro">Ordered by how real it is. Only the first item is part of the live product.</p>
+    </div>
+    <div class="research">
+      <article><div class="stage">Live on Base</div><h3>Treasurer, ledger and audit endpoint</h3><p>The capped spending stack described above.</p></article>
+      <article><div class="stage">Testnet only (Sepolia)</div><h3>Confidential balances</h3><p>Encrypted balances with access control, and a threshold check that reveals only whether a balance meets a limit. Built with Zama's open-source FHE libraries; no partnership or endorsement.</p></article>
+      <article><div class="stage">Intent, not a commitment</div><h3>Confidential spending limits</h3><p>Enforce a fleet's limits without disclosing them, including to the agents spending against them.</p></article>
+    </div>
+  </div>
+</section>
+
+<section id="changelog">
+  <div class="wrap sec-head">
+    <div>
+      <h2>Changelog</h2>
+      <p class="intro">What shipped, dated and linked to a pull request or transaction.</p>
+    </div>
+    <ol class="log">
+      <li><time>Sep 15, 2026</time><div><strong>Launch self-test payment</strong><span class="d">One 0.001 USDC call to the allowance endpoint after the ledger reset.</span></div><a href="https://basescan.org/tx/0x93a15735c5b82fb8c9fdc0f7db5d56916a14f6ee4ef343000a29fd55c4bcaf4c">BaseScan</a></li>
+      <li><time>Sep 15, 2026</time><div><strong>Ledger reset and payment hash gate</strong><span class="d">Payments require a real transaction hash; ledger reset for launch.</span></div><a href="https://github.com/LiquidLogicX/liquid-logic-agent/pull/30">PR #30</a></li>
+      <li><time>Sep 14, 2026</time><div><strong>Hold for approval</strong><span class="d">Large payments wait for approval; unanswered holds expire as denied.</span></div><a href="https://github.com/LiquidLogicX/liquid-logic-agent/pull/27">PR #27</a></li>
+      <li><time>Sep 14, 2026</time><div><strong>Operator freeze</strong><span class="d">Halt and resume all outgoing payments.</span></div><a href="https://github.com/LiquidLogicX/liquid-logic-agent/pull/26">PR #26</a></li>
+      <li><time>Sep 14, 2026</time><div><strong>Allowance pre-flight endpoint</strong><span class="d">Check permission and remaining limit for 0.001 USDC.</span></div><a href="https://github.com/LiquidLogicX/liquid-logic-agent/pull/24">PR #24</a></li>
+      <li><time>Sep 14, 2026</time><div><strong>Live audit settlements</strong><span class="d">Paid audit calls recorded on Base.</span></div><a href="https://basescan.org/tx/0x465910619fb6ba1fa3106b911098d435d4900e0bf2bce05b35f3c7e077643318">BaseScan</a></li>
+      <li><time>Sep 13, 2026</time><div><strong>First live Base payment</strong><span class="d">Treasurer paid an allowlisted x402 endpoint on Base mainnet.</span></div><a href="https://basescan.org/tx/0xacf34818767a8a5a17b4790bb3778af2787b8ea28a06774c3678ec0567293e8e">BaseScan</a></li>
+    </ol>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <p>USDC on Base for x402 services. $LLX is the Liquid Logic Agent token on Virtuals (Base). It is not an investment product. No returns, yield, buybacks or price support are promised. Research describes intent, not a commitment.</p>
+    </div>
+    <div>
+      <p><a href="mailto:hello@liquidlogicx.com">hello@liquidlogicx.com</a></p>
+      <p><a href="https://x.com/LiquidLogicX">@LiquidLogicX on X</a></p>
+    </div>
+  </div>
+</footer>
+
+<script>
+document.querySelectorAll('button.copy').forEach(function(b){
+  b.addEventListener('click',function(){
+    var v=b.getAttribute('data-copy');
+    function done(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy'},1600)}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(v).then(done,function(){prompt('Copy the contract address:',v)})}
+    else{prompt('Copy the contract address:',v)}
+  });
+});
+</script>
+</body>
+</html>
