@@ -1,12 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import {
   endpointShortLabel,
   eventTypeLabel,
   fetchLedgerLatest,
-  isNonPaymentType,
   isSelfTestReason,
   paymentBasescan,
   shortAddr,
@@ -14,70 +12,55 @@ import {
   type LedgerLatest,
 } from "@/lib/ledger";
 
-function detailFor(e: LedgerEventRow): { label: string; title?: string } {
+function formatUtcShort(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleString("en-US", {
+    timeZone: "UTC",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+}
+
+function isLaunchGenesisReset(e: LedgerEventRow): boolean {
+  return e.message === "LAUNCH_GENESIS_RESET" || e.reason === "LAUNCH_GENESIS_RESET";
+}
+
+/** Public destination column — never surface internal note reason strings. */
+function destinationFor(e: LedgerEventRow): { label: string; title?: string } {
   if (e.endpoint) {
     return { label: endpointShortLabel(e.endpoint), title: e.endpoint };
   }
-  if (e.message) return { label: e.message };
+  if (e.type === "top_up") return { label: "Treasurer wallet" };
+  if (e.type === "note") {
+    if (isLaunchGenesisReset(e)) {
+      return { label: "Ledger reset for launch" };
+    }
+    return { label: "—" };
+  }
   if (e.error) return { label: e.error };
   if (e.holdId) return { label: `hold ${e.holdId}` };
-  if (e.walletAddress) return { label: e.walletAddress };
-  return { label: e.reason ?? "—" };
+  if (e.walletAddress) return { label: shortAddr(e.walletAddress), title: e.walletAddress };
+  // Do not fall through to e.reason for public UI
+  return { label: "—" };
 }
 
-function EventRow({ e }: { e: LedgerEventRow }) {
-  const type = e.type || "payment";
-  const nonPay = isNonPaymentType(type) || type !== "payment";
-  const href = paymentBasescan(e);
-  const amount =
-    e.amountUsdc != null && e.amountUsdc !== ""
-      ? `${e.amountUsdc} USDC`
-      : null;
-
-  return (
-    <li className={`ledger-event ${nonPay ? `ledger-event--${type}` : "ledger-event--payment"}`}>
-      <div className="ledger-event-meta">
-        <span className={`ledger-type-badge ledger-type-badge--${type}`}>
-          {eventTypeLabel(type)}
-        </span>
-        <time className="muted small mono" dateTime={e.timestamp}>
-          {e.timestamp}
-        </time>
-      </div>
-      <div className="ledger-event-body">
-        {amount && type === "payment" ? (
-          <strong>{amount}</strong>
-        ) : amount && type !== "payment" ? (
-          <span className="muted">{amount}</span>
-        ) : null}
-        {type === "payment" && isSelfTestReason(e.reason) ? (
-          <span className="tag-self-test">Self-test</span>
-        ) : null}
-        {amount && type === "payment" ? " → " : amount ? " · " : null}
-        {(() => {
-          const d = detailFor(e);
-          return (
-            <span className="endpoint-label" title={d.title}>
-              {d.label}
-            </span>
-          );
-        })()}
-      </div>
-      {e.reason && type !== "payment" ? (
-        <p className="muted small ledger-event-reason">{e.reason}</p>
-      ) : null}
-      {href ? (
-        <a href={href} rel="noopener noreferrer" target="_blank">
-          BaseScan {e.txHash ? shortAddr(e.txHash) : "tx"}
-        </a>
-      ) : type === "payment" ? (
-        <p className="muted small">No transaction hash — not counted as settled spend.</p>
-      ) : null}
-    </li>
-  );
+function amountFor(e: LedgerEventRow): string {
+  if (e.amountUsdc != null && e.amountUsdc !== "") {
+    return `${e.amountUsdc} USDC`;
+  }
+  return "—";
 }
 
-export function LedgerLive() {
+type Props = {
+  /** Compact home-section mode vs full /ledger page */
+  variant?: "section" | "page";
+};
+
+export function LedgerLive({ variant = "section" }: Props) {
   const [latest, setLatest] = useState<LedgerLatest | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -105,84 +88,148 @@ export function LedgerLive() {
     void load();
   }, [load]);
 
-  const events: LedgerEventRow[] =
-    latest?.recentEvents?.length
-      ? latest.recentEvents
-      : (latest?.recentPayments ?? []).map((p) => ({
-          ...p,
-          type: p.type ?? "payment",
-        }));
+  const events: LedgerEventRow[] = latest?.recentEvents?.length
+    ? latest.recentEvents
+    : (latest?.recentPayments ?? []).map((p) => ({
+        ...p,
+        type: p.type ?? "payment",
+      }));
 
-  const nonPayments = events.filter((e) => (e.type ?? "payment") !== "payment");
-  const payments = events.filter((e) => (e.type ?? "payment") === "payment");
+  // Prefer payments + top-ups for the table; keep all events on page variant
+  const filtered =
+    variant === "section"
+      ? events.filter((e) => {
+          const t = e.type ?? "payment";
+          return t === "payment" || t === "top_up";
+        })
+      : events;
+
+  // Newest first (same order as the home ledger panel expects)
+  const rows = [...filtered].sort((a, b) => {
+    const ta = Date.parse(a.timestamp);
+    const tb = Date.parse(b.timestamp);
+    if (Number.isNaN(ta) && Number.isNaN(tb)) return 0;
+    if (Number.isNaN(ta)) return 1;
+    if (Number.isNaN(tb)) return -1;
+    return tb - ta;
+  });
+
+  const updated = latest?.generatedAt
+    ? formatUtcShort(latest.generatedAt) + " UTC"
+    : "—";
 
   return (
-    <>
-      <section className="card">
-        <div className="ledger-summary-head">
-          <h2>Summary</h2>
-          <button type="button" className="btn btn-ghost ledger-refresh" onClick={() => void load()}>
-            Refresh
-          </button>
+    <div className="ledger-live" style={{ minWidth: 0 }}>
+      <div className="summary">
+        <div>
+          <span>Payments</span>
+          <strong>{latest?.totalPayments ?? (loading ? "…" : 0)}</strong>
         </div>
-        {loading && !latest ? (
-          <p className="muted">Loading live ledger…</p>
-        ) : error && !latest ? (
-          <p className="muted">{error}</p>
-        ) : latest ? (
-          <ul>
-            <li>Generated: {latest.generatedAt ?? "—"}</li>
-            <li>Events: {latest.totalEvents ?? 0}</li>
-            <li>Payments: {latest.totalPayments ?? 0}</li>
-            <li>Approx USDC paid: {latest.totalPaidUsdcApprox ?? 0}</li>
-            {latest.walletAddress ? (
-              <li>
-                Wallet:{" "}
-                <a
-                  href={`https://basescan.org/address/${latest.walletAddress}`}
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  {latest.walletAddress}
-                </a>
-              </li>
-            ) : null}
-          </ul>
-        ) : (
-          <p className="muted">No published summary yet.</p>
-        )}
-        <p>
-          <Link href={`/ledger/latest.json?t=${Date.now()}`}>latest.json</Link> ·{" "}
-          <a href="/ledger/index.html">Daily HTML</a>
-        </p>
-        <p className="muted small">
-          Live fetch with cache bypass — Liquid Logic X public proof of operating spend.
-        </p>
-      </section>
-
-      <section className="card">
-        <h2>Recent activity</h2>
-        <p className="muted small">
-          Payments require a BaseScan hash. Holds, denials, expiries, and freeze
-          events are shown as their own types — never as fake payments.
-        </p>
-        <ul className="ledger-event-list">
-          {events.length ? (
-            events.map((e, i) => (
-              <EventRow key={`${e.type}-${e.timestamp}-${i}`} e={e} />
-            ))
-          ) : (
-            <li className="muted">None yet.</li>
-          )}
-        </ul>
-        {nonPayments.length > 0 || payments.length > 0 ? (
-          <p className="muted small">
-            Showing {payments.length} payment
-            {payments.length === 1 ? "" : "s"} and {nonPayments.length} other
-            event{nonPayments.length === 1 ? "" : "s"} in this window.
-          </p>
+        <div>
+          <span>Total paid</span>
+          <strong>
+            {latest
+              ? `${Number(latest.totalPaidUsdcApprox ?? 0).toLocaleString(undefined, { maximumFractionDigits: 6 })} USDC`
+              : loading
+                ? "…"
+                : "—"}
+          </strong>
+        </div>
+        <div>
+          <span>Last updated</span>
+          <strong>{loading && !latest ? "…" : updated}</strong>
+        </div>
+        {variant === "page" ? (
+          <div>
+            <button
+              type="button"
+              className="btn secondary"
+              onClick={() => void load()}
+            >
+              Refresh
+            </button>
+          </div>
         ) : null}
-      </section>
-    </>
+      </div>
+
+      {error && !latest ? (
+        <p className="note">{error}</p>
+      ) : (
+        <div className="tablewrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Time (UTC)</th>
+                <th>Type</th>
+                <th>Destination</th>
+                <th className="num">Amount</th>
+                <th>Transaction</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.length === 0 && !loading ? (
+                <tr>
+                  <td colSpan={5}>No ledger events yet.</td>
+                </tr>
+              ) : null}
+              {rows.map((e, i) => {
+                const type = e.type || "payment";
+                const dest = destinationFor(e);
+                const href = paymentBasescan(e);
+                return (
+                  <tr key={`${type}-${e.timestamp}-${i}`}>
+                    <td>
+                      <time dateTime={e.timestamp}>
+                        {formatUtcShort(e.timestamp)}
+                      </time>
+                    </td>
+                    <td>
+                      {eventTypeLabel(type)}
+                      {type === "payment" && isSelfTestReason(e.reason) ? (
+                        <span className="tag">Self-test</span>
+                      ) : null}
+                    </td>
+                    <td title={dest.title}>{dest.label}</td>
+                    <td className="num">{amountFor(e)}</td>
+                    <td>
+                      {href ? (
+                        <a
+                          className="mono"
+                          href={href}
+                          rel="noopener noreferrer"
+                          target="_blank"
+                        >
+                          {e.txHash ? shortAddr(e.txHash) : "tx"}
+                        </a>
+                      ) : type === "payment" ? (
+                        <span className="muted">No hash</span>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <p className="note ledger-reset-note">
+        Ledger reset for launch on September 15, 2026. Earlier test payments are
+        listed in the changelog.
+      </p>
+      <p className="note">
+        Live from{" "}
+        <a href="/ledger/latest.json">latest.json</a>
+        {variant === "section" ? (
+          <>
+            {" · "}
+            <a href="/ledger">Full ledger</a>
+          </>
+        ) : null}
+        .
+      </p>
+    </div>
   );
 }
