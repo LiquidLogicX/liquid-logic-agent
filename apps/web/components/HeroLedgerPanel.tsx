@@ -1,5 +1,9 @@
 "use client";
 
+/**
+ * Compact live ledger summary (optional hero/aside use).
+ * Institutional home uses PolicyTermsheet in the hero; this stays for reuse.
+ */
 import { useEffect, useState } from "react";
 import {
   type LedgerLatest,
@@ -46,64 +50,56 @@ export function HeroLedgerPanel() {
 
   return (
     <aside
-      className={`hero-panel${isEmpty ? " hero-panel--empty" : ""}`}
+      className={`termsheet${isEmpty ? " hero-panel--empty" : ""}`}
       aria-label="Live ledger summary"
     >
-      <p className="hero-panel-kicker">Live from ledger</p>
-      <div className={`hero-panel-grid${isEmpty ? " hero-panel-grid--solo" : ""}`}>
-        <div>
-          <span className="kpi-label">Total USDC spent</span>
-          <span className="kpi-value">
-            {Number(latest.totalPaidUsdcApprox ?? 0).toLocaleString(undefined, {
-              maximumFractionDigits: 6,
-            })}
-          </span>
-        </div>
-        <div>
-          <span className="kpi-label">Payments</span>
-          <span className="kpi-value">{totalPayments}</span>
-        </div>
-      </div>
+      <h2>Live from ledger</h2>
+      <p className="asof">Published at liquidlogicx.com/ledger/latest.json</p>
+      <dl className="terms">
+        <dt>Total USDC spent</dt>
+        <dd>
+          {Number(latest.totalPaidUsdcApprox ?? 0).toLocaleString(undefined, {
+            maximumFractionDigits: 6,
+          })}
+        </dd>
+        <dt>Payments</dt>
+        <dd>{totalPayments}</dd>
+      </dl>
       {isEmpty ? (
-        <p className="hero-panel-empty-msg">{EMPTY_COPY}</p>
+        <p className="src">{EMPTY_COPY}</p>
       ) : (
-        <div className="hero-panel-recent">
-          <span className="kpi-label">Latest payments</span>
-          <ul className="hero-panel-payment-list">
-            {recentPayments.map((p, i) => {
-              const scan = paymentBasescan(p);
-              const label = p.endpoint ? endpointShortLabel(p.endpoint) : null;
-              return (
-                <li key={`${p.txHash ?? p.timestamp}-${i}`}>
-                  <p className="hero-panel-payment-line">
-                    <strong>{p.amountUsdc} USDC</strong>
-                    {isSelfTestReason(p.reason) ? (
-                      <span className="tag-self-test">Self-test</span>
-                    ) : null}
-                    {label ? (
-                      <>
-                        {" "}
-                        →{" "}
-                        <span className="endpoint-label" title={p.endpoint}>
-                          {label}
-                        </span>
-                      </>
-                    ) : null}
-                  </p>
-                  {scan ? (
-                    <a href={scan} rel="noopener noreferrer" target="_blank">
-                      BaseScan {p.txHash ? shortAddr(p.txHash) : "tx"}
-                    </a>
-                  ) : (
-                    <p className="muted small">
-                      No transaction hash recorded yet.
-                    </p>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+        <ul className="hero-panel-payment-list">
+          {recentPayments.map((p, i) => {
+            const scan = paymentBasescan(p);
+            const label = p.endpoint ? endpointShortLabel(p.endpoint) : null;
+            return (
+              <li key={`${p.txHash ?? p.timestamp}-${i}`}>
+                <p className="hero-panel-payment-line">
+                  <strong>{p.amountUsdc} USDC</strong>
+                  {isSelfTestReason(p.reason) ? (
+                    <span className="tag">Self-test</span>
+                  ) : null}
+                  {label ? (
+                    <>
+                      {" "}
+                      →{" "}
+                      <span className="endpoint-label" title={p.endpoint}>
+                        {label}
+                      </span>
+                    </>
+                  ) : null}
+                </p>
+                {scan ? (
+                  <a href={scan} rel="noopener noreferrer" target="_blank">
+                    BaseScan {p.txHash ? shortAddr(p.txHash) : "tx"}
+                  </a>
+                ) : (
+                  <p className="note">No transaction hash recorded yet.</p>
+                )}
+              </li>
+            );
+          })}
+        </ul>
       )}
     </aside>
   );

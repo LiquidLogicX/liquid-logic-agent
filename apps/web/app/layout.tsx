@@ -1,42 +1,56 @@
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { SiteFooter } from "@/components/SiteFooter";
+import { SiteHeader } from "@/components/SiteHeader";
+import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
-export const metadata = {
-  title: "Liquid Logic Agent",
-  description:
-    "Autonomous USDC operating spend on Base via x402 — services only, public ledger.",
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: SITE_TITLE,
+    template: "%s — Liquid Logic X",
+  },
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    type: "website",
+    url: SITE_URL,
+    siteName: "Liquid Logic X",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "Liquid Logic X",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: ["/og.png"],
+  },
+  icons: {
+    icon: [{ url: "/favicon.png", type: "image/png" }],
+    apple: [{ url: "/apple-touch-icon.png" }],
+  },
 };
+
+const themeBoot = `(function(){try{var t=localStorage.getItem("llx-theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t);}else{document.documentElement.removeAttribute("data-theme");}}catch(e){}})();`;
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeBoot }} />
+      </head>
       <body>
-        <header className="site-header">
-          <a className="logo" href="/">
-            Liquid Logic <span className="x">X</span>
-          </a>
-          <nav>
-            <a href="/#ledger-live">Ledger</a>
-            <a href="/#changelog">Changelog</a>
-            <a href="/plans">Plans</a>
-            <a href="/docs">Endpoint docs</a>
-            <a href="/#contact">Contact</a>
-          </nav>
-        </header>
+        <SiteHeader />
         {children}
-        <footer className="site-footer">
-          <p>
-            USDC on Base for x402 services. $LLX is the Liquid Logic Agent token
-            on Virtuals (Base). It is not an investment product — no returns,
-            yield, buybacks, or price support are promised. Plans describes
-            intent, not a commitment.
-          </p>
-          <p className="site-footer-x">
-            <a href="https://x.com/LiquidLogicX" rel="me noopener noreferrer">
-              @LiquidLogicX
-            </a>
-          </p>
-        </footer>
+        <SiteFooter />
       </body>
     </html>
   );

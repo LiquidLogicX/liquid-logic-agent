@@ -1,21 +1,44 @@
-const auditUrl =
-  process.env.NEXT_PUBLIC_AUDIT_URL ?? "https://audit.liquidlogicx.com";
+import type { Metadata } from "next";
+import { AUDIT_URL } from "@/lib/site";
+
+export const metadata: Metadata = {
+  title: "Endpoint docs",
+  description:
+    "x402 allowance and audit endpoints — fees in USDC on Base via Coinbase CDP.",
+  openGraph: {
+    title: "Endpoint docs — Liquid Logic X",
+    description:
+      "x402 allowance and audit endpoints — fees in USDC on Base via Coinbase CDP.",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Liquid Logic X" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Endpoint docs — Liquid Logic X",
+    description:
+      "x402 allowance and audit endpoints — fees in USDC on Base via Coinbase CDP.",
+    images: ["/og.png"],
+  },
+};
 
 export default function DocsPage() {
   return (
     <main className="page">
       <h1>Endpoint docs</h1>
+      <p className="page-lede">
+        Paid per call over x402. No account or API key. Settled in USDC on Base
+        through the Coinbase CDP facilitator.
+      </p>
 
-      <section className="card">
+      <section className="docs-card">
         <h2>Allowance pre-flight</h2>
         <p>
           <code>
-            GET|POST {auditUrl}/api/allowance
+            GET|POST {AUDIT_URL}/api/allowance
           </code>
         </p>
         <ul>
           <li>
-            Price: <strong>$0.001 USDC</strong> (cheaper than audit)
+            Fee: <strong>0.001 USDC</strong>
           </li>
           <li>
             Network: Base (<code>eip155:8453</code>)
@@ -30,27 +53,27 @@ export default function DocsPage() {
             remaining + allowlist summary.
           </li>
           <li>
-            Policy source: published treasurer allowlist / max per payment /
-            UTC daily cap (same rules as the treasurer CLI). No per-endpoint cap.
+            Policy source: published treasurer allowlist / max per payment / UTC
+            daily cap (same rules as the treasurer CLI). No per-endpoint cap.
           </li>
         </ul>
         <pre>{`# Before paying an endpoint
-GET ${auditUrl}/api/allowance?wallet=0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D&endpoint=https://audit.liquidlogicx.com/api/audit
+GET ${AUDIT_URL}/api/allowance?wallet=0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D&endpoint=https://audit.liquidlogicx.com/api/audit
 
 # Wallet-level remaining + allowlist
-GET ${auditUrl}/api/allowance?wallet=0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D`}</pre>
+GET ${AUDIT_URL}/api/allowance?wallet=0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D`}</pre>
       </section>
 
-      <section className="card">
+      <section className="docs-card">
         <h2>Audit my agent wallet</h2>
         <p>
           <code>
-            GET|POST {auditUrl}/api/audit
+            GET|POST {AUDIT_URL}/api/audit
           </code>
         </p>
         <ul>
           <li>
-            Price: <strong>$0.05 USDC</strong>
+            Fee: <strong>0.05 USDC</strong>
           </li>
           <li>
             Network: Base (<code>eip155:8453</code>)
@@ -60,19 +83,19 @@ GET ${auditUrl}/api/allowance?wallet=0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D`
           <li>Output: structured spend summary (destinations + BaseScan links)</li>
         </ul>
         <pre>{`# Query
-GET ${auditUrl}/api/audit?wallet=0xYourAgent
+GET ${AUDIT_URL}/api/audit?wallet=0xYourAgent
 
 # JSON body
-POST ${auditUrl}/api/audit
+POST ${AUDIT_URL}/api/audit
 { "wallet": "0xYourAgent" }`}</pre>
-        <p className="muted">
+        <p className="note">
           Client example: <code>apps/audit/scripts/paid-audit-call.ts</code>
         </p>
       </section>
 
-      <section className="card">
+      <section className="docs-card">
         <h2>Treasurer (internal)</h2>
-        <p className="muted">
+        <p className="note">
           Pays allowlisted x402 URLs with USDC. CLI:{" "}
           <code>set-allowance</code>, <code>top-up</code>, <code>revoke</code>,{" "}
           <code>pay</code>, <code>print-wallet-address</code>,{" "}
