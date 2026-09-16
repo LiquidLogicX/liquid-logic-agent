@@ -25,16 +25,27 @@ function formatUtcShort(iso: string): string {
   });
 }
 
+function isLaunchGenesisReset(e: LedgerEventRow): boolean {
+  return e.message === "LAUNCH_GENESIS_RESET" || e.reason === "LAUNCH_GENESIS_RESET";
+}
+
+/** Public destination column — never surface internal note reason strings. */
 function destinationFor(e: LedgerEventRow): { label: string; title?: string } {
   if (e.endpoint) {
     return { label: endpointShortLabel(e.endpoint), title: e.endpoint };
   }
   if (e.type === "top_up") return { label: "Treasurer wallet" };
-  if (e.message) return { label: e.message };
+  if (e.type === "note") {
+    if (isLaunchGenesisReset(e)) {
+      return { label: "Ledger reset for launch" };
+    }
+    return { label: "—" };
+  }
   if (e.error) return { label: e.error };
   if (e.holdId) return { label: `hold ${e.holdId}` };
   if (e.walletAddress) return { label: shortAddr(e.walletAddress), title: e.walletAddress };
-  return { label: e.reason ?? "—" };
+  // Do not fall through to e.reason for public UI
+  return { label: "—" };
 }
 
 function amountFor(e: LedgerEventRow): string {
@@ -85,13 +96,23 @@ export function LedgerLive({ variant = "section" }: Props) {
       }));
 
   // Prefer payments + top-ups for the table; keep all events on page variant
-  const rows =
+  const filtered =
     variant === "section"
       ? events.filter((e) => {
           const t = e.type ?? "payment";
           return t === "payment" || t === "top_up";
         })
       : events;
+
+  // Newest first (same order as the home ledger panel expects)
+  const rows = [...filtered].sort((a, b) => {
+    const ta = Date.parse(a.timestamp);
+    const tb = Date.parse(b.timestamp);
+    if (Number.isNaN(ta) && Number.isNaN(tb)) return 0;
+    if (Number.isNaN(ta)) return 1;
+    if (Number.isNaN(tb)) return -1;
+    return tb - ta;
+  });
 
   const updated = latest?.generatedAt
     ? formatUtcShort(latest.generatedAt) + " UTC"
