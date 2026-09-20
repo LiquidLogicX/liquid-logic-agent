@@ -41,3 +41,8 @@ Artifacts land in `acceptance/`. Settled payments append to repo-root `data/ledg
 `/api/audit` unions (1) local `public/ledger` + `data/ledger.jsonl`, (2) the live published ledger at `LEDGER_REMOTE_BASE_URL` (default `https://liquidlogicx.com`), and (3) the current settlement when the header is present. Events are keyed by tx hash so a sparse Render sync cannot wipe history twice.
 
 Bazaar `output.example` for `/api/audit` is derived at module load from local ledger files (`public/ledger` + `data/ledger.jsonl`) via `buildAuditOutputExample()` — not hand-typed counts. For `/api/allowance` see `lib/allowance-output-example.ts`. Check with `npm run check-example` and `npm run check-allowance`.
+
+
+## Arc x402 rail (optional)
+
+Set `ENABLE_X402_ARC=1` to advertise a second v2 accept for USDC on Arc (`eip155:5042`) via Circle Gateway (`GatewayWalletBatched`). Default **off** — Base CDP path and 402 shape stay unchanged. Arc payTo defaults to `0xe9bf3457f1e59ffa507141e64e8eb259f966c2c2` (`ARC_PAY_TO_EVM`). See `acceptance/DRY_RUN_ARC.md`.

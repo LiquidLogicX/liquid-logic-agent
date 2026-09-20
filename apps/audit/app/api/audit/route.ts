@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withX402FromHTTPServer } from "@x402/next";
-import { AUDIT_PRICE_USDC, basescanTxUrl, type PaymentEvent } from "@liquid-logic/shared";
+import {
+  AUDIT_PRICE_USDC,
+  explorerTxUrl,
+  NETWORK_BASE,
+  type PaymentEvent,
+} from "@liquid-logic/shared";
 import {
   buildSpendSummary,
   loadLedgerEvents,
 } from "@/lib/spend-summary";
 import { getAuditX402Server } from "@/lib/x402-server";
+import { withX402DualRail } from "@/lib/with-x402-dual";
 
 function parseWallet(req: NextRequest): string | null {
   const url = new URL(req.url);
@@ -30,6 +35,7 @@ function decodePaymentResponse(raw: string): {
   transaction?: string;
   txHash?: string;
   transactionHash?: string;
+  network?: string;
 } | null {
   const candidates = [raw];
   try {
@@ -45,6 +51,7 @@ function decodePaymentResponse(raw: string): {
         transaction?: string;
         txHash?: string;
         transactionHash?: string;
+        network?: string;
       };
     } catch {
       /* try next */
@@ -70,15 +77,19 @@ function settlementFromRequest(
   const payer = parsed.payer;
   if (payer && payer.toLowerCase() !== wallet.toLowerCase()) return null;
   const url = new URL(req.url);
+  const network =
+    parsed.network === "eip155:5042" || parsed.network === "eip155:8453"
+      ? parsed.network
+      : NETWORK_BASE;
   return {
     type: "payment",
     timestamp: new Date().toISOString(),
     endpoint: `${url.origin}${url.pathname}`,
     amountUsdc: AUDIT_PRICE_USDC,
     asset: "USDC",
-    network: "eip155:8453",
+    network,
     txHash: tx,
-    basescanUrl: basescanTxUrl(tx),
+    basescanUrl: explorerTxUrl(network, tx),
     walletAddress: wallet,
     reason: "paid audit call",
   };
@@ -106,12 +117,15 @@ async function handleAudit(req: NextRequest): Promise<NextResponse> {
 
 /**
  * CDP createX402Server returns an x402HTTPResourceServer — use
- * withX402FromHTTPServer (not withX402, which expects x402ResourceServer).
+ * withX402DualRail (Base CDP + optional Arc Circle Gateway when ENABLE_X402_ARC).
  */
 async function paidHandler(req: NextRequest): Promise<NextResponse> {
   try {
     const server = await getAuditX402Server();
-    const wrapped = withX402FromHTTPServer(handleAudit, server);
+    const wrapped = withX402DualRail(handleAudit, server, {
+      label: "$0.05",
+      amountUsdc: AUDIT_PRICE_USDC,
+    });
     return wrapped(req);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
