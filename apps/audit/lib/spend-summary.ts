@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import {
   atomicToUsdc,
-  basescanTxUrl,
+  explorerTxUrl,
   isPaymentEvent,
   mergeLedgerEvents,
   parseLedgerJsonl,
@@ -221,7 +221,7 @@ export function buildSpendSummary(
     examples: list.slice(-5).map((x) => ({
       amountUsdc: x.amountUsdc,
       txHash: x.txHash,
-      basescanUrl: x.txHash ? basescanTxUrl(x.txHash) : x.basescanUrl,
+      basescanUrl: x.txHash ? explorerTxUrl(x.network, x.txHash) : x.basescanUrl,
       timestamp: x.timestamp,
     })),
   }));
@@ -242,7 +242,7 @@ export function buildSpendSummary(
       endpoint: resourceEndpoint(p.endpoint),
       amountUsdc: p.amountUsdc,
       txHash: p.txHash,
-      basescanUrl: p.txHash ? basescanTxUrl(p.txHash) : p.basescanUrl,
+      basescanUrl: p.txHash ? explorerTxUrl(p.network, p.txHash) : p.basescanUrl,
       timestamp: p.timestamp,
       reason: p.reason,
     })),

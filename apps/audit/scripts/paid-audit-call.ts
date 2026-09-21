@@ -15,7 +15,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { CdpX402Client } from "@coinbase/cdp-sdk/x402";
 import { wrapFetchWithPayment } from "@x402/fetch";
-import { AUDIT_PRICE_USDC, basescanTxUrl } from "@liquid-logic/shared";
+import { AUDIT_PRICE_USDC, explorerTxUrl, NETWORK_BASE } from "@liquid-logic/shared";
 
 function findRepoRoot(): string {
   const markers = ["apps/treasurer", "packages/ledger-publisher"];
@@ -57,9 +57,12 @@ function canonicalLedgerPath(): string {
   return abs;
 }
 
-function extractTxHash(res: Response): string | undefined {
+function extractSettlement(res: Response): {
+  txHash?: string;
+  network?: string;
+} {
   const raw = res.headers.get("payment-response") ?? res.headers.get("x-payment-response");
-  if (!raw) return undefined;
+  if (!raw) return {};
   const candidates = [raw];
   try {
     const pad = "=".repeat((4 - (raw.length % 4)) % 4);
@@ -73,14 +76,17 @@ function extractTxHash(res: Response): string | undefined {
         transaction?: string;
         txHash?: string;
         transactionHash?: string;
+        network?: string;
       };
       const tx = parsed.transaction ?? parsed.txHash ?? parsed.transactionHash;
-      if (tx && /^0x[a-fA-F0-9]{64}$/.test(tx)) return tx;
+      if (tx && /^0x[a-fA-F0-9]{64}$/.test(tx)) {
+        return { txHash: tx, network: parsed.network };
+      }
     } catch {
       /* try next */
     }
   }
-  return undefined;
+  return {};
 }
 
 function appendLedgerPayment(opts: {
@@ -88,6 +94,7 @@ function appendLedgerPayment(opts: {
   amountUsdc: string;
   txHash?: string;
   walletAddress: string;
+  network?: string;
 }): void {
   const abs = canonicalLedgerPath();
   fs.mkdirSync(path.dirname(abs), { recursive: true });
@@ -105,9 +112,11 @@ function appendLedgerPayment(opts: {
     endpoint: opts.endpoint,
     amountUsdc: opts.amountUsdc,
     asset: "USDC",
-    network: "eip155:8453",
+    network: opts.network ?? NETWORK_BASE,
     txHash: opts.txHash,
-    basescanUrl: opts.txHash ? basescanTxUrl(opts.txHash) : undefined,
+    basescanUrl: opts.txHash
+      ? explorerTxUrl(opts.network ?? NETWORK_BASE, opts.txHash)
+      : undefined,
     walletAddress: opts.walletAddress,
     reason: "paid audit call",
   };
@@ -148,11 +157,12 @@ async function main(): Promise<void> {
   console.log(text);
   console.error(`Wrote ${file}`);
   if (res.status >= 400) process.exit(2);
-  const txHash = extractTxHash(res);
+  const settled = extractSettlement(res);
   appendLedgerPayment({
     endpoint: `${baseUrl}/api/audit`,
     amountUsdc: AUDIT_PRICE_USDC,
-    txHash,
+    txHash: settled.txHash,
+    network: settled.network,
     walletAddress: evmAddress,
   });
 }

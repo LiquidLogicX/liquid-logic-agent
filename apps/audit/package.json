@@ -9,20 +9,22 @@
     "paid-call": "node --import tsx scripts/paid-audit-call.ts",
     "paid-allowance": "node --import tsx scripts/paid-allowance-call.ts",
     "check-example": "LEDGER_SKIP_REMOTE=1 node --import tsx scripts/check-example.ts",
-    "check-allowance": "LEDGER_SKIP_REMOTE=1 node --import tsx scripts/check-allowance.ts"
+    "check-allowance": "LEDGER_SKIP_REMOTE=1 node --import tsx scripts/check-allowance.ts",
+    "check-arc": "node --import tsx scripts/check-arc-x402.ts"
   },
   "dependencies": {
+    "@circle-fin/x402-batching": "^3.5.0",
     "@coinbase/cdp-sdk": "^1.55.0",
     "@liquid-logic/shared": "*",
     "@x402/core": "^2.25.0",
     "@x402/evm": "^2.25.0",
+    "@x402/extensions": "^2.25.0",
     "@x402/fetch": "^2.25.0",
     "@x402/next": "^2.25.0",
     "@x402/svm": "^2.25.0",
     "next": "^16.3.5",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "@x402/extensions": "^2.25.0"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",
