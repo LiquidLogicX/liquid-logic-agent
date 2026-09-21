@@ -55,8 +55,9 @@ export interface PaymentEvent extends LedgerEventBase {
   endpoint: string;
   amountUsdc: string;
   asset: "USDC";
-  network: "eip155:8453" | "eip155:84532";
+  network: "eip155:8453" | "eip155:84532" | "eip155:5042";
   txHash?: string;
+  /** Explorer URL (BaseScan or Arc explorer); name kept for back-compat. */
   basescanUrl?: string;
   /** Present when payment followed an operator-approved hold. */
   holdId?: string;
@@ -87,7 +88,7 @@ export interface HeldEvent extends LedgerEventBase {
   endpoint: string;
   amountUsdc: string;
   asset?: "USDC";
-  network?: "eip155:8453" | "eip155:84532";
+  network?: "eip155:8453" | "eip155:84532" | "eip155:5042";
 }
 
 /** Operator deny of a pending hold. */
@@ -160,7 +161,15 @@ export function normalizeLedgerEvent(raw: unknown): LedgerEvent | null {
       ? obj.type
       : DEFAULT_LEDGER_EVENT_TYPE;
   if (typeof obj.timestamp !== "string" || !obj.timestamp) return null;
-  return { ...obj, type } as LedgerEvent;
+  const next: Record<string, unknown> = { ...obj, type };
+  // Backfill missing network on spend / top-up rows as Base mainnet (pre-Arc ledger).
+  if (
+    (type === "payment" || type === "top_up" || type === "held") &&
+    (next.network == null || next.network === "")
+  ) {
+    next.network = "eip155:8453";
+  }
+  return next as unknown as LedgerEvent;
 }
 
 /** Stable identity for union-merge (tx hash when present; otherwise full row). */
