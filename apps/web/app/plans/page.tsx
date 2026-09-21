@@ -9,14 +9,14 @@ export const metadata: Metadata = {
     title: "Research — Liquid Logic X",
     description:
       "What is live on Base, what is built on Sepolia, and the intended direction for confidential spend caps.",
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Liquid Logic X" }],
+    images: [{ url: "/llx-avatar.png", width: 400, height: 400, alt: "Liquid Logic X" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Research — Liquid Logic X",
     description:
       "What is live on Base, what is built on Sepolia, and the intended direction for confidential spend caps.",
-    images: ["/og.png"],
+    images: ["/llx-avatar.png"],
   },
 };
 

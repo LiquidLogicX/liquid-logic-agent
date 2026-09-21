@@ -137,18 +137,9 @@ header.top .top-inner {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  border: 1.5px solid var(--violet);
-  display: grid;
-  place-items: center;
-  font: 600 10px/1 var(--sans);
-  letter-spacing: 0.02em;
-  color: var(--ink);
+  display: block;
   flex-shrink: 0;
-}
-
-.mark b {
-  color: var(--violet);
-  font-weight: 600;
+  object-fit: cover;
 }
 
 nav.primary {

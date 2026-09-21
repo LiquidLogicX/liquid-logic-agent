@@ -14,9 +14,14 @@ export function SiteHeader() {
     <header className="top">
       <div className="wrap top-inner">
         <a className="brand" href="/">
-          <span className="mark" aria-hidden="true">
-            LL<b>X</b>
-          </span>
+          <img
+            className="mark"
+            src="/llx-avatar.svg"
+            width={30}
+            height={30}
+            alt=""
+            aria-hidden="true"
+          />
           Liquid Logic X
         </a>
         <nav className="primary" aria-label="Primary">

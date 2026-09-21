@@ -138,6 +138,62 @@ export function isSelfTestReason(reason: string | undefined): boolean {
   return reason === "self-test";
 }
 
+
+export function isLaunchGenesisReset(e: {
+  message?: string;
+  reason?: string;
+}): boolean {
+  return e.message === "LAUNCH_GENESIS_RESET" || e.reason === "LAUNCH_GENESIS_RESET";
+}
+
+/** Sum of top_up amountUsdc values across recentEvents (display-only). */
+export function sumTopUpUsdc(events: LedgerEventRow[] | undefined): number {
+  if (!events?.length) return 0;
+  let sum = 0;
+  for (const e of events) {
+    if (e.type !== "top_up") continue;
+    const n = Number(e.amountUsdc);
+    if (!Number.isNaN(n)) sum += n;
+  }
+  return sum;
+}
+
+/** ISO timestamp of LAUNCH_GENESIS_RESET note, if present in events. */
+export function operatingSinceIso(
+  events: LedgerEventRow[] | undefined,
+): string | null {
+  if (!events?.length) return null;
+  const hit = events.find((e) => isLaunchGenesisReset(e));
+  return hit?.timestamp ?? null;
+}
+
+/** Count payments with reason self-test in recentPayments / recentEvents. */
+export function countSelfTestPayments(
+  latest: LedgerLatest | null | undefined,
+): number {
+  if (!latest) return 0;
+  if (latest.recentEvents?.length) {
+    return latest.recentEvents.filter(
+      (e) => (e.type ?? "payment") === "payment" && isSelfTestReason(e.reason),
+    ).length;
+  }
+  return (latest.recentPayments ?? []).filter((p) =>
+    isSelfTestReason(p.reason),
+  ).length;
+}
+
+/** e.g. "1 (1 self-test)" when any self-tests are included in the total. */
+export function paymentsCountLabel(
+  totalPayments: number,
+  selfTestCount: number,
+): string {
+  if (selfTestCount > 0) {
+    const noun = selfTestCount === 1 ? "self-test" : "self-tests";
+    return `${totalPayments} (${selfTestCount} ${noun})`;
+  }
+  return String(totalPayments);
+}
+
 /** Cache-busting fetch for published ledger JSON (proof page must not serve stale CDN). */
 export async function fetchLedgerLatest(
   base = "",
