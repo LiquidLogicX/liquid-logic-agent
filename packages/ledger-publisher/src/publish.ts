@@ -9,6 +9,7 @@ import path from "node:path";
 import {
   atomicToUsdc,
   basescanTxUrl,
+  explorerTxUrl,
   isPaymentEvent,
   parseLedgerJsonl,
   usdcToAtomic,
@@ -27,9 +28,19 @@ function dayKey(iso: string): string {
 
 function withBasescan(e: LedgerEvent): LedgerEvent {
   if ("txHash" in e && e.txHash && !("basescanUrl" in e && e.basescanUrl)) {
-    return { ...e, basescanUrl: basescanTxUrl(e.txHash) } as LedgerEvent;
+    const network =
+      "network" in e && typeof e.network === "string" ? e.network : "eip155:8453";
+    return { ...e, basescanUrl: explorerTxUrl(network, e.txHash) } as LedgerEvent;
   }
   return e;
+}
+
+function txExplorerHref(e: LedgerEvent): string | null {
+  if (!("txHash" in e) || !e.txHash) return null;
+  const network =
+    "network" in e && typeof e.network === "string" ? e.network : "eip155:8453";
+  if ("basescanUrl" in e && e.basescanUrl) return String(e.basescanUrl);
+  return explorerTxUrl(network, e.txHash);
 }
 
 function escapeHtml(s: string): string {
@@ -43,9 +54,9 @@ function escapeHtml(s: string): string {
 function renderDayHtml(day: string, events: LedgerEvent[]): string {
   const rows = events
     .map((e) => {
-      const tx =
-        "txHash" in e && e.txHash
-          ? `<a href="${escapeHtml(basescanTxUrl(e.txHash))}" rel="noopener noreferrer">${escapeHtml(e.txHash.slice(0, 10))}…</a>`
+      const href = txExplorerHref(e);
+      const tx = href
+          ? `<a href="${escapeHtml(href)}" rel="noopener noreferrer">${escapeHtml(String((e as { txHash?: string }).txHash).slice(0, 10))}…</a>`
           : "—";
       const amount =
         "amountUsdc" in e && e.amountUsdc ? `${escapeHtml(String(e.amountUsdc))} USDC` : "—";
@@ -99,10 +110,10 @@ function renderDayHtml(day: string, events: LedgerEvent[]): string {
 </head>
 <body>
   <h1>Liquid Logic X — operating spend ledger — ${escapeHtml(day)}</h1>
-  <p class="note">USDC on Base for x402 services only. Every tx links to BaseScan when a hash exists. Not investment advice; no treasury-growth framing.</p>
+  <p class="note">USDC on Base (and Arc when present) for x402 services only. Every tx links to the network explorer when a hash exists. Not investment advice; no treasury-growth framing.</p>
   <table>
     <thead>
-      <tr><th>Time (UTC)</th><th>Type</th><th>Endpoint / detail</th><th>Amount</th><th>BaseScan</th><th>Reason</th></tr>
+      <tr><th>Time (UTC)</th><th>Type</th><th>Endpoint / detail</th><th>Amount</th><th>Explorer</th><th>Reason</th></tr>
     </thead>
     <tbody>
 ${rows || `<tr><td colspan="6">No events this day.</td></tr>`}
@@ -133,7 +144,7 @@ function renderSocialDraft(
     lines.push(`- No service payments recorded this day.`);
   } else {
     for (const p of payments) {
-      const url = p.basescanUrl ?? (p.txHash ? basescanTxUrl(p.txHash) : "(no tx yet)");
+      const url = p.basescanUrl ?? (p.txHash ? explorerTxUrl(p.network, p.txHash) : "(no tx yet)");
       lines.push(
         `- ${p.amountUsdc} USDC → ${p.endpoint}${p.txHash ? ` — ${url}` : ""}`,
       );
@@ -218,7 +229,7 @@ function main(): void {
     today,
     recentPayments: paymentsAll.slice(-20).map((p) => ({
       ...p,
-      basescanUrl: p.txHash ? basescanTxUrl(p.txHash) : p.basescanUrl,
+      basescanUrl: p.txHash ? explorerTxUrl(p.network, p.txHash) : p.basescanUrl,
     })),
     recentEvents: events.slice(-40).map((e) => {
       if ("txHash" in e && e.txHash) {
@@ -227,7 +238,12 @@ function main(): void {
           basescanUrl:
             "basescanUrl" in e && e.basescanUrl
               ? e.basescanUrl
-              : basescanTxUrl(e.txHash),
+              : explorerTxUrl(
+                  "network" in e && typeof e.network === "string"
+                    ? e.network
+                    : "eip155:8453",
+                  e.txHash,
+                ),
         };
       }
       return e;

@@ -50,3 +50,52 @@ export function basescanTxUrl(txHash: string): string {
   const h = txHash.startsWith("0x") ? txHash : `0x${txHash}`;
   return `${BASESCAN_TX}${h}`;
 }
+
+/** CAIP-2 Arc mainnet (Circle). Gas is USDC. */
+export const NETWORK_ARC = "eip155:5042" as const;
+
+/** Arc mainnet USDC (Circle native / Gateway asset, 6 decimals for x402). */
+export const USDC_ARC_MAINNET =
+  "0x3600000000000000000000000000000000000000" as const;
+
+/** Circle GatewayWalletBatched verifying contract (Arc + other Gateway rails). */
+export const ARC_GATEWAY_WALLET =
+  "0x77777777Dcc4d5A8B6E418Fd04D8997ef11000eE" as const;
+
+/**
+ * Dedicated OKX Arc rail payTo — NOT the Base treasurer (0xEA24…167D).
+ * Override with ARC_PAY_TO_EVM when needed.
+ */
+export const ARC_PAY_TO_DEFAULT =
+  "0xe9bf3457f1e59ffa507141e64e8eb259f966c2c2" as const;
+
+/** Official Arc Blockscout explorer (tx). */
+export const ARCSCAN_TX = "https://explorer.arc.io/tx/";
+export const ARCSCAN_ADDRESS = "https://explorer.arc.io/address/";
+
+export type PaymentNetwork =
+  | typeof NETWORK_BASE
+  | typeof NETWORK_BASE_SEPOLIA
+  | typeof NETWORK_ARC;
+
+export function arcscanTxUrl(txHash: string): string {
+  const h = txHash.startsWith("0x") ? txHash : `0x${txHash}`;
+  return `${ARCSCAN_TX}${h}`;
+}
+
+/**
+ * Explorer tx URL selected off CAIP-2 network.
+ * Missing / unknown network → BaseScan (legacy rows).
+ */
+export function explorerTxUrl(
+  network: string | undefined | null,
+  txHash: string,
+): string {
+  if (network === NETWORK_ARC || network === "eip155:5042") {
+    return arcscanTxUrl(txHash);
+  }
+  return basescanTxUrl(txHash);
+}
+
+/** Default ledger network when a historical row omits `network`. */
+export const LEDGER_NETWORK_BACKFILL = NETWORK_BASE;

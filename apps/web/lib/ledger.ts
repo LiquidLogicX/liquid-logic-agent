@@ -60,11 +60,20 @@ export function basescanAddress(addr: string): string {
 export function paymentBasescan(p: {
   basescanUrl?: string;
   txHash?: string;
+  network?: string;
 }): string | undefined {
   if (p.basescanUrl) return p.basescanUrl;
-  if (p.txHash) return `https://basescan.org/tx/${p.txHash}`;
+  if (p.txHash) {
+    if (p.network === "eip155:5042") {
+      return `https://explorer.arc.io/tx/${p.txHash}`;
+    }
+    return `https://basescan.org/tx/${p.txHash}`;
+  }
   return undefined;
 }
+
+/** Alias — explorer link selected off network (BaseScan or Arc). */
+export const paymentExplorer = paymentBasescan;
 
 const NON_PAYMENT_TYPES = new Set([
   "held",

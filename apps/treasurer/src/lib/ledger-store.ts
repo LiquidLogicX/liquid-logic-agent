@@ -1,7 +1,7 @@
 import type { LedgerEvent } from "@liquid-logic/shared";
 import {
-  basescanTxUrl,
   DEFAULT_LEDGER_EVENT_TYPE,
+  explorerTxUrl,
   normalizeLedgerEvent,
   parseLedgerJsonl,
   sumSpentTodayAtomic,
@@ -51,7 +51,7 @@ export class LedgerStore {
   recordPayment(opts: {
     endpoint: string;
     amountUsdc: string;
-    network: "eip155:8453" | "eip155:84532";
+    network: "eip155:8453" | "eip155:84532" | "eip155:5042";
     /** Required — never append a payment row without an on-chain hash. */
     txHash: string;
     walletAddress?: string;
@@ -75,7 +75,7 @@ export class LedgerStore {
       asset: "USDC",
       network: opts.network,
       txHash,
-      basescanUrl: basescanTxUrl(txHash),
+      basescanUrl: explorerTxUrl(opts.network, txHash),
       walletAddress: opts.walletAddress,
       reason: opts.reason ?? "x402 service payment",
       holdId: opts.holdId,

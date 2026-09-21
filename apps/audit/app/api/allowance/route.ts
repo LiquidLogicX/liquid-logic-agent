@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withX402FromHTTPServer } from "@x402/next";
-import { ALLOWANCE_PRICE_LABEL, NETWORK_BASE } from "@liquid-logic/shared";
+import {
+  ALLOWANCE_PRICE_LABEL,
+  ALLOWANCE_PRICE_USDC,
+  NETWORK_BASE,
+} from "@liquid-logic/shared";
 import { buildAllowance } from "@/lib/allowance";
 import { getAuditX402Server } from "@/lib/x402-server";
+import { withX402DualRail } from "@/lib/with-x402-dual";
 
 function parseWallet(req: NextRequest): string | null {
   const url = new URL(req.url);
@@ -79,7 +83,10 @@ async function handleAllowance(req: NextRequest): Promise<NextResponse> {
 async function paidHandler(req: NextRequest): Promise<NextResponse> {
   try {
     const server = await getAuditX402Server();
-    const wrapped = withX402FromHTTPServer(handleAllowance, server);
+    const wrapped = withX402DualRail(handleAllowance, server, {
+      label: ALLOWANCE_PRICE_LABEL,
+      amountUsdc: ALLOWANCE_PRICE_USDC,
+    });
     return wrapped(req);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
