@@ -2,12 +2,17 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
+  countSelfTestPayments,
   endpointShortLabel,
   eventTypeLabel,
   fetchLedgerLatest,
+  isLaunchGenesisReset,
   isSelfTestReason,
+  operatingSinceIso,
   paymentBasescan,
+  paymentsCountLabel,
   shortAddr,
+  sumTopUpUsdc,
   type LedgerEventRow,
   type LedgerLatest,
 } from "@/lib/ledger";
@@ -25,8 +30,15 @@ function formatUtcShort(iso: string): string {
   });
 }
 
-function isLaunchGenesisReset(e: LedgerEventRow): boolean {
-  return e.message === "LAUNCH_GENESIS_RESET" || e.reason === "LAUNCH_GENESIS_RESET";
+function formatUtcDate(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString("en-US", {
+    timeZone: "UTC",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 /** Public destination column — never surface internal note reason strings. */
@@ -58,12 +70,17 @@ function amountFor(e: LedgerEventRow): string {
 type Props = {
   /** Compact home-section mode vs full /ledger page */
   variant?: "section" | "page";
+  /** SSR/first-paint seed from public/ledger/latest.json; client may still refresh. */
+  initialLatest?: LedgerLatest | null;
 };
 
-export function LedgerLive({ variant = "section" }: Props) {
-  const [latest, setLatest] = useState<LedgerLatest | null>(null);
+export function LedgerLive({
+  variant = "section",
+  initialLatest = null,
+}: Props) {
+  const [latest, setLatest] = useState<LedgerLatest | null>(initialLatest);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialLatest);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -118,12 +135,22 @@ export function LedgerLive({ variant = "section" }: Props) {
     ? formatUtcShort(latest.generatedAt) + " UTC"
     : "—";
 
+  const fundedUsdc = sumTopUpUsdc(latest?.recentEvents);
+  const genesisIso = operatingSinceIso(latest?.recentEvents);
+  const totalPayments = latest?.totalPayments ?? 0;
+  const selfTestCount = countSelfTestPayments(latest);
+  const paymentsLabel = latest
+    ? paymentsCountLabel(totalPayments, selfTestCount)
+    : loading
+      ? "…"
+      : "0";
+
   return (
     <div className="ledger-live" style={{ minWidth: 0 }}>
       <div className="summary">
         <div>
           <span>Payments</span>
-          <strong>{latest?.totalPayments ?? (loading ? "…" : 0)}</strong>
+          <strong>{paymentsLabel}</strong>
         </div>
         <div>
           <span>Total paid</span>
@@ -135,6 +162,35 @@ export function LedgerLive({ variant = "section" }: Props) {
                 : "—"}
           </strong>
         </div>
+        {variant === "page" ? (
+          <div>
+            <span>Funded</span>
+            <strong>
+              {latest
+                ? `${fundedUsdc.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 6,
+                  })} USDC`
+                : loading
+                  ? "…"
+                  : "—"}
+            </strong>
+          </div>
+        ) : null}
+        {variant === "page" ? (
+          <div>
+            <span>Operating since</span>
+            <strong>
+              {latest
+                ? genesisIso
+                  ? formatUtcDate(genesisIso)
+                  : "—"
+                : loading
+                  ? "…"
+                  : "—"}
+            </strong>
+          </div>
+        ) : null}
         <div>
           <span>Last updated</span>
           <strong>{loading && !latest ? "…" : updated}</strong>

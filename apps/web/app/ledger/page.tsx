@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LedgerLive } from "@/components/LedgerLive";
+import { loadLedgerLatestFromPublic } from "@/lib/loadLedgerLatest";
 
 /** Always render dynamically — never bake a stale build-time ledger snapshot. */
 export const dynamic = "force-dynamic";
@@ -24,7 +25,9 @@ export const metadata: Metadata = {
   },
 };
 
-export default function LedgerPage() {
+export default async function LedgerPage() {
+  const initialLatest = await loadLedgerLatestFromPublic();
+
   return (
     <main className="page">
       <h1>Public ledger</h1>
@@ -33,7 +36,7 @@ export default function LedgerPage() {
         Settled payments link to BaseScan or the Arc explorer by network. Hold
         and freeze lifecycle events appear as their own types.
       </p>
-      <LedgerLive variant="page" />
+      <LedgerLive variant="page" initialLatest={initialLatest} />
     </main>
   );
 }
