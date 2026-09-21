@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-20T15:17:31.777Z",
+  "generatedAt": "2026-09-21T00:31:56.437Z",
   "network": "eip155:8453",
   "asset": "USDC",
   "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
@@ -10,7 +10,7 @@
     "2026-09-13",
     "2026-09-15"
   ],
-  "today": "2026-09-20",
+  "today": "2026-09-21",
   "recentPayments": [
     {
       "type": "payment",
@@ -38,8 +38,7 @@
       "amountUsdc": "5.00",
       "txHash": "0x86725a32173f31957011a2a7b6a8136d48ed8074ac436396472adf3b7ce96310",
       "basescanUrl": "https://basescan.org/tx/0x86725a32173f31957011a2a7b6a8136d48ed8074ac436396472adf3b7ce96310",
-      "reason": "USDC top-up from OKX (on-chain funding tx)",
-      "network": "eip155:8453"
+      "reason": "USDC top-up from OKX (on-chain funding tx)"
     },
     {
       "type": "note",
