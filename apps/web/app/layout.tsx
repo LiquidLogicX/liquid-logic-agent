@@ -20,9 +20,9 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     images: [
       {
-        url: "/og.png",
-        width: 1200,
-        height: 630,
+        url: "/llx-avatar.png",
+        width: 400,
+        height: 400,
         alt: "Liquid Logic X",
       },
     ],
@@ -31,10 +31,13 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
-    images: ["/og.png"],
+    images: ["/llx-avatar.png"],
   },
   icons: {
-    icon: [{ url: "/favicon.png", type: "image/png" }],
+    icon: [
+      { url: "/llx-avatar.svg", type: "image/svg+xml" },
+      { url: "/favicon.png", type: "image/png" },
+    ],
     apple: [{ url: "/apple-touch-icon.png" }],
   },
 };
