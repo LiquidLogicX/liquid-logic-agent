@@ -70,12 +70,17 @@ function amountFor(e: LedgerEventRow): string {
 type Props = {
   /** Compact home-section mode vs full /ledger page */
   variant?: "section" | "page";
+  /** SSR/first-paint seed from public/ledger/latest.json; client may still refresh. */
+  initialLatest?: LedgerLatest | null;
 };
 
-export function LedgerLive({ variant = "section" }: Props) {
-  const [latest, setLatest] = useState<LedgerLatest | null>(null);
+export function LedgerLive({
+  variant = "section",
+  initialLatest = null,
+}: Props) {
+  const [latest, setLatest] = useState<LedgerLatest | null>(initialLatest);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialLatest);
 
   const load = useCallback(async () => {
     setLoading(true);

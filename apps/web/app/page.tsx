@@ -4,8 +4,15 @@ import { LlxSection } from "@/components/LlxSection";
 import { PolicyTermsheet } from "@/components/PolicyTermsheet";
 import { ResearchGrid } from "@/components/ResearchGrid";
 import { AUDIT_URL } from "@/lib/site";
+import { loadLedgerLatestFromPublic } from "@/lib/loadLedgerLatest";
 
-export default function HomePage() {
+/** Keep home ledger KPIs live with public/ledger/latest.json. */
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+export default async function HomePage() {
+  const initialLatest = await loadLedgerLatestFromPublic();
+
   return (
     <>
       <div className="hero">
@@ -118,7 +125,7 @@ export default function HomePage() {
               listed in the changelog.
             </p>
           </div>
-          <LedgerLive variant="section" />
+          <LedgerLive variant="section" initialLatest={initialLatest} />
         </div>
       </section>
 
