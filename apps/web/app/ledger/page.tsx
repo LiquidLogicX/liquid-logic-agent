@@ -14,14 +14,14 @@ export const metadata: Metadata = {
     title: "Public ledger — Liquid Logic X",
     description:
       "Liquid Logic X operating spend in USDC on Base (Arc when present). Settled payments link to the network explorer.",
-    images: [{ url: "/llx-avatar.png", width: 400, height: 400, alt: "Liquid Logic X" }],
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Liquid Logic X" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Public ledger — Liquid Logic X",
     description:
       "Liquid Logic X operating spend in USDC on Base (Arc when present). Settled payments link to the network explorer.",
-    images: ["/llx-avatar.png"],
+    images: ["/og.png"],
   },
 };
 

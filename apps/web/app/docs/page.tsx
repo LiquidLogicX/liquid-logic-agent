@@ -9,14 +9,14 @@ export const metadata: Metadata = {
     title: "Endpoint docs — Liquid Logic X",
     description:
       "x402 allowance and audit endpoints — fees in USDC on Base via Coinbase CDP.",
-    images: [{ url: "/llx-avatar.png", width: 400, height: 400, alt: "Liquid Logic X" }],
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Liquid Logic X" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Endpoint docs — Liquid Logic X",
     description:
       "x402 allowance and audit endpoints — fees in USDC on Base via Coinbase CDP.",
-    images: ["/llx-avatar.png"],
+    images: ["/og.png"],
   },
 };
 
