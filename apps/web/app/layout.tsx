@@ -35,10 +35,11 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/llx-avatar.svg", type: "image/svg+xml" },
-      { url: "/favicon.png", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.png", type: "image/png", sizes: "32x32" },
+      { url: "/llx-logo.png", type: "image/png" },
     ],
-    apple: [{ url: "/apple-touch-icon.png" }],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
   },
 };
 
