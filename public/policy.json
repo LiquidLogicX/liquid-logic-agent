@@ -3,7 +3,6 @@
   "allowlist": [
     "https://audit.liquidlogicx.com/api/audit",
     "https://liquid-logic-agent-audit.vercel.app/api/audit",
-    "https://x402uselessfacts.vercel.app/api/useless-fact",
     "https://audit.liquidlogicx.com/api/allowance"
   ],
   "maxPerPaymentUsdc": "1.00",

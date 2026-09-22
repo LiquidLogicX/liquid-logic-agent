@@ -42,6 +42,5 @@ export const ALLOWANCE_OUTPUT_EXAMPLE_WALLET_ONLY: AllowanceReport = {
   allowlist: [
     "https://audit.liquidlogicx.com/api/audit",
     "https://liquid-logic-agent-audit.vercel.app/api/audit",
-    "https://x402uselessfacts.vercel.app/api/useless-fact",
   ],
 };
