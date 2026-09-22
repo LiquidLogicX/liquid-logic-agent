@@ -16,11 +16,10 @@ export function SiteHeader() {
         <a className="brand" href="/">
           <img
             className="mark"
-            src="/llx-avatar.svg"
-            width={30}
-            height={30}
-            alt=""
-            aria-hidden="true"
+            src="/llx-logo.png"
+            width={40}
+            height={40}
+            alt="Liquid Logic X"
           />
           Liquid Logic X
         </a>
