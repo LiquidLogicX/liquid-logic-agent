@@ -36,7 +36,6 @@ export const DEFAULT_TREASURER_POLICY: TreasurerPolicy = {
   allowlist: [
     "https://audit.liquidlogicx.com/api/audit",
     "https://liquid-logic-agent-audit.vercel.app/api/audit",
-    "https://x402uselessfacts.vercel.app/api/useless-fact",
   ],
   maxPerPaymentUsdc: "1.00",
   dailyCapUsdc: "10.00",
