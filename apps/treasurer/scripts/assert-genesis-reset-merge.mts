@@ -56,7 +56,7 @@ const diskJsonl = [
   {
     type: "payment",
     timestamp: "2026-09-13T15:23:37.000Z",
-    endpoint: "https://x402uselessfacts.vercel.app/api/useless-fact",
+    endpoint: "https://audit.liquidlogicx.com/api/audit",
     amountUsdc: "0.001",
     asset: "USDC",
     network: "eip155:8453",
