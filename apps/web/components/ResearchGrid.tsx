@@ -7,7 +7,7 @@ export function ResearchGrid() {
         <p>The capped spending stack described on this site.</p>
       </article>
       <article>
-        <div className="stage">Testnet only (Sepolia)</div>
+        <div className="stage">Deployed · Sepolia testnet</div>
         <h3>Confidential balances</h3>
         <p>
           Encrypted balances with access control, and a threshold check that
@@ -16,7 +16,7 @@ export function ResearchGrid() {
         </p>
       </article>
       <article>
-        <div className="stage">Intent, not a commitment</div>
+        <div className="stage">Next</div>
         <h3>Confidential spending limits</h3>
         <p>
           Enforce a fleet&apos;s limits without disclosing them, including to
@@ -24,8 +24,8 @@ export function ResearchGrid() {
         </p>
       </article>
       <article>
-        <div className="stage">Intent, not a commitment</div>
-        <h3>Phase 3 — LLX Privacy Network</h3>
+        <div className="stage">Phase 3</div>
+        <h3>LLX Privacy Network</h3>
         <p>
           Our own L2 built for private finance. Proof of funds, confidential
           balances and settlement proofs run natively, powered by FHE.
