@@ -5,7 +5,7 @@ const NAV = [
   { href: "/#ledger", label: "Ledger" },
   { href: "/#endpoints", label: "Endpoints" },
   { href: "/#llx", label: "$LLX" },
-  { href: "/plans", label: "Research" },
+  { href: "/plans", label: "Roadmap" },
   { href: "/#changelog", label: "Changelog" },
 ] as const;
 
