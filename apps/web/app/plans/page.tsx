@@ -2,20 +2,20 @@ import type { Metadata } from "next";
 import { ResearchGrid } from "@/components/ResearchGrid";
 
 export const metadata: Metadata = {
-  title: "Research",
+  title: "Roadmap",
   description:
-    "What is live on Base, what is built on Sepolia, and the intended direction for confidential spend caps.",
+    "What's live, what's deployed, and what's next for Liquid Logic X.",
   openGraph: {
-    title: "Research — Liquid Logic X",
+    title: "Roadmap — Liquid Logic X",
     description:
-      "What is live on Base, what is built on Sepolia, and the intended direction for confidential spend caps.",
+      "What's live, what's deployed, and what's next for Liquid Logic X.",
     images: [{ url: "/og.png", width: 1200, height: 630, alt: "Liquid Logic X" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Research — Liquid Logic X",
+    title: "Roadmap — Liquid Logic X",
     description:
-      "What is live on Base, what is built on Sepolia, and the intended direction for confidential spend caps.",
+      "What's live, what's deployed, and what's next for Liquid Logic X.",
     images: ["/og.png"],
   },
 };
@@ -23,10 +23,10 @@ export const metadata: Metadata = {
 export default function PlansPage() {
   return (
     <main className="page">
-      <h1>Research</h1>
+      <h1>Roadmap</h1>
       <p className="page-lede">
-        Ordered by how real it is. Only the first item is part of the live
-        product. This page keeps the /plans URL; content is Research.
+        What&apos;s live, what&apos;s deployed, and what&apos;s next. This page
+        keeps the /plans URL; content is Roadmap.
       </p>
       <section className="block" style={{ borderBottom: 0, paddingTop: 0 }}>
         <div className="sec-head" style={{ gridTemplateColumns: "1fr" }}>
