@@ -6,7 +6,7 @@ export function SiteFooter() {
           <p>
             USDC on Base for x402 services. $LLX is the Liquid Logic Agent token
             on Virtuals (Base). It is not an investment product. No returns,
-            yield, buybacks or price support are promised. Research describes
+            yield, buybacks or price support are promised. Roadmap describes
             intent, not a commitment.
           </p>
         </div>

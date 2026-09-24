@@ -195,10 +195,9 @@ export default async function HomePage() {
       <section className="block" id="research">
         <div className="wrap sec-head">
           <div>
-            <h2>Research</h2>
+            <h2>Roadmap</h2>
             <p className="intro">
-              Ordered by how real it is. Only the first item is part of the live
-              product.
+              What&apos;s live, what&apos;s deployed, and what&apos;s next.
             </p>
           </div>
           <ResearchGrid />
