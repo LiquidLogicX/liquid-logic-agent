@@ -23,6 +23,16 @@ export function ResearchGrid() {
           the agents spending against them.
         </p>
       </article>
+      <article>
+        <div className="stage">Intent, not a commitment</div>
+        <h3>Phase 3 — LLX Privacy Network</h3>
+        <p>
+          Our own L2 built for private finance. Proof of funds, confidential
+          balances and settlement proofs run natively, powered by FHE.
+          Businesses prove what they hold without ever showing it. No other
+          payments network does this.
+        </p>
+      </article>
     </div>
   );
 }
