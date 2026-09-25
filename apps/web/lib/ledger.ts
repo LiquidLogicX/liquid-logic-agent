@@ -9,6 +9,8 @@ export type LedgerPayment = {
   basescanUrl?: string;
   walletAddress?: string;
   reason?: string;
+  /** Public label from the publisher, e.g. "self-test" (payer = treasurer). */
+  label?: string;
   holdId?: string;
   approvedBy?: string;
   message?: string;
@@ -27,6 +29,8 @@ export type LedgerEventRow = {
   basescanUrl?: string;
   walletAddress?: string;
   reason?: string;
+  /** Public label from the publisher, e.g. "self-test" (payer = treasurer). */
+  label?: string;
   holdId?: string;
   approvedBy?: string;
   message?: string;
@@ -40,6 +44,8 @@ export type LedgerLatest = {
   walletAddress?: string | null;
   totalEvents?: number;
   totalPayments?: number;
+  /** Payments labeled "self-test" across the whole ledger (publisher ≥ labels PR). */
+  selfTestPayments?: number;
   totalPaidUsdcApprox?: number;
   days?: string[];
   today?: string;
@@ -138,6 +144,29 @@ export function isSelfTestReason(reason: string | undefined): boolean {
   return reason === "self-test";
 }
 
+/**
+ * Public label for a payment row: the publisher's `label` field, falling back
+ * to legacy rows whose `reason` is "self-test".
+ */
+export function paymentLabel(e: {
+  type?: string;
+  label?: string;
+  reason?: string;
+}): string | undefined {
+  if ((e.type ?? "payment") !== "payment") return undefined;
+  if (e.label) return e.label;
+  return isSelfTestReason(e.reason) ? "self-test" : undefined;
+}
+
+/** Display text for a payment label tag ("self-test" → "Self-test"). */
+export function paymentLabelText(label: string): string {
+  return label === "self-test" ? "Self-test" : label;
+}
+
+function isSelfTestRow(e: { type?: string; label?: string; reason?: string }): boolean {
+  return paymentLabel(e) === "self-test";
+}
+
 
 export function isLaunchGenesisReset(e: {
   message?: string;
@@ -167,19 +196,16 @@ export function operatingSinceIso(
   return hit?.timestamp ?? null;
 }
 
-/** Count payments with reason self-test in recentPayments / recentEvents. */
+/** Count self-test payments (publisher total, else label/reason in recent rows). */
 export function countSelfTestPayments(
   latest: LedgerLatest | null | undefined,
 ): number {
   if (!latest) return 0;
+  if (typeof latest.selfTestPayments === "number") return latest.selfTestPayments;
   if (latest.recentEvents?.length) {
-    return latest.recentEvents.filter(
-      (e) => (e.type ?? "payment") === "payment" && isSelfTestReason(e.reason),
-    ).length;
+    return latest.recentEvents.filter((e) => isSelfTestRow(e)).length;
   }
-  return (latest.recentPayments ?? []).filter((p) =>
-    isSelfTestReason(p.reason),
-  ).length;
+  return (latest.recentPayments ?? []).filter((p) => isSelfTestRow(p)).length;
 }
 
 /** e.g. "1 (1 self-test)" when any self-tests are included in the total. */

@@ -64,6 +64,12 @@ export interface PaymentEvent extends LedgerEventBase {
   /** Present when payment followed an operator-approved hold. */
   holdId?: string;
   approvedBy?: string;
+  /**
+   * Public label (e.g. "self-test"). Normally derived at publish time by
+   * @liquid-logic/ledger-publisher (treasurer rule + ledger-labels.json), so
+   * existing ledger rows never need rewriting.
+   */
+  label?: string;
 }
 
 export interface PaymentFailedEvent extends LedgerEventBase {

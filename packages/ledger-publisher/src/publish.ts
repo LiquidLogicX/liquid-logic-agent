@@ -16,6 +16,7 @@ import {
   type LedgerEvent,
   type PaymentEvent,
 } from "@liquid-logic/shared";
+import { applyLabels, DEFAULT_LABELS_PATH, loadLabelOverrides, SELF_TEST_LABEL } from "./labels.js";
 
 function loadEvents(filePath: string): LedgerEvent[] {
   if (!fs.existsSync(filePath)) return [];
@@ -72,9 +73,12 @@ function renderDayHtml(day: string, events: LedgerEvent[]): string {
               : e.type === "frozen" || e.type === "unfrozen"
                 ? "type-freeze"
                 : "type-other";
+      const label = "label" in e && e.label ? String(e.label) : "";
+      const labelCell = label ? `<span class="label">${escapeHtml(label)}</span>` : "";
       return `<tr class="${typeClass}">
   <td>${escapeHtml(e.timestamp)}</td>
   <td><span class="badge ${typeClass}">${escapeHtml(e.type)}</span></td>
+  <td>${labelCell}</td>
   <td>${endpoint}</td>
   <td>${amount}</td>
   <td>${tx}</td>
@@ -106,6 +110,7 @@ function renderDayHtml(day: string, events: LedgerEvent[]): string {
     tr.type-held { background: #f5f3ff; }
     tr.type-ops-neg { background: #f8fafc; }
     tr.type-freeze { background: #faf5ff; }
+    .label { display: inline-block; padding: 0.1rem 0.45rem; border-radius: 999px; font-size: 0.75rem; background: #fef3c7; color: #92400e; white-space: nowrap; }
   </style>
 </head>
 <body>
@@ -113,10 +118,10 @@ function renderDayHtml(day: string, events: LedgerEvent[]): string {
   <p class="note">USDC on Base (and Arc when present) for x402 services only. Every tx links to the network explorer when a hash exists. Not investment advice; no treasury-growth framing.</p>
   <table>
     <thead>
-      <tr><th>Time (UTC)</th><th>Type</th><th>Endpoint / detail</th><th>Amount</th><th>Explorer</th><th>Reason</th></tr>
+      <tr><th>Time (UTC)</th><th>Type</th><th>Label</th><th>Endpoint / detail</th><th>Amount</th><th>Explorer</th><th>Reason</th></tr>
     </thead>
     <tbody>
-${rows || `<tr><td colspan="6">No events this day.</td></tr>`}
+${rows || `<tr><td colspan="7">No events this day.</td></tr>`}
     </tbody>
   </table>
 </body>
@@ -146,7 +151,7 @@ function renderSocialDraft(
     for (const p of payments) {
       const url = p.basescanUrl ?? (p.txHash ? explorerTxUrl(p.network, p.txHash) : "(no tx yet)");
       lines.push(
-        `- ${p.amountUsdc} USDC → ${p.endpoint}${p.txHash ? ` — ${url}` : ""}`,
+        `- ${p.amountUsdc} USDC → ${p.endpoint}${p.label ? ` [${p.label}]` : ""}${p.txHash ? ` — ${url}` : ""}`,
       );
     }
   }
@@ -188,11 +193,15 @@ function main(): void {
     process.env.SOCIAL_DRAFTS_DIR ?? path.join(root, "drafts/social"),
   );
   const wallet = process.env.AGENT_WALLET_ADDRESS;
+  const labelsPath = path.resolve(process.env.LEDGER_LABELS_PATH ?? DEFAULT_LABELS_PATH);
+  const labelOverrides = loadLabelOverrides(labelsPath);
 
   fs.mkdirSync(outDir, { recursive: true });
   fs.mkdirSync(draftsDir, { recursive: true });
 
-  const events = loadEvents(jsonl).map(withBasescan);
+  // Labels are derived here (treasurer → "self-test", plus ledger-labels.json
+  // overrides by tx hash); data/ledger.jsonl rows are never rewritten.
+  const events = applyLabels(loadEvents(jsonl), labelOverrides).map(withBasescan);
   const byDay = new Map<string, LedgerEvent[]>();
   for (const e of events) {
     const d = dayKey(e.timestamp);
@@ -214,6 +223,8 @@ function main(): void {
     walletAddress: wallet ?? null,
     totalEvents: events.length,
     totalPayments: paymentsAll.length,
+    /** Payments labeled "self-test" (payer = treasurer), included in totalPayments. */
+    selfTestPayments: paymentsAll.filter((p) => p.label === SELF_TEST_LABEL).length,
     totalPaidUsdcApprox: Number(
       atomicToUsdc(
         paymentsAll.reduce((s, p) => {
@@ -309,6 +320,8 @@ function main(): void {
       {
         ok: true,
         events: events.length,
+        labeled: events.filter((e) => "label" in e && e.label).length,
+        labelsPath,
         days: days.length,
         outDir,
         draftsDir,

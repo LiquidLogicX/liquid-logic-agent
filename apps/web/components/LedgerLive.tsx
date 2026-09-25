@@ -7,7 +7,8 @@ import {
   eventTypeLabel,
   fetchLedgerLatest,
   isLaunchGenesisReset,
-  isSelfTestReason,
+  paymentLabel,
+  paymentLabelText,
   operatingSinceIso,
   paymentBasescan,
   paymentsCountLabel,
@@ -241,8 +242,8 @@ export function LedgerLive({
                     </td>
                     <td>
                       {eventTypeLabel(type)}
-                      {type === "payment" && isSelfTestReason(e.reason) ? (
-                        <span className="tag">Self-test</span>
+                      {paymentLabel(e) ? (
+                        <span className="tag">{paymentLabelText(paymentLabel(e)!)}</span>
                       ) : null}
                     </td>
                     <td title={dest.title}>{dest.label}</td>

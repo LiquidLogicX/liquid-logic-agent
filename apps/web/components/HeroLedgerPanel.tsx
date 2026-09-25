@@ -9,7 +9,8 @@ import {
   type LedgerLatest,
   type LedgerPayment,
   endpointShortLabel,
-  isSelfTestReason,
+  paymentLabel,
+  paymentLabelText,
   paymentBasescan,
   shortAddr,
 } from "@/lib/ledger";
@@ -76,8 +77,8 @@ export function HeroLedgerPanel() {
               <li key={`${p.txHash ?? p.timestamp}-${i}`}>
                 <p className="hero-panel-payment-line">
                   <strong>{p.amountUsdc} USDC</strong>
-                  {isSelfTestReason(p.reason) ? (
-                    <span className="tag">Self-test</span>
+                  {paymentLabel(p) ? (
+                    <span className="tag">{paymentLabelText(paymentLabel(p)!)}</span>
                   ) : null}
                   {label ? (
                     <>

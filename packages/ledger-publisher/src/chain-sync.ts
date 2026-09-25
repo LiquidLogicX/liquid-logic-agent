@@ -38,6 +38,7 @@ import {
   type LedgerEvent,
   type PaymentEvent,
 } from "@liquid-logic/shared";
+import { withLabel } from "./labels.js";
 
 /** x402 payTo for audit.liquidlogicx.com on Base (AUDIT_PAY_TO_EVM in Vercel). */
 export const DEFAULT_PAY_TO = "0x147991A1c25e78f6D9225d2dBA61eD93A6158c7b";
@@ -78,7 +79,10 @@ export function endpointForAmount(amountUsdc: string): string {
 
 export function transferToEvent(t: ChainTransfer, payTo: string): PaymentEvent {
   const amountUsdc = atomicToUsdc(t.value);
-  return {
+  // Same label rule the publisher applies (payer = treasurer → "self-test"), so
+  // new rows carry it in data/ledger.jsonl too. Existing rows are never edited;
+  // the publisher labels those at publish time.
+  return withLabel({
     type: "payment",
     timestamp: new Date(t.timestamp * 1000).toISOString(),
     endpoint: endpointForAmount(amountUsdc),
@@ -90,7 +94,7 @@ export function transferToEvent(t: ChainTransfer, payTo: string): PaymentEvent {
     walletAddress: t.from,
     payTo,
     reason: "x402 payment received by payTo (Base chain-sync)",
-  };
+  });
 }
 
 /**

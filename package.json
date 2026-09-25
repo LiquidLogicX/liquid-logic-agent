@@ -20,7 +20,7 @@
     "treasurer": "npm run cli -w @liquid-logic/treasurer --",
     "lint": "echo \"No root lint yet\"",
     "chain-sync-ledger": "node --import tsx packages/ledger-publisher/src/chain-sync.ts",
-    "test:ledger": "node --import tsx --test packages/ledger-publisher/test/chain-sync.test.ts"
+    "test:ledger": "node --import tsx --test packages/ledger-publisher/test/chain-sync.test.ts packages/ledger-publisher/test/labels.test.ts"
   },
   "license": "MIT"
 }
