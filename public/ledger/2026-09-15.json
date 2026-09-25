@@ -17,7 +17,8 @@
       "txHash": "0x93a15735c5b82fb8c9fdc0f7db5d56916a14f6ee4ef343000a29fd55c4bcaf4c",
       "basescanUrl": "https://basescan.org/tx/0x93a15735c5b82fb8c9fdc0f7db5d56916a14f6ee4ef343000a29fd55c4bcaf4c",
       "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
-      "reason": "self-test"
+      "reason": "self-test",
+      "label": "self-test"
     }
   ]
 }

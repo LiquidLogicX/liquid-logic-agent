@@ -27,7 +27,8 @@
       "basescanUrl": "https://basescan.org/tx/0x9e69f6d6a0e2b7fe3997733398a6f7986adeb3f64066b421fa38c77d6f051c74",
       "walletAddress": "0xea24bafbbaf6d7ba58be860ee906f0fe533d167d",
       "payTo": "0x147991A1c25e78f6D9225d2dBA61eD93A6158c7b",
-      "reason": "x402 payment received by payTo (Base chain-sync)"
+      "reason": "x402 payment received by payTo (Base chain-sync)",
+      "label": "self-test"
     }
   ]
 }

@@ -12,7 +12,8 @@
       "basescanUrl": "https://basescan.org/tx/0xe38b1f519ca64dfa8c2260b7d49f76375c0c292c6bb04ea80096fb3573a3c0ce",
       "walletAddress": "0x7dd81398fac7de0bf843bfd874cbea68face17d2",
       "payTo": "0x147991A1c25e78f6D9225d2dBA61eD93A6158c7b",
-      "reason": "x402 payment received by payTo (Base chain-sync)"
+      "reason": "x402 payment received by payTo (Base chain-sync)",
+      "label": "likely Bazaar indexing check"
     }
   ]
 }
