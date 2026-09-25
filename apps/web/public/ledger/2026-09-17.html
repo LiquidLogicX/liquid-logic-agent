@@ -21,6 +21,7 @@
     tr.type-held { background: #f5f3ff; }
     tr.type-ops-neg { background: #f8fafc; }
     tr.type-freeze { background: #faf5ff; }
+    .label { display: inline-block; padding: 0.1rem 0.45rem; border-radius: 999px; font-size: 0.75rem; background: #fef3c7; color: #92400e; white-space: nowrap; }
   </style>
 </head>
 <body>
@@ -28,12 +29,13 @@
   <p class="note">USDC on Base (and Arc when present) for x402 services only. Every tx links to the network explorer when a hash exists. Not investment advice; no treasury-growth framing.</p>
   <table>
     <thead>
-      <tr><th>Time (UTC)</th><th>Type</th><th>Endpoint / detail</th><th>Amount</th><th>Explorer</th><th>Reason</th></tr>
+      <tr><th>Time (UTC)</th><th>Type</th><th>Label</th><th>Endpoint / detail</th><th>Amount</th><th>Explorer</th><th>Reason</th></tr>
     </thead>
     <tbody>
 <tr class="type-payment">
   <td>2026-09-17T03:24:17.000Z</td>
   <td><span class="badge type-payment">payment</span></td>
+  <td><span class="label">likely Bazaar indexing check</span></td>
   <td>https://audit.liquidlogicx.com/api/allowance</td>
   <td>0.001 USDC</td>
   <td><a href="https://basescan.org/tx/0xe38b1f519ca64dfa8c2260b7d49f76375c0c292c6bb04ea80096fb3573a3c0ce" rel="noopener noreferrer">0xe38b1f51…</a></td>
