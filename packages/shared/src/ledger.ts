@@ -59,6 +59,8 @@ export interface PaymentEvent extends LedgerEventBase {
   txHash?: string;
   /** Explorer URL (BaseScan or Arc explorer); name kept for back-compat. */
   basescanUrl?: string;
+  /** Receiving address, set on rows reconciled from Base chain data (chain-sync). */
+  payTo?: string;
   /** Present when payment followed an operator-approved hold. */
   holdId?: string;
   approvedBy?: string;
