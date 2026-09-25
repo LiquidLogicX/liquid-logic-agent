@@ -14,7 +14,7 @@ These four need one real run. Total cost: **2 × $0.02 USDC** plus a little Arc 
 
 ## Check 2 — paid call returns 200, new proofId, Arc tx
 
-Run where the repo and the treasurer CDP keys are (laptop or Render Shell):
+Run this on a machine that has the repo and the treasurer CDP keys (a laptop or the Render Shell):
 
 ```bash
 export AUDIT_URL=https://audit.liquidlogicx.com
@@ -43,11 +43,14 @@ and the registry count on `https://proofs.liquidlogicx.com/proofs` has not gone 
 
 ## Check 8 — payment is in the ledger and on the public page
 
-1. Each run prints `settlement tx: 0x…` and adds a line to `data/ledger.jsonl`. Commit that file, or
-   let the ledger chain-sync pick up the payment from Base on its next run (every 6h, or run
-   **Actions → Publish ledger → Run workflow**).
-2. Pass if both settlement tx hashes show up in `data/ledger.jsonl` with endpoint `…/api/prove`
-   and amount `0.02`, and on `https://liquidlogicx.com/ledger/latest.json` (`recentPayments`).
+Needs the ledger fix PR (chain-sync) merged, and its proposed workflow copied into `.github/workflows/`.
+
+1. Each run prints `settlement tx: 0x…`. Write both down.
+2. GitHub → **Actions → Publish ledger → Run workflow**. It pulls every Base USDC payment to payTo into
+   `data/ledger.jsonl` (endpoint `…/api/prove`, amount `0.02`). `main` is protected, so the run opens a PR
+   called **"chore(ledger): publish ledger (automated)"**, or shows a compare link if Actions can't open PRs. Merge it.
+3. Pass if both settlement tx hashes are in `data/ledger.jsonl` on main and in
+   `https://liquidlogicx.com/ledger/latest.json` (`recentPayments`), after the site redeploys.
 
 ## If something fails
 
