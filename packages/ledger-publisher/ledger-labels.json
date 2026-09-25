@@ -1,0 +1,9 @@
+{
+  "$comment": "Publish-time payment labels keyed by exact tx hash (lowercase). data/ledger.jsonl stays append-only; the publisher adds `label` to matching payment rows in latest.json, <day>.json and the ledger HTML. Treasurer-paid rows get \"self-test\" by rule (see src/labels.ts) and need no entry here. Kept in packages/ledger-publisher/ so editing it triggers the Publish ledger workflow.",
+  "labels": {
+    "0xe38b1f519ca64dfa8c2260b7d49f76375c0c292c6bb04ea80096fb3573a3c0ce": {
+      "label": "likely Bazaar indexing check",
+      "why": "Only payment from 0x7dd81398fac7de0bf843bfd874cbea68face17d2: 0.001 USDC to payTo 0x147991A1c25e78f6D9225d2dBA61eD93A6158c7b (/api/allowance), Base block 51413055, 2026-09-17T03:24:17Z (Sep 16 8:24 PM PT). Verified on Base RPC 2026-09-25."
+    }
+  }
+}

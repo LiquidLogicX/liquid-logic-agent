@@ -55,3 +55,23 @@ The treasurer daily cap only counts rows whose `walletAddress` is the treasurer
 Env: `BASE_RPC_URL` (default `https://mainnet.base.org`, 2,000-block getLogs cap),
 `LEDGER_CHAIN_SYNC_CHUNK`, `LEDGER_CHAIN_SYNC_START_BLOCK` (set to the launch
 block to leave pre-launch history out), `LEDGER_PAY_TO_EVM`.
+
+## Payment labels (publish time)
+
+`ledger.jsonl` rows are never rewritten to add labels. The publisher
+(`npm run publish-ledger`) adds a `label` field to payment rows in
+`latest.json` (`recentPayments` / `recentEvents`), `<day>.json`, the ledger
+HTML (Label column) and social drafts, plus `selfTestPayments` in `latest.json`:
+
+1. `packages/ledger-publisher/ledger-labels.json` — explicit labels keyed by
+   exact tx hash (e.g. `0xe38b…c0ce` → `likely Bazaar indexing check`).
+   It lives in the publisher package so editing it re-triggers the
+   Publish ledger workflow.
+2. A `label` already on the row (chain-sync writes `self-test` on newly
+   appended treasurer rows).
+3. Rule: payer `walletAddress` == treasurer
+   `0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D` (case-insensitive) →
+   `self-test`. This covers future rows from any writer (chain-sync,
+   `paid-*-call` scripts, treasurer disk sync).
+
+Totals (`totalPayments`, `totalPaidUsdcApprox`) still include self-tests.
