@@ -5,6 +5,7 @@ import {
   normalizeLedgerEvent,
   parseLedgerJsonl,
   sumSpentTodayAtomic,
+  TREASURER_WALLET_ADDRESS,
 } from "@liquid-logic/shared";
 import fs from "node:fs";
 import path from "node:path";
@@ -33,9 +34,14 @@ export class LedgerStore {
     return parseLedgerJsonl(raw);
   }
 
-  /** Sum USDC payment amounts for the UTC calendar day of `now`. */
+  /**
+   * Sum the treasurer's USDC payment amounts for the UTC calendar day of `now`.
+   * Filtered to the treasurer wallet: the ledger also carries x402 payments
+   * other agents made to our payTo (chain-sync), which must never count
+   * against the treasurer's daily cap. Rows without walletAddress still count.
+   */
   spentTodayAtomic(now = new Date()): bigint {
-    return sumSpentTodayAtomic(this.readAll(), now);
+    return sumSpentTodayAtomic(this.readAll(), now, TREASURER_WALLET_ADDRESS);
   }
 
   hasTx(txHash: string): boolean {
