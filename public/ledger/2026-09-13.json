@@ -15,6 +15,19 @@
       "basescanUrl": "https://basescan.org/tx/0x86725a32173f31957011a2a7b6a8136d48ed8074ac436396472adf3b7ce96310",
       "reason": "USDC top-up from OKX (on-chain funding tx)",
       "network": "eip155:8453"
+    },
+    {
+      "type": "payment",
+      "timestamp": "2026-09-13T18:06:49.000Z",
+      "endpoint": "https://audit.liquidlogicx.com/api/audit",
+      "amountUsdc": "0.05",
+      "asset": "USDC",
+      "network": "eip155:8453",
+      "txHash": "0x9e69f6d6a0e2b7fe3997733398a6f7986adeb3f64066b421fa38c77d6f051c74",
+      "basescanUrl": "https://basescan.org/tx/0x9e69f6d6a0e2b7fe3997733398a6f7986adeb3f64066b421fa38c77d6f051c74",
+      "walletAddress": "0xea24bafbbaf6d7ba58be860ee906f0fe533d167d",
+      "payTo": "0x147991A1c25e78f6D9225d2dBA61eD93A6158c7b",
+      "reason": "x402 payment received by payTo (Base chain-sync)"
     }
   ]
 }
