@@ -9,11 +9,16 @@ on:
       - "data/ledger.jsonl"
       - "packages/ledger-publisher/**"
 
+concurrency:
+  group: publish-ledger
+  cancel-in-progress: false
+
 jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -22,6 +27,13 @@ jobs:
           cache: npm
       - run: npm install
       - run: npm run build -w @liquid-logic/shared && npm run build -w @liquid-logic/ledger-publisher
+      # Append every Base USDC Transfer to the x402 payTo (audit/allowance/prove
+      # payments from ANY payer) that is missing from data/ledger.jsonl.
+      - name: Reconcile payTo receipts from Base
+        env:
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          LEDGER_JSONL_PATH: data/ledger.jsonl
+        run: npm run chain-sync-ledger
       - name: Publish public ledger + social drafts
         env:
           LEDGER_JSONL_PATH: data/ledger.jsonl
@@ -29,15 +41,41 @@ jobs:
           SOCIAL_DRAFTS_DIR: drafts/social
           AGENT_WALLET_ADDRESS: ${{ secrets.AGENT_WALLET_ADDRESS }}
         run: npm run publish-ledger
-      - name: Mirror into web + audit public/ledger
+      - name: Mirror into apps/web/public/ledger for the site
         run: |
-          mkdir -p apps/web/public/ledger apps/audit/public/ledger
+          mkdir -p apps/web/public/ledger
           cp -a public/ledger/. apps/web/public/ledger/
-          cp -a public/ledger/. apps/audit/public/ledger/
-      - name: Commit artifacts (if changed)
+      # main is protected ("Changes must be made through a pull request"), so a
+      # direct push is rejected. The old step hid that with `git push || true`
+      # and the public ledger silently stopped updating on 2026-09-22.
+      # Now: skip timestamp-only churn; try a direct push; if rejected, open or
+      # refresh an automation PR for Miles to merge. Any other failure is red.
+      - name: Commit artifacts (if materially changed)
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/ledger apps/web/public/ledger apps/audit/public/ledger drafts/social
-          git diff --staged --quiet || git commit -m "chore(ledger): publish public ledger and social drafts"
-          git push || true
+          git add data/ledger.jsonl data/chain-sync.json public/ledger apps/web/public/ledger drafts/social
+          if git diff --staged --quiet -I '"generatedAt"' -I '"today"' -- . ':(exclude)data/chain-sync.json'; then
+            echo "No material ledger change (timestamps / cursor only) — nothing to publish."
+            exit 0
+          fi
+          git commit -m "chore(ledger): publish public ledger and social drafts"
+          if git push origin HEAD:main; then
+            exit 0
+          fi
+          echo "::warning::Direct push to protected main rejected — opening/refreshing an automation PR."
+          BR=automation/ledger-publish
+          git push --force origin HEAD:refs/heads/$BR
+          if [ "$(gh pr list --head "$BR" --base main --state open --json number --jq 'length')" != "0" ]; then
+            echo "Automation PR already open — branch $BR refreshed."
+            exit 0
+          fi
+          if ! gh pr create --base main --head "$BR" \
+              --title "chore(ledger): publish ledger (automated)" \
+              --body "Automated by the Publish ledger workflow: new payTo receipts reconciled from Base and republished public/ledger. main is protected, so this needs a human merge."; then
+            # Repo setting "Allow GitHub Actions to create and approve pull requests" is off.
+            echo "::error::Ledger changes pushed to branch $BR but this workflow may not open PRs. Open it by hand: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/compare/main...$BR"
+            exit 1
+          fi

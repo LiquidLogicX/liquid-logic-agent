@@ -32,3 +32,26 @@ push pre-launch payment/held/denied phantoms back into GitHub after merge.
    disk from GitHub and **does not** push local extras; then unset it.
 
 Do **not** resume normal union sync with a dirty disk.
+
+## Chain-sync: payments received by payTo (x402 revenue)
+
+`npm run chain-sync-ledger` (also the first step of the Publish ledger workflow)
+reads every Base USDC `Transfer` to the x402 payTo
+`0x147991A1c25e78f6D9225d2dBA61eD93A6158c7b` over JSON-RPC and appends a
+`payment` row for any tx hash not already in this file (existing rows are never
+edited). Rows carry `walletAddress` = payer, `payTo`, and an endpoint inferred
+from the price (`0.05` → `/api/audit`, `0.001` → `/api/allowance`, `0.02` →
+`/api/prove`). `data/chain-sync.json` is the scan cursor (only committed with a
+real ledger change).
+
+Why: before this, only LLX's own outgoing payments reached this file (treasurer
+disk sync + `paid-*-call` scripts). Payments other agents made to our endpoints
+were never recorded, and the genesis reset dropped the Sep 13–14 self-tests, so
+`latest.json` showed 1 payment while payTo had 9 on Base.
+
+The treasurer daily cap only counts rows whose `walletAddress` is the treasurer
+(or is missing), so other agents' payments never eat into it.
+
+Env: `BASE_RPC_URL` (default `https://mainnet.base.org`, 2,000-block getLogs cap),
+`LEDGER_CHAIN_SYNC_CHUNK`, `LEDGER_CHAIN_SYNC_START_BLOCK` (set to the launch
+block to leave pre-launch history out), `LEDGER_PAY_TO_EVM`.
