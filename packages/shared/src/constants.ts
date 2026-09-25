@@ -22,6 +22,13 @@ export const AUDIT_PRICE_LABEL = "$0.05";
 export const ALLOWANCE_PRICE_USDC = "0.001";
 export const ALLOWANCE_PRICE_LABEL = "$0.001";
 
+/**
+ * /api/prove — settlement receipt for a Base USDC payment, recorded on Arc.
+ * Single source of truth for the price; the label is derived from it.
+ */
+export const PROVE_PRICE_USDC = "0.02";
+export const PROVE_PRICE_LABEL = `$${PROVE_PRICE_USDC}`;
+
 /** CDP-managed Liquid Logic Agent treasurer (Base). */
 export const TREASURER_WALLET_ADDRESS =
   "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D" as const;

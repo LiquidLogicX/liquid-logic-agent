@@ -2,16 +2,47 @@
  * CDP x402 seller for audit + treasurer allowance pre-flight.
  * - GET/POST /api/audit     $0.05 USDC on Base
  * - GET/POST /api/allowance $0.001 USDC on Base (cheaper; call before spending)
+ * - GET/POST /api/prove     $0.02 USDC on Base (settlement proof on Arc)
  */
-import { createX402Server, type X402Server } from "@coinbase/cdp-sdk/x402";
+import {
+  createX402Server,
+  type CdpRouteConfig,
+  type X402Server,
+} from "@coinbase/cdp-sdk/x402";
 import { declareDiscoveryExtension } from "@x402/extensions/bazaar";
 import {
   ALLOWANCE_PRICE_LABEL,
   AUDIT_PRICE_LABEL,
   NETWORK_BASE,
+  PROVE_PRICE_LABEL,
 } from "@liquid-logic/shared";
 import { AUDIT_OUTPUT_EXAMPLE } from "./audit-output-example";
 import { ALLOWANCE_OUTPUT_EXAMPLE } from "./allowance-output-example";
+import {
+  getProveDiscovery,
+  postProveDiscovery,
+  PROVE_DESCRIPTION,
+} from "./prove/discovery";
+
+/**
+ * /api/prove routes (Base only — never the Arc dual rail, which settles
+ * before the handler). Exported so tests can mount the same config on a mock
+ * facilitator.
+ */
+export const PROVE_ROUTES: Record<"GET /api/prove" | "POST /api/prove", CdpRouteConfig> = {
+  "GET /api/prove": {
+    price: PROVE_PRICE_LABEL,
+    networks: [NETWORK_BASE],
+    description: PROVE_DESCRIPTION,
+    extensions: { ...getProveDiscovery },
+  },
+  "POST /api/prove": {
+    price: PROVE_PRICE_LABEL,
+    networks: [NETWORK_BASE],
+    description: PROVE_DESCRIPTION,
+    extensions: { ...postProveDiscovery },
+  },
+};
 
 const AUDIT_DESCRIPTION =
   "Liquid Logic Agent — wallet audit. Returns a structured USDC spend summary for an agent wallet from the public ledger. Site: https://liquidlogicx.com";
@@ -137,6 +168,7 @@ export function getAuditX402Server(): Promise<X402Server> {
           description: ALLOWANCE_DESCRIPTION,
           extensions: { ...postAllowanceDiscovery },
         },
+        ...PROVE_ROUTES,
       },
     });
   }
