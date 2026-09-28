@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Liquid Logic X ledger — 2026-09-17</title>
+  <style>
+    body { font-family: ui-sans-serif, system-ui, sans-serif; margin: 2rem; color: #0f172a; background: #f8fafc; }
+    h1 { font-size: 1.25rem; }
+    table { width: 100%; border-collapse: collapse; background: #fff; }
+    th, td { border: 1px solid #e2e8f0; padding: 0.5rem 0.75rem; text-align: left; font-size: 0.875rem; }
+    th { background: #f1f5f9; }
+    a { color: #6d28d9; }
+    .note { color: #64748b; font-size: 0.875rem; margin-bottom: 1rem; }
+    .badge { display: inline-block; padding: 0.1rem 0.45rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+    .type-payment .badge, .badge.type-payment { background: #e2e8f0; color: #0f172a; }
+    .type-held .badge, .badge.type-held { background: #ede9fe; color: #5b21b6; }
+    .type-ops-neg .badge, .badge.type-ops-neg { background: #f1f5f9; color: #475569; }
+    .type-freeze .badge, .badge.type-freeze { background: #ddd6fe; color: #4c1d95; }
+    .type-other .badge, .badge.type-other { background: #f8fafc; color: #334155; }
+    tr.type-held { background: #f5f3ff; }
+    tr.type-ops-neg { background: #f8fafc; }
+    tr.type-freeze { background: #faf5ff; }
+  </style>
+</head>
+<body>
+  <h1>Liquid Logic X — operating spend ledger — 2026-09-17</h1>
+  <p class="note">USDC on Base (and Arc when present) for x402 services only. Every tx links to the network explorer when a hash exists. Not investment advice; no treasury-growth framing.</p>
+  <table>
+    <thead>
+      <tr><th>Time (UTC)</th><th>Type</th><th>Endpoint / detail</th><th>Amount</th><th>Explorer</th><th>Reason</th></tr>
+    </thead>
+    <tbody>
+<tr class="type-payment">
+  <td>2026-09-17T03:24:17.000Z</td>
+  <td><span class="badge type-payment">payment</span></td>
+  <td>https://audit.liquidlogicx.com/api/allowance</td>
+  <td>0.001 USDC</td>
+  <td><a href="https://basescan.org/tx/0xe38b1f519ca64dfa8c2260b7d49f76375c0c292c6bb04ea80096fb3573a3c0ce" rel="noopener noreferrer">0xe38b1f51…</a></td>
+  <td>x402 payment received by payTo (Base chain-sync)</td>
+</tr>
+    </tbody>
+  </table>
+</body>
+</html>

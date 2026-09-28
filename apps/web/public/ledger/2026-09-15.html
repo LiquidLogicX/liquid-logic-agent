@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Liquid Logic X ledger — 2026-09-15</title>
+  <style>
+    body { font-family: ui-sans-serif, system-ui, sans-serif; margin: 2rem; color: #0f172a; background: #f8fafc; }
+    h1 { font-size: 1.25rem; }
+    table { width: 100%; border-collapse: collapse; background: #fff; }
+    th, td { border: 1px solid #e2e8f0; padding: 0.5rem 0.75rem; text-align: left; font-size: 0.875rem; }
+    th { background: #f1f5f9; }
+    a { color: #6d28d9; }
+    .note { color: #64748b; font-size: 0.875rem; margin-bottom: 1rem; }
+    .badge { display: inline-block; padding: 0.1rem 0.45rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+    .type-payment .badge, .badge.type-payment { background: #e2e8f0; color: #0f172a; }
+    .type-held .badge, .badge.type-held { background: #ede9fe; color: #5b21b6; }
+    .type-ops-neg .badge, .badge.type-ops-neg { background: #f1f5f9; color: #475569; }
+    .type-freeze .badge, .badge.type-freeze { background: #ddd6fe; color: #4c1d95; }
+    .type-other .badge, .badge.type-other { background: #f8fafc; color: #334155; }
+    tr.type-held { background: #f5f3ff; }
+    tr.type-ops-neg { background: #f8fafc; }
+    tr.type-freeze { background: #faf5ff; }
+  </style>
+</head>
+<body>
+  <h1>Liquid Logic X — operating spend ledger — 2026-09-15</h1>
+  <p class="note">USDC on Base (and Arc when present) for x402 services only. Every tx links to the network explorer when a hash exists. Not investment advice; no treasury-growth framing.</p>
+  <table>
+    <thead>
+      <tr><th>Time (UTC)</th><th>Type</th><th>Endpoint / detail</th><th>Amount</th><th>Explorer</th><th>Reason</th></tr>
+    </thead>
+    <tbody>
+<tr class="type-other">
+  <td>2026-09-15T04:16:00.000Z</td>
+  <td><span class="badge type-other">note</span></td>
+  <td>note</td>
+  <td>—</td>
+  <td>—</td>
+  <td>Day-one launch truncate — prefer this remote over longer Render disk until disk is wiped</td>
+</tr>
+<tr class="type-payment">
+  <td>2026-09-15T20:38:56.825Z</td>
+  <td><span class="badge type-payment">payment</span></td>
+  <td>https://audit.liquidlogicx.com/api/allowance?wallet=0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D</td>
+  <td>0.001 USDC</td>
+  <td><a href="https://basescan.org/tx/0x93a15735c5b82fb8c9fdc0f7db5d56916a14f6ee4ef343000a29fd55c4bcaf4c" rel="noopener noreferrer">0x93a15735…</a></td>
+  <td>self-test</td>
+</tr>
+    </tbody>
+  </table>
+</body>
+</html>

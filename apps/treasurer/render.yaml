@@ -1,0 +1,62 @@
+# Render Blueprint — Liquid Logic Treasurer (public web service)
+# Account: hello@liquidlogicx.com
+# Instance / plan: starter
+# Network: Base mainnet (omit CDP_X402_ENVIRONMENT). Development uses Base Sepolia.
+#
+# Path A (chosen): web service so phone can hit HTTPS hold approve/deny with
+# Bearer LLX_OPERATOR_TOKEN. Background workers are not publicly reachable;
+# hold approve must execute CDP payments on this process (not via Vercel/x402).
+#
+# Deploy from repo root. CLI / one-off jobs:
+#   node dist/cli/index.js print-wallet-address
+#   node dist/cli/index.js pay <url> --amount 0.05
+# Operator (public):
+#   curl -X POST https://$HOST/api/hold/$ID/approve -H "Authorization: Bearer $LLX_OPERATOR_TOKEN"
+previewsEnabled: false
+services:
+  - type: web
+    name: liquid-logic-treasurer
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./apps/treasurer/Dockerfile
+    dockerContext: .
+    region: oregon
+    healthCheckPath: /healthz
+    envVars:
+      - key: CDP_API_KEY_ID
+        sync: false
+      - key: CDP_API_KEY_SECRET
+        sync: false
+      - key: CDP_WALLET_SECRET
+        sync: false
+      - key: TREASURER_LEDGER_PATH
+        value: /app/data/ledger.jsonl
+      - key: TREASURER_ALLOWLIST
+        sync: false
+      - key: TREASURER_MAX_PER_PAYMENT_USDC
+        value: "1.00"
+      - key: TREASURER_DAILY_CAP_USDC
+        value: "10.00"
+      - key: TREASURER_WALLET_ACCOUNT_NAME
+        value: x402-client-wallet-1
+      - key: LEDGER_SYNC_GITHUB_TOKEN
+        sync: false
+      - key: LEDGER_SYNC_REPO
+        value: LiquidLogicX/liquid-logic-agent
+      - key: LEDGER_SYNC_PATH
+        value: data/ledger.jsonl
+      - key: LEDGER_SYNC_INTERVAL_MS
+        value: "300000"
+      - key: LLX_OPERATOR_TOKEN
+        sync: false
+      - key: PORT
+        value: "10000"
+      # Unset = holds disabled. Set e.g. "0.05" to hold audit-sized payments.
+      - key: HOLD_ABOVE_USDC
+        sync: false
+      - key: HOLD_TTL_SECONDS
+        value: "3600"
+    disk:
+      name: treasurer-ledger
+      mountPath: /app/data
+      sizeGB: 1

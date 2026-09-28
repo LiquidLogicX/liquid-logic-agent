@@ -1,0 +1,20 @@
+node_modules/
+dist/
+.next/
+.turbo/
+*.log
+.env
+.env.local
+.env.*.local
+!.env.example
+apps/treasurer/data/*.jsonl
+!apps/treasurer/data/.gitkeep
+apps/audit/data/*.jsonl
+data/*.jsonl
+!data/.gitkeep
+# Canonical treasurer events for the public publisher / CI
+!data/ledger.jsonl
+.DS_Store
+coverage/
+*.tsbuildinfo
+.vercel
