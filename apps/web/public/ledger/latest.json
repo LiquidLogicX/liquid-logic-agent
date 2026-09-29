@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-09-28T19:39:16.062Z",
+  "generatedAt": "2026-09-29T00:37:24.037Z",
   "network": "eip155:8453",
   "asset": "USDC",
-  "walletAddress": "",
+  "walletAddress": "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D",
   "totalEvents": 15,
   "totalPayments": 12,
   "totalPaidUsdcApprox": 0.295,
@@ -14,7 +14,7 @@
     "2026-09-25",
     "2026-09-28"
   ],
-  "today": "2026-09-28",
+  "today": "2026-09-29",
   "recentPayments": [
     {
       "type": "payment",
