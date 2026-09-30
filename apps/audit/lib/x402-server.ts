@@ -7,6 +7,7 @@
 import {
   createX402Server,
   type CdpRouteConfig,
+  type RouteConfig,
   type X402Server,
 } from "@coinbase/cdp-sdk/x402";
 import { declareDiscoveryExtension } from "@x402/extensions/bazaar";
@@ -43,6 +44,41 @@ export const PROVE_ROUTES: Record<"GET /api/prove" | "POST /api/prove", CdpRoute
     extensions: { ...postProveDiscovery },
   },
 };
+
+/**
+ * Provider-level Bazaar metadata (x402 `resource.serviceName` / `tags` / `iconUrl`).
+ * Agentic Market uses these for the listing's name, search tags and icon.
+ * Only the full x402 RouteConfig format carries them — the simplified
+ * CdpRouteConfig drops them — so every route is converted with `withServiceMeta`.
+ */
+const SERVICE_NAME = "Liquid Logic Agent"; // <= 32 printable ASCII
+const SERVICE_TAGS = [
+  "agent-treasury",
+  "spend-controls",
+  "settlement-proofs",
+  "usdc",
+  "audit",
+]; // <= 5 tags, each <= 32 ASCII
+const SERVICE_ICON_URL = "https://liquidlogicx.com/llx-logo.png";
+
+/** Convert a simplified CDP route (Base only) to full RouteConfig + service metadata. */
+function withServiceMeta(route: CdpRouteConfig): RouteConfig {
+  return {
+    accepts: {
+      scheme: "exact",
+      price: route.price,
+      network: NETWORK_BASE as `${string}:${string}`,
+      payTo: "", // vacant — filled from payToConfig by createX402Server
+      maxTimeoutSeconds: 300,
+    },
+    ...(route.description !== undefined && { description: route.description }),
+    mimeType: "application/json",
+    serviceName: SERVICE_NAME,
+    tags: [...SERVICE_TAGS],
+    iconUrl: SERVICE_ICON_URL,
+    ...(route.extensions !== undefined && { extensions: route.extensions }),
+  };
+}
 
 const AUDIT_DESCRIPTION =
   "Liquid Logic Agent — wallet audit. Returns a structured USDC spend summary for an agent wallet from the public ledger. Site: https://liquidlogicx.com";
@@ -144,31 +180,32 @@ export function getAuditX402Server(): Promise<X402Server> {
           }
         : {}),
       routes: {
-        "GET /api/audit": {
+        "GET /api/audit": withServiceMeta({
           price: AUDIT_PRICE_LABEL,
           networks: [NETWORK_BASE],
           description: AUDIT_DESCRIPTION,
           extensions: { ...getAuditDiscovery },
-        },
-        "POST /api/audit": {
+        }),
+        "POST /api/audit": withServiceMeta({
           price: AUDIT_PRICE_LABEL,
           networks: [NETWORK_BASE],
           description: AUDIT_DESCRIPTION,
           extensions: { ...postAuditDiscovery },
-        },
-        "GET /api/allowance": {
+        }),
+        "GET /api/allowance": withServiceMeta({
           price: ALLOWANCE_PRICE_LABEL,
           networks: [NETWORK_BASE],
           description: ALLOWANCE_DESCRIPTION,
           extensions: { ...getAllowanceDiscovery },
-        },
-        "POST /api/allowance": {
+        }),
+        "POST /api/allowance": withServiceMeta({
           price: ALLOWANCE_PRICE_LABEL,
           networks: [NETWORK_BASE],
           description: ALLOWANCE_DESCRIPTION,
           extensions: { ...postAllowanceDiscovery },
-        },
-        ...PROVE_ROUTES,
+        }),
+        "GET /api/prove": withServiceMeta(PROVE_ROUTES["GET /api/prove"]),
+        "POST /api/prove": withServiceMeta(PROVE_ROUTES["POST /api/prove"]),
       },
     });
   }
