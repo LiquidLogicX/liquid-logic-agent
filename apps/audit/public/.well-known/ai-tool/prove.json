@@ -1,0 +1,147 @@
+{
+  "type": "https://ercs.ethereum.org/ERCS/erc-8257#tool-manifest-v1",
+  "name": "Liquid Logic Agent — Settlement Proof",
+  "description": "Liquid Logic X settlement proofs: receipts for agent payments. Send a Base USDC transaction hash and get a settlement proof recorded on Arc with a public verify link. The paying wallet must be the sender or recipient of the USDC transfer (403 otherwise, not charged). Idempotent: an already-recorded tx returns status \"existing\". Charged only when a proof is returned. Paid per call via x402: 0.02 USDC on Base. Site: https://liquidlogicx.com",
+  "endpoint": "https://audit.liquidlogicx.com/api/prove",
+  "inputs": {
+    "type": "object",
+    "properties": {
+      "txHash": {
+        "type": "string",
+        "pattern": "^0x[0-9a-fA-F]{64}$",
+        "description": "Base mainnet (eip155:8453) transaction hash of a USDC payment (must contain a Transfer from Base USDC 0x833589fcd6edb6e08f4c7c32d4f71b54bda02913). Your paying wallet must be its from or to."
+      },
+      "memo": {
+        "type": "string",
+        "maxLength": 64,
+        "pattern": "^[\\x20-\\x7E]*$",
+        "description": "Optional plain-text note stored on-chain with the proof (printable ASCII, max 64 chars). Public."
+      }
+    },
+    "required": [
+      "txHash"
+    ]
+  },
+  "outputs": {
+    "type": "object",
+    "properties": {
+      "proofId": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "description": "1-based position in the SettlementProofs registry on Arc"
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "recorded",
+          "existing"
+        ]
+      },
+      "source": {
+        "type": "object",
+        "properties": {
+          "chain": {
+            "type": "string",
+            "const": "eip155:8453"
+          },
+          "txHash": {
+            "type": "string",
+            "pattern": "^0x[0-9a-fA-F]{64}$"
+          },
+          "from": {
+            "type": "string",
+            "pattern": "^0x[0-9a-fA-F]{40}$"
+          },
+          "to": {
+            "type": "string",
+            "pattern": "^0x[0-9a-fA-F]{40}$"
+          },
+          "amountUsdc": {
+            "type": "string",
+            "description": "Decimal USDC, e.g. \"0.05\""
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Base block time (UTC)"
+          }
+        },
+        "required": [
+          "chain",
+          "txHash",
+          "from",
+          "to",
+          "amountUsdc",
+          "timestamp"
+        ]
+      },
+      "arc": {
+        "type": "object",
+        "properties": {
+          "chain": {
+            "type": "string",
+            "const": "eip155:5042"
+          },
+          "contract": {
+            "type": "string",
+            "const": "0x1de52cbc4490a7873ef007e51cb91a5b374facb1"
+          },
+          "txHash": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^0x[0-9a-fA-F]{64}$",
+            "description": "Arc tx that recorded the proof"
+          }
+        },
+        "required": [
+          "chain",
+          "contract",
+          "txHash"
+        ]
+      },
+      "verifyUrl": {
+        "type": "string",
+        "description": "Public verifier page on proofs.liquidlogicx.com"
+      },
+      "recordedAt": {
+        "type": "string"
+      },
+      "refId": {
+        "type": "string",
+        "pattern": "^0x[0-9a-fA-F]{64}$",
+        "description": "Settlement ID on Arc = keccak256(srcTxHash, payee, amountUSDC)"
+      },
+      "memo": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "proofId",
+      "status",
+      "source",
+      "arc",
+      "verifyUrl",
+      "recordedAt"
+    ]
+  },
+  "version": "1.0.0",
+  "image": "https://audit.liquidlogicx.com/ai-tool/llx-logo.png",
+  "featuredImage": "https://audit.liquidlogicx.com/ai-tool/llx-banner.png",
+  "tags": [
+    "ai",
+    "defi",
+    "security"
+  ],
+  "pricing": [
+    {
+      "amount": "20000",
+      "asset": "eip155:8453/erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "recipient": "eip155:8453:0x147991a1c25e78f6d9225d2dba61ed93a6158c7b",
+      "protocol": "x402"
+    }
+  ],
+  "creatorAddress": "0x0000000000000000000000000000000000000000"
+}
