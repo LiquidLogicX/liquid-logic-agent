@@ -21,7 +21,7 @@
     "lint": "echo \"No root lint yet\"",
     "chain-sync-ledger": "node --import tsx packages/ledger-publisher/src/chain-sync.ts",
     "test:ledger": "node --import tsx --test packages/ledger-publisher/test/chain-sync.test.ts",
-    "test:web": "node --import tsx --test apps/web/test/request-access.test.ts"
+    "test:web": "node --import tsx --test apps/web/test/request-access.test.ts apps/web/test/video-sound.test.ts"
   },
   "license": "MIT"
 }
