@@ -897,9 +897,10 @@ pre {
   color: var(--warn);
 }
 
-/* Phone frame: 720x1466 video, max ~600px tall on desktop. */
+/* Phone frame: 720x1232 video, screen ~600px tall on desktop. */
 .phone {
-  width: 318px;
+  /* 12px bezel + 1px border each side + 348px screen = ~595px tall at 720:1232 */
+  width: 374px;
   padding: 12px;
   border-radius: 46px;
   background: #0b0d12;
@@ -909,7 +910,7 @@ pre {
 
 .phone-screen {
   position: relative;
-  aspect-ratio: 720 / 1466;
+  aspect-ratio: 720 / 1232;
   max-height: 600px;
   border-radius: 34px;
   overflow: hidden;
