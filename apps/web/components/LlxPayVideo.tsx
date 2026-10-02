@@ -84,18 +84,18 @@ export function LlxPayVideo() {
           ref={holder}
           dangerouslySetInnerHTML={{ __html: VIDEO_HTML }}
         />
+        {!missing && (
+          <button
+            type="button"
+            className="phone-sound"
+            aria-label={soundButtonLabel(muted)}
+            aria-pressed={!muted}
+            onClick={onToggleSound}
+          >
+            <SpeakerIcon muted={muted} />
+          </button>
+        )}
       </div>
-      {!missing && (
-        <button
-          type="button"
-          className="phone-sound"
-          aria-label={soundButtonLabel(muted)}
-          aria-pressed={!muted}
-          onClick={onToggleSound}
-        >
-          <SpeakerIcon muted={muted} />
-        </button>
-      )}
     </div>
   );
 }

@@ -959,11 +959,15 @@ pre {
   display: none;
 }
 
-/* Sound toggle: sits on the frame's bottom-right corner, off the app UI. */
+/* Sound toggle: inside the screen's bottom-right corner (clipped by the
+   screen, so it can never leave the frame). The demo app's bottom nav fills
+   the lowest ~10.7% of the 720x1232 video (Settings sits in the right corner),
+   so the button floats just above it. A % bottom tracks the video at every
+   width because the screen keeps the video's aspect ratio. */
 .phone-sound {
   position: absolute;
-  right: -10px;
-  bottom: -10px;
+  right: 11px;
+  bottom: 12%;
   width: 44px;
   height: 44px;
   display: grid;
