@@ -1,5 +1,6 @@
 import { ChangelogList } from "@/components/ChangelogList";
 import { LedgerLive } from "@/components/LedgerLive";
+import { LlxPaySection } from "@/components/LlxPaySection";
 import { LlxSection } from "@/components/LlxSection";
 import { PolicyTermsheet } from "@/components/PolicyTermsheet";
 import { ResearchGrid } from "@/components/ResearchGrid";
@@ -36,6 +37,8 @@ export default async function HomePage() {
           <PolicyTermsheet />
         </div>
       </div>
+
+      <LlxPaySection />
 
       <section className="block" id="controls">
         <div className="wrap sec-head">

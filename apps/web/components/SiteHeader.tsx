@@ -1,6 +1,7 @@
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 const NAV = [
+  { href: "/#llx-pay", label: "LLX Pay" },
   { href: "/#controls", label: "Controls" },
   { href: "/#ledger", label: "Ledger" },
   { href: "/#endpoints", label: "Endpoints" },
@@ -21,7 +22,9 @@ export function SiteHeader() {
             height={40}
             alt="Liquid Logic X"
           />
-          Liquid Logic X
+          <span>
+            Liquid Logic <span className="chrome-x">X</span>
+          </span>
         </a>
         <nav className="primary" aria-label="Primary">
           {NAV.map((item) => (
