@@ -16,8 +16,8 @@ const VIDEO_HTML = `<video autoplay muted loop playsinline preload="metadata" po
 function SpeakerIcon({ muted }: { muted: boolean }) {
   return (
     <svg
-      width="18"
-      height="18"
+      width="15"
+      height="15"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -84,18 +84,20 @@ export function LlxPayVideo() {
           ref={holder}
           dangerouslySetInnerHTML={{ __html: VIDEO_HTML }}
         />
+        {!missing && (
+          <button
+            type="button"
+            className="phone-sound"
+            aria-label={soundButtonLabel(muted)}
+            aria-pressed={!muted}
+            onClick={onToggleSound}
+          >
+            <span className="phone-sound-dot" aria-hidden="true">
+              <SpeakerIcon muted={muted} />
+            </span>
+          </button>
+        )}
       </div>
-      {!missing && (
-        <button
-          type="button"
-          className="phone-sound"
-          aria-label={soundButtonLabel(muted)}
-          aria-pressed={!muted}
-          onClick={onToggleSound}
-        >
-          <SpeakerIcon muted={muted} />
-        </button>
-      )}
     </div>
   );
 }
