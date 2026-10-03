@@ -1031,38 +1031,57 @@ pre {
   display: none;
 }
 
-/* Sound toggle: inside the screen's bottom-right corner (clipped by the
-   screen, so it can never leave the frame). The demo app's bottom nav fills
-   the lowest ~10.7% of the 720x1232 video (Settings sits in the right corner),
-   so the button floats just above it. A % bottom tracks the video at every
-   width because the screen keeps the video's aspect ratio. */
+/* Sound toggle: a 30px dot tucked into the screen's bottom-right corner,
+   in the demo app's bottom nav to the right of Settings, so app content
+   above the nav (e.g. "Settled") stays visible. The button itself is a
+   transparent 44x44 tap area; the visible dot sits in its bottom-right, so
+   the extra tap area extends up/left without hiding anything. The screen
+   clips overflow, so it can never leave the frame; 7px insets keep the dot
+   clear of the screen's rounded corner (34px radius desktop; 8px insets
+   for the 40px mobile radius, set in the media query below). */
 .phone-sound {
   position: absolute;
-  right: 11px;
-  bottom: 12%;
+  right: 7px;
+  bottom: 7px;
   width: 44px;
   height: 44px;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 50%;
-  background: rgba(11, 13, 18, 0.72);
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
   color: #e7eaf0;
   cursor: pointer;
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-  box-shadow: 0 4px 14px rgba(10, 12, 20, 0.35);
+  -webkit-tap-highlight-color: transparent;
   z-index: 2;
 }
 
-.phone-sound:hover {
-  background: rgba(11, 13, 18, 0.88);
+.phone-sound-dot {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  background: rgba(11, 13, 18, 0.78);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 8px rgba(10, 12, 20, 0.35);
+}
+
+.phone-sound:hover .phone-sound-dot {
+  background: rgba(11, 13, 18, 0.92);
 }
 
 .phone-sound:focus-visible {
+  outline: none;
+}
+
+.phone-sound:focus-visible .phone-sound-dot {
   outline: 2px solid var(--violet);
-  outline-offset: 2px;
+  outline-offset: 1px;
 }
 
 .phone[data-missing="true"] .phone-sound {
@@ -1092,6 +1111,11 @@ pre {
   .phone-screen {
     max-height: none;
     border-radius: 40px;
+  }
+
+  .phone-sound {
+    right: 8px;
+    bottom: 8px;
   }
 
   .llxpay-head h2 {
