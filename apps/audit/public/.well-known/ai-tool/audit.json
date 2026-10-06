@@ -1,7 +1,7 @@
 {
   "type": "https://ercs.ethereum.org/ERCS/erc-8257#tool-manifest-v1",
-  "name": "Liquid Logic Agent — Wallet Audit",
-  "description": "Liquid Logic X wallet audit for AI agents. Send an agent wallet address and get a structured USDC spend summary from the Liquid Logic X public ledger on Base: payment count, total USDC, spend by destination endpoint with Basescan links, recent payments, and hold/deny/freeze counts. Paid per call via x402: 0.05 USDC on Base. Call with GET ?wallet=0x… or POST JSON {\"wallet\":\"0x…\"}. Site: https://liquidlogicx.com",
+  "name": "x402 Agent Spend Audit",
+  "description": "x402 agent spend audit by Liquid Logic X: where an agent wallet's USDC went. Input: a wallet address (0x...). Output: JSON spend summary of x402 payments in Base USDC (count, total, per-endpoint breakdown, recent payments with Basescan tx links, holds/denials). Source: the Liquid Logic X public ledger (its treasurer agent's spend); anyone can verify each payment onchain. $0.05 USDC on Base. Site: https://liquidlogicx.com",
   "endpoint": "https://audit.liquidlogicx.com/api/audit",
   "inputs": {
     "type": "object",
@@ -9,7 +9,7 @@
       "wallet": {
         "type": "string",
         "pattern": "^0x[0-9a-fA-F]{40}$",
-        "description": "Agent wallet address (0x…) to audit"
+        "description": "Agent wallet address (0x\u2026) to audit"
       }
     },
     "required": [
@@ -153,9 +153,11 @@
   "image": "https://audit.liquidlogicx.com/ai-tool/llx-logo.png",
   "featuredImage": "https://audit.liquidlogicx.com/ai-tool/llx-banner.png",
   "tags": [
-    "ai",
-    "defi",
-    "security"
+    "audit",
+    "agent-spend",
+    "x402",
+    "usdc",
+    "base"
   ],
   "pricing": [
     {

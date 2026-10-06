@@ -1,0 +1,122 @@
+{
+  "type": "https://ercs.ethereum.org/ERCS/erc-8257#tool-manifest-v1",
+  "name": "x402 Spend Cap/Allowance Check",
+  "description": "x402 spend cap and allowance check by Liquid Logic X: call it before paying an x402 endpoint. Input: wallet (the Liquid Logic X treasurer, 0xEA24...) and optional endpoint URL. Output: JSON { allowed, reason, remainingUsdc, capUsdc, spentUsdc } from the published spend policy (allowlist, max per payment, UTC daily cap) and public ledger. Omit endpoint for remaining cap + allowlist. $0.001 USDC on Base. Site: https://liquidlogicx.com",
+  "endpoint": "https://audit.liquidlogicx.com/api/allowance",
+  "inputs": {
+    "type": "object",
+    "properties": {
+      "wallet": {
+        "type": "string",
+        "pattern": "^0x[0-9a-fA-F]{40}$",
+        "description": "Agent wallet address (0x\u2026) to check against the published spend policy"
+      },
+      "endpoint": {
+        "type": "string",
+        "description": "Optional x402 endpoint URL to check allowlist membership; omit for remaining-cap + allowlist summary"
+      },
+      "amountUsdc": {
+        "type": "string",
+        "description": "Optional proposed payment amount in USDC (decimal string) for max-per-payment check"
+      }
+    },
+    "required": [
+      "wallet"
+    ]
+  },
+  "outputs": {
+    "type": "object",
+    "properties": {
+      "walletAddress": {
+        "type": "string",
+        "pattern": "^0x[0-9a-fA-F]{40}$"
+      },
+      "endpoint": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "allowed": {
+        "type": "boolean"
+      },
+      "reason": {
+        "type": "string"
+      },
+      "remainingUsdc": {
+        "type": "number"
+      },
+      "capUsdc": {
+        "type": "number"
+      },
+      "spentUsdc": {
+        "type": "number"
+      },
+      "maxPerPaymentUsdc": {
+        "type": "number"
+      },
+      "day": {
+        "type": "string",
+        "description": "UTC calendar day (YYYY-MM-DD)"
+      },
+      "network": {
+        "type": "string",
+        "const": "eip155:8453"
+      },
+      "asset": {
+        "type": "string",
+        "const": "USDC"
+      },
+      "source": {
+        "type": "string",
+        "const": "treasurer_policy"
+      },
+      "spentWindow": {
+        "type": "string"
+      },
+      "endpointAllowlisted": {
+        "type": "boolean"
+      },
+      "allowlist": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "required": [
+      "walletAddress",
+      "endpoint",
+      "allowed",
+      "reason",
+      "remainingUsdc",
+      "capUsdc",
+      "spentUsdc",
+      "maxPerPaymentUsdc",
+      "day",
+      "network",
+      "asset",
+      "source",
+      "spentWindow"
+    ]
+  },
+  "version": "1.0.0",
+  "image": "https://audit.liquidlogicx.com/ai-tool/llx-logo.png",
+  "featuredImage": "https://audit.liquidlogicx.com/ai-tool/llx-banner.png",
+  "tags": [
+    "allowance",
+    "spend-controls",
+    "agent-payments",
+    "x402",
+    "usdc"
+  ],
+  "pricing": [
+    {
+      "amount": "1000",
+      "asset": "eip155:8453/erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "recipient": "eip155:8453:0x147991a1c25e78f6d9225d2dba61ed93a6158c7b",
+      "protocol": "x402"
+    }
+  ],
+  "creatorAddress": "0x0000000000000000000000000000000000000000"
+}

@@ -1,7 +1,7 @@
 {
   "type": "https://ercs.ethereum.org/ERCS/erc-8257#tool-manifest-v1",
-  "name": "Liquid Logic Agent — Settlement Proof",
-  "description": "Liquid Logic X settlement proofs: receipts for agent payments. Send a Base USDC transaction hash and get a settlement proof recorded on Arc with a public verify link. The paying wallet must be the sender or recipient of the USDC transfer (403 otherwise, not charged). Idempotent: an already-recorded tx returns status \"existing\". Charged only when a proof is returned. Paid per call via x402: 0.02 USDC on Base. Site: https://liquidlogicx.com",
+  "name": "Payment Receipt/Settlement Proof",
+  "description": "Payment receipt and settlement proof for x402 and agent payments, by Liquid Logic X. Input: a Base USDC tx hash (optional memo). Output: JSON proof recorded onchain on Arc mainnet (proofId, from/to/amount, Arc tx, refId) plus a public verify link anyone can check. $0.02 USDC on Base, charged only when a proof is returned. Your paying wallet must be the tx sender or recipient. Liquid Logic X also records proofs on Tempo mainnet. Site: https://liquidlogicx.com",
   "endpoint": "https://audit.liquidlogicx.com/api/prove",
   "inputs": {
     "type": "object",
@@ -131,9 +131,11 @@
   "image": "https://audit.liquidlogicx.com/ai-tool/llx-logo.png",
   "featuredImage": "https://audit.liquidlogicx.com/ai-tool/llx-banner.png",
   "tags": [
-    "ai",
-    "defi",
-    "security"
+    "payment-receipt",
+    "settlement-proof",
+    "verify",
+    "x402",
+    "usdc"
   ],
   "pricing": [
     {
