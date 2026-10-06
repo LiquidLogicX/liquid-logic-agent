@@ -1,0 +1,171 @@
+{
+  "type": "https://ercs.ethereum.org/ERCS/erc-8257#tool-manifest-v1",
+  "name": "x402 Agent Spend Audit",
+  "description": "x402 agent spend audit by Liquid Logic X: where an agent wallet's USDC went. Input: a wallet address (0x...). Output: JSON spend summary of x402 payments in Base USDC (count, total, per-endpoint breakdown, recent payments with Basescan tx links, holds/denials). Source: the Liquid Logic X public ledger (its treasurer agent's spend); anyone can verify each payment onchain. $0.05 USDC on Base. Site: https://liquidlogicx.com",
+  "endpoint": "https://audit.liquidlogicx.com/api/audit",
+  "inputs": {
+    "type": "object",
+    "properties": {
+      "wallet": {
+        "type": "string",
+        "pattern": "^0x[0-9a-fA-F]{40}$",
+        "description": "Agent wallet address (0x\u2026) to audit"
+      }
+    },
+    "required": [
+      "wallet"
+    ]
+  },
+  "outputs": {
+    "type": "object",
+    "properties": {
+      "walletAddress": {
+        "type": "string",
+        "pattern": "^0x[0-9a-fA-F]{40}$"
+      },
+      "network": {
+        "type": "string",
+        "const": "eip155:8453"
+      },
+      "asset": {
+        "type": "string",
+        "const": "USDC"
+      },
+      "source": {
+        "type": "string",
+        "const": "public_ledger"
+      },
+      "paymentCount": {
+        "type": "integer"
+      },
+      "totalUsdc": {
+        "type": "number"
+      },
+      "held": {
+        "type": "integer"
+      },
+      "denied": {
+        "type": "integer"
+      },
+      "expired": {
+        "type": "integer"
+      },
+      "frozenSeconds": {
+        "type": "number"
+      },
+      "destinations": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "endpoint": {
+              "type": "string"
+            },
+            "count": {
+              "type": "integer"
+            },
+            "totalUsdc": {
+              "type": "number"
+            },
+            "examples": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "amountUsdc": {
+                    "type": "string"
+                  },
+                  "txHash": {
+                    "type": "string",
+                    "pattern": "^0x[0-9a-fA-F]{64}$"
+                  },
+                  "basescanUrl": {
+                    "type": "string"
+                  },
+                  "timestamp": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "amountUsdc",
+                  "timestamp"
+                ]
+              }
+            }
+          },
+          "required": [
+            "endpoint",
+            "count",
+            "totalUsdc",
+            "examples"
+          ]
+        }
+      },
+      "recent": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "endpoint": {
+              "type": "string"
+            },
+            "amountUsdc": {
+              "type": "string"
+            },
+            "txHash": {
+              "type": "string",
+              "pattern": "^0x[0-9a-fA-F]{64}$"
+            },
+            "basescanUrl": {
+              "type": "string"
+            },
+            "timestamp": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "endpoint",
+            "amountUsdc",
+            "timestamp"
+          ]
+        }
+      },
+      "note": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "walletAddress",
+      "network",
+      "asset",
+      "source",
+      "paymentCount",
+      "totalUsdc",
+      "destinations",
+      "recent",
+      "note"
+    ]
+  },
+  "version": "1.0.0",
+  "image": "https://audit.liquidlogicx.com/ai-tool/llx-logo.png",
+  "featuredImage": "https://audit.liquidlogicx.com/ai-tool/llx-banner.png",
+  "tags": [
+    "audit",
+    "agent-spend",
+    "x402",
+    "usdc",
+    "base"
+  ],
+  "pricing": [
+    {
+      "amount": "50000",
+      "asset": "eip155:8453/erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "recipient": "eip155:8453:0x147991a1c25e78f6d9225d2dba61ed93a6158c7b",
+      "protocol": "x402"
+    }
+  ],
+  "creatorAddress": "0x0000000000000000000000000000000000000000"
+}
