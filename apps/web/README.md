@@ -5,8 +5,10 @@ Next.js App Router marketing + ledger surface.
 - Explains the agent (USDC / x402 services only; agent never buys, sells, or holds $LLX)
 - Live ledger embed + links
 - Endpoint docs for the $0.05 audit fee
-- Brief `$LLX` note (Virtuals launch); contract address renders only when `NEXT_PUBLIC_LLX_CONTRACT_ADDRESS` is set
-- **No** pricing beyond audit, **no** roadmap promises as reasons to hold the token
+- `$LLX` token facts with the official contract (`lib/site.ts`) and one check-the-address line
+- `$LLX utility` section (`#llx-utility`, data in `lib/llxUtility.ts`). Items stay "Coming soon" until they ship in code; x402 endpoints accept USDC only today
+- Site-wide footer line: "Nothing on this site is financial advice."
+- **Never** promise price, returns, yield, buybacks or holder profit (guarded by `test/llx-utility.test.ts`)
 
 Ready for Vercel Hobby + custom domain `liquidlogicx.com`.
 

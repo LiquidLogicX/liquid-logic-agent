@@ -2,6 +2,7 @@ import { ChangelogList } from "@/components/ChangelogList";
 import { LedgerLive } from "@/components/LedgerLive";
 import { LlxPaySection } from "@/components/LlxPaySection";
 import { LlxSection } from "@/components/LlxSection";
+import { LlxUtility } from "@/components/LlxUtility";
 import { PolicyTermsheet } from "@/components/PolicyTermsheet";
 import { ResearchGrid } from "@/components/ResearchGrid";
 import { AUDIT_URL } from "@/lib/site";
@@ -192,6 +193,18 @@ export default async function HomePage() {
             </p>
           </div>
           <LlxSection />
+        </div>
+      </section>
+
+      <section className="block" id="llx-utility">
+        <div className="wrap sec-head">
+          <div>
+            <h2>$LLX utility</h2>
+            <p className="intro">
+              What $LLX does across Liquid Logic X products.
+            </p>
+          </div>
+          <LlxUtility />
         </div>
       </section>
 
