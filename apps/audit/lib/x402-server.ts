@@ -24,6 +24,13 @@ import {
   postProveDiscovery,
   PROVE_DESCRIPTION,
 } from "./prove/discovery";
+import {
+  ALLOWANCE_META,
+  AUDIT_META,
+  BAZAAR_ICON_URL,
+  PROVE_META,
+  type BazaarMeta,
+} from "./bazaar-meta";
 
 /**
  * /api/prove routes (Base only — never the Arc dual rail, which settles
@@ -46,23 +53,14 @@ export const PROVE_ROUTES: Record<"GET /api/prove" | "POST /api/prove", CdpRoute
 };
 
 /**
- * Provider-level Bazaar metadata (x402 `resource.serviceName` / `tags` / `iconUrl`).
- * Agentic Market uses these for the listing's name, search tags and icon.
+ * Bazaar listing metadata (x402 `resource.serviceName` / `tags` / `iconUrl`),
+ * set per route from ./bazaar-meta so each endpoint gets a keyword-first name
+ * and its own tags (Bazaar ranks name > tags > description).
  * Only the full x402 RouteConfig format carries them — the simplified
  * CdpRouteConfig drops them — so every route is converted with `withServiceMeta`.
  */
-const SERVICE_NAME = "Liquid Logic Agent"; // <= 32 printable ASCII
-const SERVICE_TAGS = [
-  "agent-treasury",
-  "spend-controls",
-  "settlement-proofs",
-  "usdc",
-  "audit",
-]; // <= 5 tags, each <= 32 ASCII
-const SERVICE_ICON_URL = "https://liquidlogicx.com/llx-logo.png";
-
-/** Convert a simplified CDP route (Base only) to full RouteConfig + service metadata. */
-function withServiceMeta(route: CdpRouteConfig): RouteConfig {
+/** Convert a simplified CDP route (Base only) to full RouteConfig + listing metadata. */
+function withServiceMeta(route: CdpRouteConfig, meta: BazaarMeta): RouteConfig {
   return {
     accepts: {
       scheme: "exact",
@@ -73,18 +71,16 @@ function withServiceMeta(route: CdpRouteConfig): RouteConfig {
     },
     ...(route.description !== undefined && { description: route.description }),
     mimeType: "application/json",
-    serviceName: SERVICE_NAME,
-    tags: [...SERVICE_TAGS],
-    iconUrl: SERVICE_ICON_URL,
+    serviceName: meta.serviceName,
+    tags: [...meta.tags],
+    iconUrl: BAZAAR_ICON_URL,
     ...(route.extensions !== undefined && { extensions: route.extensions }),
   };
 }
 
-const AUDIT_DESCRIPTION =
-  "Liquid Logic Agent — wallet audit. Returns a structured USDC spend summary for an agent wallet from the public ledger. Site: https://liquidlogicx.com";
+const AUDIT_DESCRIPTION = AUDIT_META.description;
 
-const ALLOWANCE_DESCRIPTION =
-  "Call this BEFORE paying an x402 endpoint: ask whether the Liquid Logic treasurer wallet (0xEA24…) is allowed to pay that URL and how much USDC remains under the UTC daily cap. $0.001 USDC on Base — cheaper than /api/audit ($0.05). Pass wallet; optionally pass endpoint. Omit endpoint for wallet-level remaining + allowlist. Site: https://liquidlogicx.com";
+const ALLOWANCE_DESCRIPTION = ALLOWANCE_META.description;
 
 const auditOutputExample = {
   example: AUDIT_OUTPUT_EXAMPLE,
@@ -185,27 +181,27 @@ export function getAuditX402Server(): Promise<X402Server> {
           networks: [NETWORK_BASE],
           description: AUDIT_DESCRIPTION,
           extensions: { ...getAuditDiscovery },
-        }),
+        }, AUDIT_META),
         "POST /api/audit": withServiceMeta({
           price: AUDIT_PRICE_LABEL,
           networks: [NETWORK_BASE],
           description: AUDIT_DESCRIPTION,
           extensions: { ...postAuditDiscovery },
-        }),
+        }, AUDIT_META),
         "GET /api/allowance": withServiceMeta({
           price: ALLOWANCE_PRICE_LABEL,
           networks: [NETWORK_BASE],
           description: ALLOWANCE_DESCRIPTION,
           extensions: { ...getAllowanceDiscovery },
-        }),
+        }, ALLOWANCE_META),
         "POST /api/allowance": withServiceMeta({
           price: ALLOWANCE_PRICE_LABEL,
           networks: [NETWORK_BASE],
           description: ALLOWANCE_DESCRIPTION,
           extensions: { ...postAllowanceDiscovery },
-        }),
-        "GET /api/prove": withServiceMeta(PROVE_ROUTES["GET /api/prove"]),
-        "POST /api/prove": withServiceMeta(PROVE_ROUTES["POST /api/prove"]),
+        }, ALLOWANCE_META),
+        "GET /api/prove": withServiceMeta(PROVE_ROUTES["GET /api/prove"], PROVE_META),
+        "POST /api/prove": withServiceMeta(PROVE_ROUTES["POST /api/prove"], PROVE_META),
       },
     });
   }
