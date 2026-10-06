@@ -3,12 +3,7 @@ export function SiteFooter() {
     <footer className="site-foot">
       <div className="wrap foot-inner">
         <div>
-          <p>
-            USDC on Base for x402 services. $LLX is the Liquid Logic Agent token
-            on Virtuals (Base). It is not an investment product. No returns,
-            yield, buybacks or price support are promised. Roadmap describes
-            intent, not a commitment.
-          </p>
+          <p className="foot-nfa">Nothing on this site is financial advice.</p>
         </div>
         <div>
           <p>

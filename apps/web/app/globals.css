@@ -462,7 +462,7 @@ th.num {
 
 .token-grid {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
+  grid-template-columns: 1fr;
   gap: 32px;
   align-items: start;
   min-width: 0;
@@ -474,22 +474,55 @@ th.num {
   padding: 4px 20px;
 }
 
-.disclosure {
-  background: var(--sheet);
-  border: 1px solid var(--rule);
-  border-left: 4px solid var(--warn);
-  padding: 20px 22px;
-  font-size: 15px;
-}
-
-.disclosure h3 {
-  font-size: 18px;
-  margin-bottom: 8px;
-}
-
-.disclosure p {
-  margin: 0 0 10px;
+.ca-note {
+  margin: 8px 0 0;
+  font-size: 13px;
+  font-weight: 400;
   color: var(--slate);
+}
+
+.utility {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--rule);
+  min-width: 0;
+}
+
+.utility li {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--rule);
+  min-width: 0;
+}
+
+.utility h3 {
+  font-size: 18px;
+  margin: 8px 0 6px;
+}
+
+.utility p {
+  margin: 0;
+  font-size: 15px;
+  color: var(--slate);
+}
+
+.utility .pill {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 2px 8px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  color: var(--slate);
+}
+
+.utility .pill.live {
+  color: var(--ink);
+}
+
+footer.site-foot p.foot-nfa {
+  color: var(--ink);
 }
 
 .ca {
@@ -707,6 +740,359 @@ pre {
 .endpoint-label {
   overflow-wrap: anywhere;
   word-break: break-word;
+}
+
+/* —— Brand: silver chrome X in the "Liquid Logic X" wordmark —— */
+.chrome-x {
+  background: linear-gradient(180deg, #f2f5f8 0%, #c9d2dc 50%, #8e9aa6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0.5px 0 rgba(24, 32, 47, 0.55));
+}
+
+/* —— LLX Pay —— */
+.llxpay-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "head media"
+    "body media";
+  grid-template-rows: auto 1fr;
+  column-gap: 56px;
+  row-gap: 20px;
+  align-items: start;
+}
+
+.llxpay-head {
+  grid-area: head;
+}
+
+.llxpay-media {
+  grid-area: media;
+  justify-self: end;
+}
+
+.llxpay-body {
+  grid-area: body;
+  min-width: 0;
+}
+
+.llxpay-head h2 {
+  font-size: 34px;
+  line-height: 1.15;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  font: 600 12px/1 var(--sans);
+  letter-spacing: 0.02em;
+  color: var(--violet);
+  background: var(--violet-soft);
+  border: 1px solid var(--violet);
+  padding: 5px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.llxpay-sub {
+  font-size: 18px;
+  color: var(--slate);
+  max-width: 46ch;
+  margin: 14px 0 0;
+  line-height: 1.6;
+}
+
+.llxpay-proof {
+  margin: 0 0 18px;
+  font-size: 15px;
+  color: var(--ok);
+  background: var(--ok-soft);
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 4px;
+}
+
+.llxpay-proof a {
+  color: inherit;
+  font-weight: 600;
+}
+
+.llxpay-points {
+  list-style: none;
+  margin: 0 0 26px;
+  padding: 0;
+  border-top: 1px solid var(--rule);
+  max-width: 54ch;
+}
+
+.llxpay-points li {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+  color: var(--slate);
+}
+
+.llxpay-points strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.llxpay-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.llxpay-demo {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.llxpay-demo small {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--slate);
+}
+
+.llxpay-form-wrap {
+  margin-top: 18px;
+  max-width: 440px;
+}
+
+.llxpay-form {
+  display: grid;
+  gap: 12px;
+  background: var(--sheet);
+  border: 1px solid var(--rule-strong);
+  border-top: 4px solid var(--violet);
+  padding: 18px 20px;
+}
+
+.llxpay-form label {
+  display: grid;
+  gap: 4px;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.llxpay-form input {
+  font: 400 16px var(--sans);
+  padding: 10px 12px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--ink);
+  width: 100%;
+}
+
+.llxpay-form input:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: 1px;
+}
+
+.llxpay-form button {
+  justify-self: start;
+}
+
+.llxpay-form button[disabled] {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.llxpay-hp {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.llxpay-msg {
+  margin: 0;
+  font-size: 14px;
+}
+
+.llxpay-msg.ok {
+  color: var(--ok);
+  background: var(--ok-soft);
+  padding: 12px 14px;
+  border-radius: 4px;
+}
+
+.llxpay-msg.err {
+  color: var(--warn);
+}
+
+/* Settlement proof verifier links */
+.proofs-cta {
+  margin-top: 26px;
+  padding-top: 20px;
+  border-top: 1px solid var(--rule);
+  max-width: 54ch;
+}
+
+.proofs-line {
+  margin: 0 0 14px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.proofs-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.proofs-buttons .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .proofs-buttons {
+    flex-direction: column;
+  }
+
+  .proofs-buttons .btn {
+    width: 100%;
+  }
+}
+
+/* Phone frame: 720x1232 video, screen ~600px tall on desktop. */
+.phone {
+  position: relative;
+  /* 12px bezel + 1px border each side + 348px screen = ~595px tall at 720:1232 */
+  width: 374px;
+  padding: 12px;
+  border-radius: 46px;
+  background: #0b0d12;
+  border: 1px solid #2c3546;
+  box-shadow: 0 0 0 2px #1a2130, 0 24px 60px rgba(10, 12, 20, 0.28);
+}
+
+.phone-screen {
+  position: relative;
+  aspect-ratio: 720 / 1232;
+  max-height: 600px;
+  border-radius: 34px;
+  overflow: hidden;
+  background: radial-gradient(120% 70% at 50% 0%, #262546 0%, #121722 60%, #0b0d12 100%);
+}
+
+.phone-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #c9d2dc;
+  text-align: center;
+}
+
+.phone-fallback-mark {
+  font: 600 22px var(--serif);
+  color: #e7eaf0;
+}
+
+.phone-fallback-note {
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: #9aa3b5;
+}
+
+.phone-video,
+.phone-video video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.phone-video video {
+  object-fit: cover;
+  display: block;
+  background: transparent;
+}
+
+.phone[data-missing="true"] .phone-video {
+  display: none;
+}
+
+/* Sound toggle: sits on the frame's bottom-right corner, off the app UI. */
+.phone-sound {
+  position: absolute;
+  right: -10px;
+  bottom: -10px;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  background: rgba(11, 13, 18, 0.72);
+  color: #e7eaf0;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 14px rgba(10, 12, 20, 0.35);
+  z-index: 2;
+}
+
+.phone-sound:hover {
+  background: rgba(11, 13, 18, 0.88);
+}
+
+.phone-sound:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: 2px;
+}
+
+.phone[data-missing="true"] .phone-sound {
+  display: none;
+}
+
+@media (max-width: 860px) {
+  .llxpay-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "head"
+      "media"
+      "body";
+    grid-template-rows: auto;
+    row-gap: 24px;
+  }
+
+  .llxpay-media {
+    justify-self: stretch;
+  }
+
+  .phone {
+    width: 100%;
+    border-radius: 52px;
+  }
+
+  .phone-screen {
+    max-height: none;
+    border-radius: 40px;
+  }
+
+  .llxpay-head h2 {
+    font-size: 30px;
+  }
 }
 
 @media (max-width: 860px) {

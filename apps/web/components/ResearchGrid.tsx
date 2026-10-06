@@ -24,13 +24,29 @@ export function ResearchGrid() {
         </p>
       </article>
       <article>
+        <div className="stage">Coming soon</div>
+        <h3>$LLX payments for proofs and audits</h3>
+        <p>
+          x402 endpoints accept $LLX alongside USDC, at a discount to the USDC
+          price.
+        </p>
+      </article>
+      <article>
+        <div className="stage">Coming soon</div>
+        <h3>$LLX for X-Lock and LLX Pay</h3>
+        <p>
+          Pay X-Lock fees in $LLX at a discount, and get early access to new
+          LLX Pay features as a holder.
+        </p>
+      </article>
+      <article>
         <div className="stage">Phase 3</div>
         <h3>LLX Privacy Network</h3>
         <p>
           Our own L2 built for private finance. Proof of funds, confidential
-          balances and settlement proofs run natively, powered by FHE.
-          Businesses prove what they hold without ever showing it. No other
-          payments network does this.
+          balances and settlement proofs run natively, powered by fully
+          homomorphic encryption (FHE). Businesses prove what they hold without
+          ever showing it.
         </p>
       </article>
     </div>

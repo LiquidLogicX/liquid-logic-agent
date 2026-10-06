@@ -76,8 +76,8 @@ export function PolicyTermsheet() {
             </dd>
           </dl>
           <p className="src">
-            Payments outside these limits are refused. The agent spends USDC on
-            services only and never buys, sells or holds $LLX.
+            Payments outside these limits are refused. Agent spending settles in
+            USDC today. $LLX payments coming soon.
           </p>
         </>
       )}
