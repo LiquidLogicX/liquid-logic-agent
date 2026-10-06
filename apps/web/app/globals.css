@@ -930,6 +930,45 @@ pre {
   color: var(--warn);
 }
 
+/* Settlement proof verifier links */
+.proofs-cta {
+  margin-top: 26px;
+  padding-top: 20px;
+  border-top: 1px solid var(--rule);
+  max-width: 54ch;
+}
+
+.proofs-line {
+  margin: 0 0 14px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.proofs-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.proofs-buttons .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .proofs-buttons {
+    flex-direction: column;
+  }
+
+  .proofs-buttons .btn {
+    width: 100%;
+  }
+}
+
 /* Phone frame: 720x1232 video, screen ~600px tall on desktop. */
 .phone {
   position: relative;
