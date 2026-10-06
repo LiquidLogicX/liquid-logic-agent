@@ -58,6 +58,15 @@ test("footer carries the not-financial-advice line", () => {
   assert.match(src, /Nothing on this site is financial advice\./);
 });
 
+test("footer carries Liquid Logic X LLC copyright", () => {
+  const src = readFileSync(
+    join(__dirname, "..", "components", "SiteFooter.tsx"),
+    "utf8",
+  );
+  assert.match(src, /© 2026 Liquid Logic X LLC/);
+  assert.doesNotMatch(src, /entity number|CA LLC|Secretary of State|filing/i);
+});
+
 const read = (name: string) =>
   readFileSync(join(__dirname, "..", "components", name), "utf8").replace(
     /\s+/g,

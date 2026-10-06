@@ -7,7 +7,7 @@ Next.js App Router marketing + ledger surface.
 - Endpoint docs for the $0.05 audit fee
 - `$LLX` token facts with the official contract (`lib/site.ts`) and one check-the-address line
 - `$LLX utility` section (`#llx-utility`, data in `lib/llxUtility.ts`). Items stay "Coming soon" until they ship in code; x402 endpoints accept USDC only today
-- Site-wide footer line: "Nothing on this site is financial advice."
+- Site-wide footer: "Nothing on this site is financial advice." and "© 2026 Liquid Logic X LLC".
 - **Never** promise price, returns, yield, buybacks or holder profit (guarded by `test/llx-utility.test.ts`)
 
 Ready for Vercel Hobby + custom domain `liquidlogicx.com`.
