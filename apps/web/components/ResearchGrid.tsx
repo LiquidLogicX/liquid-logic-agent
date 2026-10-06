@@ -45,8 +45,8 @@ export function ResearchGrid() {
         <p>
           Our own L2 built for private finance. Proof of funds, confidential
           balances and settlement proofs run natively, powered by FHE.
-          Businesses prove what they hold without ever showing it. No other
-          payments network does this.
+          Businesses prove what they hold without ever showing it. Private proof
+          of funds, powered by fully homomorphic encryption.
         </p>
       </article>
     </div>

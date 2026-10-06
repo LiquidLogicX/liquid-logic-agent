@@ -32,7 +32,7 @@ export function LlxSection() {
         <dt>Liquidity pool</dt>
         <dd>100% of supply</dd>
         <dt>Team allocation</dt>
-        <dd>None</dd>
+        <dd>None at launch. Team holdings were bought on the open market.</dd>
         <dt>Liquidity lock</dt>
         <dd>10 years after graduation</dd>
         <dt>Contract</dt>
