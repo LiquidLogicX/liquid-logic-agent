@@ -77,9 +77,10 @@ test("token table says team holdings were bought on the open market", () => {
   );
 });
 
-test("FHE roadmap card uses the private proof of funds line", () => {
+test("FHE roadmap card names fully homomorphic encryption once", () => {
   const src = read("ResearchGrid.tsx");
-  assert.match(src, /Private proof of funds, powered by fully homomorphic encryption\./);
+  assert.match(src, /powered by fully\s+homomorphic encryption \(FHE\)\./);
+  assert.doesNotMatch(src, /Private proof\s+of funds, powered by/);
   assert.doesNotMatch(src, /No other payments network/);
 });
 

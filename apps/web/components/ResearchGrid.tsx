@@ -44,9 +44,9 @@ export function ResearchGrid() {
         <h3>LLX Privacy Network</h3>
         <p>
           Our own L2 built for private finance. Proof of funds, confidential
-          balances and settlement proofs run natively, powered by FHE.
-          Businesses prove what they hold without ever showing it. Private proof
-          of funds, powered by fully homomorphic encryption.
+          balances and settlement proofs run natively, powered by fully
+          homomorphic encryption (FHE). Businesses prove what they hold without
+          ever showing it.
         </p>
       </article>
     </div>
