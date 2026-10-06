@@ -1,5 +1,6 @@
 import { LlxPayActions } from "@/components/LlxPayActions";
 import { LlxPayVideo } from "@/components/LlxPayVideo";
+import { SettlementProofs } from "@/components/SettlementProofs";
 import { LLX_PAY_FIRST_PAYMENT_URL } from "@/lib/llxPay";
 
 export function LlxPaySection() {
@@ -46,6 +47,7 @@ export function LlxPaySection() {
             </li>
           </ul>
           <LlxPayActions />
+          <SettlementProofs />
         </div>
       </div>
     </section>
