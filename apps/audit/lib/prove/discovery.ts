@@ -6,9 +6,10 @@
 import { declareDiscoveryExtension } from "@x402/extensions/bazaar";
 import { MEMO_MAX_CHARS, PROVE_ARC_CHAIN, SETTLEMENT_PROOFS_ARC, verifyUrlFor } from "./config";
 import type { ProveResponse } from "./handler";
+import { PROVE_META } from "../bazaar-meta";
 
-export const PROVE_DESCRIPTION =
-  "Receipts for agent payments. Send a Base USDC tx hash, get a settlement proof on Arc with a public verify link. $0.02 USDC on Base. The paying wallet must be the sender or recipient of the USDC transfer (403 otherwise, not charged). Idempotent: an already-recorded tx returns status \"existing\" with no new Arc write. You are only charged when a proof is returned. Site: https://liquidlogicx.com";
+/** Bazaar description lives with the other listing metadata in ../bazaar-meta. */
+export const PROVE_DESCRIPTION = PROVE_META.description;
 
 /** Proof #1: Base tx 0x93a1…af4c recorded on Arc in tx 0x2bb3…0bbe (SettlementProofs index 0). */
 const PROOF1_REF_ID = "0xe6db5a86740c0e40943c06268bda4e09b45ac0a45fd6c5d7b7f2550e19e0c50e";
