@@ -9,13 +9,15 @@
  * payment while payTo had 9 USDC Transfers on Base.
  *
  * This reads every Base USDC Transfer *to* payTo via JSON-RPC eth_getLogs
- * (public RPC caps ranges at 2,000 blocks) and appends any tx hash that is not
- * already in the ledger. Existing rows are never modified. Only blocks with
+ * (public mainnet.base.org caps eth_getLogs at 500 blocks as of 2026-10-05;
+ *  paid RPCs may allow more) and appends any tx hash that is not already in
+ * the ledger. Existing rows are never modified. Only blocks with
  * ≥ CONFIRMATIONS are scanned; a cursor in data/chain-sync.json keeps runs short.
+ * If the RPC returns "limited to a N range", the scanner auto-shrinks the chunk.
  *
  * Usage (repo root): npm run chain-sync-ledger
  * Env: BASE_RPC_URL, LEDGER_PAY_TO_EVM, LEDGER_JSONL_PATH, LEDGER_CHAIN_SYNC_CURSOR,
- *      LEDGER_CHAIN_SYNC_CHUNK (default 2000), LEDGER_CHAIN_SYNC_START_BLOCK
+ *      LEDGER_CHAIN_SYNC_CHUNK (default 500), LEDGER_CHAIN_SYNC_START_BLOCK
  *      (default DEFAULT_START_BLOCK = full payTo history, which includes the
  *      pre-launch Sep 13–14 treasurer self-tests the genesis reset had dropped)
  */
@@ -44,6 +46,8 @@ export const DEFAULT_PAY_TO = "0x147991A1c25e78f6D9225d2dBA61eD93A6158c7b";
 /** Just before payTo's first USDC receipt (block 51266731, 2026-09-13). */
 export const DEFAULT_START_BLOCK = 51_266_000n;
 export const CONFIRMATIONS = 12n;
+/** Default eth_getLogs window. mainnet.base.org enforces 500; override via LEDGER_CHAIN_SYNC_CHUNK. */
+export const DEFAULT_CHUNK = 500n;
 export const TRANSFER_TOPIC =
   "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 export const AUDIT_ORIGIN = "https://audit.liquidlogicx.com";
@@ -126,6 +130,12 @@ export function reconcile(
 
 type Rpc = <T>(method: string, params: unknown[]) => Promise<T>;
 
+/** Parse "eth_getLogs is limited to a 500 range" → 500n, else null. */
+export function parseGetLogsRangeLimit(message: string): bigint | null {
+  const m = message.match(/limited to a (\d+)\s*range/i);
+  return m ? BigInt(m[1]!) : null;
+}
+
 export function jsonRpc(url: string, fetchImpl: typeof fetch = fetch): Rpc {
   let id = 0;
   return async <T>(method: string, params: unknown[]): Promise<T> => {
@@ -137,7 +147,11 @@ export function jsonRpc(url: string, fetchImpl: typeof fetch = fetch): Rpc {
       });
       const body = (await res.json().catch(() => ({}))) as { result?: T; error?: { message?: string } };
       if (res.ok && !body.error) return body.result as T;
-      if (attempt >= 4) throw new Error(`${method} failed: ${body.error?.message ?? res.status}`);
+      const msg = body.error?.message ?? String(res.status);
+      // Range-limit and other permanent RPC policy errors: do not burn retries.
+      if (parseGetLogsRangeLimit(msg) !== null || attempt >= 4) {
+        throw new Error(`${method} failed: ${msg}`);
+      }
       await new Promise((r) => setTimeout(r, 500 * 2 ** attempt));
     }
   };
@@ -146,6 +160,15 @@ export function jsonRpc(url: string, fetchImpl: typeof fetch = fetch): Rpc {
 const hex = (n: bigint) => `0x${n.toString(16)}`;
 const topicAddr = (t: string) => `0x${t.slice(-40)}`;
 const addrTopic = (a: string) => `0x${a.toLowerCase().replace(/^0x/, "").padStart(64, "0")}`;
+
+type GetLogsRow = {
+  transactionHash: string;
+  blockNumber: string;
+  logIndex: string;
+  topics: string[];
+  data: string;
+  removed?: boolean;
+};
 
 export async function fetchTransfersTo(opts: {
   rpc: Rpc;
@@ -156,18 +179,31 @@ export async function fetchTransfersTo(opts: {
 }): Promise<ChainTransfer[]> {
   const out: ChainTransfer[] = [];
   const tsCache = new Map<string, number>();
-  for (let from = opts.fromBlock; from <= opts.toBlock; from += opts.chunk) {
-    const to = from + opts.chunk - 1n < opts.toBlock ? from + opts.chunk - 1n : opts.toBlock;
-    const logs = await opts.rpc<
-      Array<{ transactionHash: string; blockNumber: string; logIndex: string; topics: string[]; data: string; removed?: boolean }>
-    >("eth_getLogs", [
-      {
-        address: USDC_BASE_MAINNET,
-        fromBlock: hex(from),
-        toBlock: hex(to),
-        topics: [TRANSFER_TOPIC, null, addrTopic(opts.payTo)],
-      },
-    ]);
+  let chunk = opts.chunk > 0n ? opts.chunk : DEFAULT_CHUNK;
+
+  for (let from = opts.fromBlock; from <= opts.toBlock; ) {
+    const to = from + chunk - 1n < opts.toBlock ? from + chunk - 1n : opts.toBlock;
+    let logs: GetLogsRow[];
+    try {
+      logs = await opts.rpc<GetLogsRow[]>("eth_getLogs", [
+        {
+          address: USDC_BASE_MAINNET,
+          fromBlock: hex(from),
+          toBlock: hex(to),
+          topics: [TRANSFER_TOPIC, null, addrTopic(opts.payTo)],
+        },
+      ]);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      const limit = parseGetLogsRangeLimit(msg);
+      const span = to - from + 1n;
+      if (limit !== null && limit > 0n && span > limit) {
+        // Public Base RPC tightened; shrink and retry this window (and remaining).
+        chunk = limit;
+        continue;
+      }
+      throw err;
+    }
     for (const l of logs) {
       if (l.removed || l.topics.length !== 3) continue;
       let ts = tsCache.get(l.blockNumber);
@@ -186,6 +222,7 @@ export async function fetchTransfersTo(opts: {
         timestamp: ts,
       });
     }
+    from = to + 1n;
   }
   return out;
 }
@@ -210,7 +247,7 @@ async function main(): Promise<void> {
   const payTo = (process.env.LEDGER_PAY_TO_EVM ?? process.env.AUDIT_PAY_TO_EVM ?? DEFAULT_PAY_TO).replace(/\s+/g, "");
   if (!/^0x[a-fA-F0-9]{40}$/.test(payTo)) throw new Error("LEDGER_PAY_TO_EVM must be a 0x address");
   const rpcUrl = process.env.BASE_RPC_URL?.trim() || "https://mainnet.base.org";
-  const chunk = BigInt(process.env.LEDGER_CHAIN_SYNC_CHUNK ?? "2000");
+  const chunk = BigInt(process.env.LEDGER_CHAIN_SYNC_CHUNK ?? DEFAULT_CHUNK.toString());
   const rpc = jsonRpc(rpcUrl);
 
   const startBlock = BigInt(process.env.LEDGER_CHAIN_SYNC_START_BLOCK?.trim() || DEFAULT_START_BLOCK);

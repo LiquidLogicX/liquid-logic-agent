@@ -104,14 +104,14 @@ describe("endpointForAmount (prices are unique per endpoint)", () => {
 });
 
 describe("fetchTransfersTo (Base JSON-RPC)", () => {
-  it("chunks eth_getLogs ≤ 2,000 blocks, filters Transfer→payTo, caches block timestamps", async () => {
+  it("chunks eth_getLogs ≤ 500 blocks, filters Transfer→payTo, caches block timestamps", async () => {
     const calls: Array<{ method: string; params: any[] }> = [];
     const log = transfers[0]!;
     const rpc = async <T>(method: string, params: any[]): Promise<T> => {
       calls.push({ method, params });
       if (method === "eth_getLogs") {
         const { fromBlock, toBlock, topics, address } = params[0];
-        assert.ok(BigInt(toBlock) - BigInt(fromBlock) + 1n <= 2000n);
+        assert.ok(BigInt(toBlock) - BigInt(fromBlock) + 1n <= 500n);
         assert.equal(address, "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913");
         assert.equal(topics[2], "0x000000000000000000000000147991a1c25e78f6d9225d2dba61ed93a6158c7b");
         const bn = log.blockNumber;
@@ -133,12 +133,13 @@ describe("fetchTransfersTo (Base JSON-RPC)", () => {
       if (method === "eth_getBlockByNumber") return { timestamp: "0x" + log.timestamp.toString(16) } as T;
       throw new Error(method);
     };
+    // 1500-block span with chunk 500 → exactly 3 eth_getLogs calls
     const got = await fetchTransfersTo({
       rpc: rpc as any,
       payTo: DEFAULT_PAY_TO,
-      fromBlock: log.blockNumber - 4500n,
-      toBlock: log.blockNumber + 10n,
-      chunk: 2000n,
+      fromBlock: log.blockNumber - 1000n,
+      toBlock: log.blockNumber + 499n,
+      chunk: 500n,
     });
     assert.equal(got.length, 1);
     assert.equal(got[0]!.txHash, log.txHash);
@@ -146,6 +147,54 @@ describe("fetchTransfersTo (Base JSON-RPC)", () => {
     assert.equal(got[0]!.timestamp, log.timestamp);
     assert.equal(calls.filter((c) => c.method === "eth_getLogs").length, 3);
     assert.equal(calls.filter((c) => c.method === "eth_getBlockByNumber").length, 1);
+  });
+
+  it("auto-shrinks chunk when RPC says eth_getLogs is limited to a 500 range", async () => {
+    const calls: Array<{ method: string; params: any[] }> = [];
+    const log = transfers[0]!;
+    const rpc = async <T>(method: string, params: any[]): Promise<T> => {
+      calls.push({ method, params });
+      if (method === "eth_getLogs") {
+        const { fromBlock, toBlock } = params[0];
+        const span = BigInt(toBlock) - BigInt(fromBlock) + 1n;
+        if (span > 500n) throw new Error("eth_getLogs failed: eth_getLogs is limited to a 500 range");
+        const bn = log.blockNumber;
+        if (bn < BigInt(fromBlock) || bn > BigInt(toBlock)) return [] as T;
+        return [
+          {
+            transactionHash: log.txHash,
+            blockNumber: "0x" + bn.toString(16),
+            logIndex: "0x" + log.logIndex.toString(16),
+            topics: [
+              "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+              "0x" + log.from.slice(2).padStart(64, "0"),
+              "0x" + log.to.slice(2).padStart(64, "0"),
+            ],
+            data: "0x" + log.value.toString(16),
+          },
+        ] as T;
+      }
+      if (method === "eth_getBlockByNumber") return { timestamp: "0x" + log.timestamp.toString(16) } as T;
+      throw new Error(method);
+    };
+    // Span must exceed 500 so the first oversized chunk actually hits the RPC limit.
+    const got = await fetchTransfersTo({
+      rpc: rpc as any,
+      payTo: DEFAULT_PAY_TO,
+      fromBlock: log.blockNumber - 100n,
+      toBlock: log.blockNumber + 900n,
+      chunk: 2000n, // too big for current public Base RPC
+    });
+    assert.equal(got.length, 1);
+    const logCalls = calls.filter((c) => c.method === "eth_getLogs");
+    assert.ok(logCalls.length >= 2, "first oversized call + shrunk retry");
+    const firstSpan =
+      BigInt(logCalls[0]!.params[0].toBlock) - BigInt(logCalls[0]!.params[0].fromBlock) + 1n;
+    assert.ok(firstSpan > 500n);
+    for (const c of logCalls.slice(1)) {
+      const span = BigInt(c.params[0].toBlock) - BigInt(c.params[0].fromBlock) + 1n;
+      assert.ok(span <= 500n);
+    }
   });
 });
 
