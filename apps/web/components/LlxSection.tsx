@@ -48,6 +48,10 @@ export function LlxSection() {
             </a>
             <CopyButton value={LLX_CONTRACT} />
           </div>
+          <p className="ca-note">
+            This is the only official $LLX contract. Check the address before
+            buying.
+          </p>
         </dd>
         <dt>Links</dt>
         <dd>
@@ -60,22 +64,6 @@ export function LlxSection() {
           </a>
         </dd>
       </dl>
-      <div className="disclosure">
-        <h3>Please read</h3>
-        <p>
-          This is the only official $LLX contract. Check the address before
-          buying.
-        </p>
-        <p>
-          $LLX is not an investment product. No returns, yield, buybacks or
-          price support are promised.
-        </p>
-        <p>
-          The agent&apos;s spending and the endpoints settle in USDC only. The
-          agent never buys, sells or holds $LLX, and the public ledger tracks
-          USDC only.
-        </p>
-      </div>
     </div>
   );
 }

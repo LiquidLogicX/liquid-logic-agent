@@ -462,7 +462,7 @@ th.num {
 
 .token-grid {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
+  grid-template-columns: 1fr;
   gap: 32px;
   align-items: start;
   min-width: 0;
@@ -474,22 +474,55 @@ th.num {
   padding: 4px 20px;
 }
 
-.disclosure {
-  background: var(--sheet);
-  border: 1px solid var(--rule);
-  border-left: 4px solid var(--warn);
-  padding: 20px 22px;
-  font-size: 15px;
-}
-
-.disclosure h3 {
-  font-size: 18px;
-  margin-bottom: 8px;
-}
-
-.disclosure p {
-  margin: 0 0 10px;
+.ca-note {
+  margin: 8px 0 0;
+  font-size: 13px;
+  font-weight: 400;
   color: var(--slate);
+}
+
+.utility {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--rule);
+  min-width: 0;
+}
+
+.utility li {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--rule);
+  min-width: 0;
+}
+
+.utility h3 {
+  font-size: 18px;
+  margin: 8px 0 6px;
+}
+
+.utility p {
+  margin: 0;
+  font-size: 15px;
+  color: var(--slate);
+}
+
+.utility .pill {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 2px 8px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  color: var(--slate);
+}
+
+.utility .pill.live {
+  color: var(--ink);
+}
+
+footer.site-foot p.foot-nfa {
+  color: var(--ink);
 }
 
 .ca {

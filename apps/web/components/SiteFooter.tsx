@@ -9,6 +9,7 @@ export function SiteFooter() {
             yield, buybacks or price support are promised. Roadmap describes
             intent, not a commitment.
           </p>
+          <p className="foot-nfa">Nothing on this site is financial advice.</p>
         </div>
         <div>
           <p>
