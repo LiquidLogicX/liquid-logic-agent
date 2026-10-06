@@ -2,7 +2,7 @@
 
 Next.js App Router marketing + ledger surface.
 
-- Explains the agent (USDC / x402 services only; agent never buys, sells, or holds $LLX)
+- Explains the agent ("Agent spending settles in USDC today. $LLX payments coming soon.")
 - Live ledger embed + links
 - Endpoint docs for the $0.05 audit fee
 - `$LLX` token facts with the official contract (`lib/site.ts`) and one check-the-address line

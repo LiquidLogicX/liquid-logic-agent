@@ -57,3 +57,39 @@ test("footer carries the not-financial-advice line", () => {
   );
   assert.match(src, /Nothing on this site is financial advice\./);
 });
+
+const read = (name: string) =>
+  readFileSync(join(__dirname, "..", "components", name), "utf8").replace(
+    /\s+/g,
+    " ",
+  );
+
+test("footer drops the old token disclaimer paragraph", () => {
+  const src = read("SiteFooter.tsx");
+  assert.doesNotMatch(src, /not an investment product/);
+  assert.doesNotMatch(src, /Roadmap describes intent/);
+});
+
+test("token table says team holdings were bought on the open market", () => {
+  assert.match(
+    read("LlxSection.tsx"),
+    /None at launch\. Team holdings were bought on the open market\./,
+  );
+});
+
+test("FHE roadmap card names fully homomorphic encryption once", () => {
+  const src = read("ResearchGrid.tsx");
+  assert.match(src, /powered by fully\s+homomorphic encryption \(FHE\)\./);
+  assert.doesNotMatch(src, /Private proof\s+of funds, powered by/);
+  assert.doesNotMatch(src, /No other payments network/);
+});
+
+test("policy section says agent spending settles in USDC today", () => {
+  const src = read("PolicyTermsheet.tsx");
+  assert.match(src, /Agent spending settles in USDC today\. \$LLX payments coming soon\./);
+  assert.doesNotMatch(src, /never buys, sells or holds/);
+});
+
+test("LLX Pay still says LLX never holds your keys", () => {
+  assert.match(read("LlxPaySection.tsx"), /never holds your keys/);
+});
