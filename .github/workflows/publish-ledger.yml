@@ -33,6 +33,8 @@ jobs:
         env:
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
           LEDGER_JSONL_PATH: data/ledger.jsonl
+          # mainnet.base.org (fallback when BASE_RPC_URL unset) caps eth_getLogs at 500.
+          LEDGER_CHAIN_SYNC_CHUNK: "500"
         run: npm run chain-sync-ledger
       - name: Publish public ledger + social drafts
         env:
