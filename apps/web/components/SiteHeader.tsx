@@ -8,6 +8,7 @@ const NAV = [
   { href: "/#llx", label: "$LLX" },
   { href: "/plans", label: "Roadmap" },
   { href: "/#changelog", label: "Changelog" },
+  { href: "/about", label: "About" },
 ] as const;
 
 export function SiteHeader() {
