@@ -1,7 +1,10 @@
 /**
  * About page copy and links.
- * Rules: no street address, entity number, phone number or token/contract
- * address on this page. LLX Pay is in development — never link or call it live.
+ * Rules: no street address, entity number or phone number on this page.
+ * LLX Pay is in development — never link or call it live.
+ * The $LLX contract address is never hard-coded here: it comes from
+ * LLX_CONTRACT in ./site (shared with the homepage token section).
+ * Token section is plain info only — no price, market cap, chart or buy link.
  */
 import { PROOFS_VERIFIER_URL } from "./proofs";
 
@@ -51,3 +54,10 @@ export const CONTACT_EMAIL = "hello@liquidlogicx.com";
 export const CONTACT_X = "https://x.com/LiquidLogicX";
 
 export const CONTACT_TELEGRAM = "https://t.me/LiquidLogicXofficial";
+
+export const TOKEN_HEADING = "Official $LLX token";
+
+export const TOKEN_LABEL = "$LLX on Virtuals (Base)";
+
+export const TOKEN_NOTE =
+  "This is the only official $LLX contract. Any other address is not ours.";

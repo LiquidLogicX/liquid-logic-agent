@@ -1,4 +1,9 @@
-/** Official $LLX contract — do not invent addresses. */
+/**
+ * Official $LLX contract — do not invent addresses.
+ * Single source of truth: the homepage token section (LlxSection) and the
+ * /about page both read this value. It changes when $LLX graduates on
+ * Virtuals — update it here only.
+ */
 export const LLX_CONTRACT =
   "0xB9Dd507a5b352783b25e14c9b6E77D9f0067380f";
 
