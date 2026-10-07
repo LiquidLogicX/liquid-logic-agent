@@ -24,7 +24,7 @@ export const ABOUT_PRODUCTS: readonly AboutProduct[] = [
   {
     name: "Settlement Proofs",
     detail:
-      "Verifiable receipts for USDC and stablecoin payments, live on Base, Arc and Tempo.",
+      "Verifiable receipts for stablecoin payments on Base, Arc and Tempo, recorded on Arc and Tempo mainnet.",
     href: PROOFS_VERIFIER_URL,
     linkLabel: "View proofs",
   },
