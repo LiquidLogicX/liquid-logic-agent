@@ -73,6 +73,15 @@ test("product links point at the proofs verifier and endpoint docs", () => {
   assert.equal(byName["Agent endpoints"], "/docs");
 });
 
+test("Settlement Proofs line names the payment and recording networks", () => {
+  const proofs = ABOUT_PRODUCTS.find((p) => p.name === "Settlement Proofs");
+  assert.ok(proofs);
+  assert.equal(
+    proofs.detail,
+    "Verifiable receipts for stablecoin payments on Base, Arc and Tempo, recorded on Arc and Tempo mainnet.",
+  );
+});
+
 test("contact links", () => {
   assert.equal(CONTACT_EMAIL, "hello@liquidlogicx.com");
   assert.equal(CONTACT_X, "https://x.com/LiquidLogicX");
