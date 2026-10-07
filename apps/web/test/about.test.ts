@@ -147,9 +147,16 @@ test("token section is plain info: no price, market cap, chart, buy or investmen
   assert.doesNotMatch(pageCode, /LLX_BASESCAN|dexscreener|geckoterminal|coingecko|uniswap/i);
 });
 
-test("header nav and footer link the About page", () => {
-  assert.match(read("components", "SiteHeader.tsx"), /\{ href: "\/about", label: "About" \}/);
+test("header nav links Endpoint docs, Ledger and About pages", () => {
+  const head = read("components", "SiteHeader.tsx");
+  assert.match(head, /\{ href: "\/about", label: "About" \}/);
+  assert.match(head, /\{ href: "\/docs", label: "Endpoint docs" \}/);
+  assert.match(head, /\{ href: "\/ledger", label: "Ledger" \}/);
+});
+
+test("footer is trimmed to the advice line and copyright only", () => {
   const foot = read("components", "SiteFooter.tsx");
-  assert.match(foot, /<a href="\/about">About<\/a>/);
   assert.match(foot, /Nothing on this site is financial advice\./);
+  assert.match(foot, /© 2026 Liquid Logic X LLC/);
+  assert.doesNotMatch(foot, /mailto:|x\.com\/LiquidLogicX|@LiquidLogicX on X|href="\/(docs|ledger|about)"/);
 });
