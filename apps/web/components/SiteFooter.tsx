@@ -22,6 +22,8 @@ export function SiteFooter() {
             <a href="/docs">Endpoint docs</a>
             {" · "}
             <a href="/ledger">Ledger</a>
+            {" · "}
+            <a href="/about">About</a>
           </p>
         </div>
       </div>

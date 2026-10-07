@@ -712,6 +712,35 @@ code {
   word-break: break-all;
 }
 
+.about .docs-card p {
+  margin: 0 0 8px;
+  overflow-wrap: anywhere;
+}
+
+.about .docs-card p:last-child {
+  margin-bottom: 0;
+}
+
+.about-list {
+  list-style: none;
+  padding-left: 0 !important;
+}
+
+.about-list li {
+  padding: 10px 0;
+  border-top: 1px solid var(--rule);
+  overflow-wrap: anywhere;
+}
+
+.about-list li:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.about-list strong {
+  color: var(--ink);
+}
+
 .docs-card pre {
   max-width: 100%;
   overflow-x: auto;
