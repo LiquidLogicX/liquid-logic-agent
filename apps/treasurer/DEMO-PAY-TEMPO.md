@@ -55,8 +55,8 @@ is off**, and never contains key material:
 "payerKey": {
   "keyPresent": true,
   "keyFormatOk": true,
-  "expectedAddress": "0x9554509BA5Ac1B3F7b6382fEDac7709179289F6e",
-  "derivedAddress": "0x9554509BA5Ac1B3F7b6382fEDac7709179289F6e",
+  "expectedAddress": "0x9554509BA5AC1B3F7b6382feDAC7709179289F6e",
+  "derivedAddress": "0x9554509BA5AC1B3F7b6382feDAC7709179289F6e",
   "match": true
 }
 ```
