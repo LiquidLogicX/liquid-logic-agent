@@ -24,6 +24,17 @@ export type LedgerEventType =
   | "frozen"
   | "unfrozen";
 
+/**
+ * CAIP-2 networks a ledger spend row can carry. Tempo (4217 / 42431) rows are
+ * written only by the treasurer's optional Tempo rail (TREASURER_TEMPO_ENABLED).
+ */
+export type LedgerNetwork =
+  | "eip155:8453"
+  | "eip155:84532"
+  | "eip155:5042"
+  | "eip155:4217"
+  | "eip155:42431";
+
 export interface LedgerEventBase {
   type: LedgerEventType;
   timestamp: string;
@@ -55,7 +66,7 @@ export interface PaymentEvent extends LedgerEventBase {
   endpoint: string;
   amountUsdc: string;
   asset: "USDC";
-  network: "eip155:8453" | "eip155:84532" | "eip155:5042";
+  network: LedgerNetwork;
   txHash?: string;
   /** Explorer URL (BaseScan or Arc explorer); name kept for back-compat. */
   basescanUrl?: string;
@@ -64,6 +75,8 @@ export interface PaymentEvent extends LedgerEventBase {
   /** Present when payment followed an operator-approved hold. */
   holdId?: string;
   approvedBy?: string;
+  /** Tempo rail: TIP-20 symbol actually sent (e.g. "USDC.e"); asset stays "USDC". */
+  tokenSymbol?: string;
 }
 
 export interface PaymentFailedEvent extends LedgerEventBase {
@@ -90,7 +103,10 @@ export interface HeldEvent extends LedgerEventBase {
   endpoint: string;
   amountUsdc: string;
   asset?: "USDC";
-  network?: "eip155:8453" | "eip155:84532" | "eip155:5042";
+  network?: LedgerNetwork;
+  /** Tempo rail: payee address and token (USDC.e) for held Tempo payments. */
+  payTo?: string;
+  tokenSymbol?: string;
 }
 
 /** Operator deny of a pending hold. */
