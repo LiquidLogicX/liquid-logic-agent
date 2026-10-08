@@ -1,4 +1,4 @@
-import type { LedgerEvent } from "@liquid-logic/shared";
+import type { LedgerEvent, LedgerNetwork } from "@liquid-logic/shared";
 import {
   DEFAULT_LEDGER_EVENT_TYPE,
   explorerTxUrl,
@@ -57,7 +57,7 @@ export class LedgerStore {
   recordPayment(opts: {
     endpoint: string;
     amountUsdc: string;
-    network: "eip155:8453" | "eip155:84532" | "eip155:5042";
+    network: LedgerNetwork;
     /** Required — never append a payment row without an on-chain hash. */
     txHash: string;
     walletAddress?: string;
@@ -65,6 +65,10 @@ export class LedgerStore {
     timestamp?: string;
     holdId?: string;
     approvedBy?: string;
+    /** Tempo rail only: TIP-20 symbol sent (e.g. "USDC.e"). */
+    tokenSymbol?: string;
+    /** Tempo rail only: payee address. */
+    payTo?: string;
   }): boolean {
     const txHash = opts.txHash?.trim();
     if (!txHash || !/^0x[a-fA-F0-9]{64}$/.test(txHash)) {
@@ -86,6 +90,8 @@ export class LedgerStore {
       reason: opts.reason ?? "x402 service payment",
       holdId: opts.holdId,
       approvedBy: opts.approvedBy,
+      tokenSymbol: opts.tokenSymbol,
+      payTo: opts.payTo,
     });
     return true;
   }

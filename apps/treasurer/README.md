@@ -9,6 +9,9 @@ Node.js TypeScript service that pays **USDC on Base** to allowlisted **x402** en
 | **Production (default)** | Omit `CDP_X402_ENVIRONMENT` | Base mainnet `eip155:8453` |
 | Development | `CDP_X402_ENVIRONMENT=development` | Base Sepolia `eip155:84532` |
 
+Optional second rail: **Demo Pay on Tempo** (USDC.e on Tempo mainnet, off by default behind
+`TREASURER_TEMPO_ENABLED`). See [`DEMO-PAY-TEMPO.md`](./DEMO-PAY-TEMPO.md). The Base rail below is unchanged.
+
 ## Guardrails (enforced in code)
 
 - USDC only — hard fail on swap/buy non-USDC

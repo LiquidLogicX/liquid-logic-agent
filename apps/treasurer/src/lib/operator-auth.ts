@@ -50,3 +50,27 @@ export function requireOperatorBearer(
 
   return { ok: true };
 }
+
+/**
+ * Service bearer for LLX Pay → treasurer Tempo routes (TREASURER_SERVICE_TOKEN).
+ * Separate from LLX_OPERATOR_TOKEN so the app never holds the principal token.
+ * Fail closed; never logs the token.
+ */
+export function requireServiceBearer(
+  authorizationHeader: string | undefined,
+  expectedToken: string | null | undefined,
+): OperatorAuthResult {
+  const expected = (expectedToken ?? "").trim();
+  if (!expected) {
+    return { ok: false, status: 401, error: "Service token not configured" };
+  }
+  const match = /^Bearer\s+(.+)$/i.exec((authorizationHeader ?? "").trim());
+  if (!match) {
+    return { ok: false, status: 401, error: "Missing Authorization bearer token" };
+  }
+  const presented = match[1]!.trim();
+  if (!presented || !safeEqual(presented, expected)) {
+    return { ok: false, status: 403, error: "Invalid service token" };
+  }
+  return { ok: true };
+}

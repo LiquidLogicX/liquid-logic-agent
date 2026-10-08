@@ -80,10 +80,44 @@ export const ARC_PAY_TO_DEFAULT =
 export const ARCSCAN_TX = "https://explorer.arc.io/tx/";
 export const ARCSCAN_ADDRESS = "https://explorer.arc.io/address/";
 
+/**
+ * Tempo mainnet (chain 4217). Used only by the treasurer's optional Tempo rail
+ * (TREASURER_TEMPO_ENABLED, off by default). Tempo has no native gas token:
+ * fees are paid in a USD TIP-20 stablecoin.
+ */
+export const NETWORK_TEMPO = "eip155:4217" as const;
+/** Tempo Moderato testnet (chain 42431). Fallback only, clearly labeled. */
+export const NETWORK_TEMPO_TESTNET = "eip155:42431" as const;
+
+/** USDC.e ("Bridged USDC (Stargate)") on Tempo mainnet. TIP-20, 6 decimals. */
+export const USDC_E_TEMPO_MAINNET =
+  "0x20C000000000000000000000b9537d11c60E8b50" as const;
+
+export const TEMPO_EXPLORER = "https://explore.tempo.xyz";
+export const TEMPO_TESTNET_EXPLORER = "https://explore.testnet.tempo.xyz";
+
 export type PaymentNetwork =
   | typeof NETWORK_BASE
   | typeof NETWORK_BASE_SEPOLIA
-  | typeof NETWORK_ARC;
+  | typeof NETWORK_ARC
+  | typeof NETWORK_TEMPO
+  | typeof NETWORK_TEMPO_TESTNET;
+
+export function isTempoNetwork(
+  network: string | undefined | null,
+): network is typeof NETWORK_TEMPO | typeof NETWORK_TEMPO_TESTNET {
+  return network === NETWORK_TEMPO || network === NETWORK_TEMPO_TESTNET;
+}
+
+export function tempoTxUrl(
+  txHash: string,
+  network: string = NETWORK_TEMPO,
+): string {
+  const h = txHash.startsWith("0x") ? txHash : `0x${txHash}`;
+  const base =
+    network === NETWORK_TEMPO_TESTNET ? TEMPO_TESTNET_EXPLORER : TEMPO_EXPLORER;
+  return `${base}/tx/${h}`;
+}
 
 export function arcscanTxUrl(txHash: string): string {
   const h = txHash.startsWith("0x") ? txHash : `0x${txHash}`;
@@ -100,6 +134,9 @@ export function explorerTxUrl(
 ): string {
   if (network === NETWORK_ARC || network === "eip155:5042") {
     return arcscanTxUrl(txHash);
+  }
+  if (isTempoNetwork(network)) {
+    return tempoTxUrl(txHash, network);
   }
   return basescanTxUrl(txHash);
 }

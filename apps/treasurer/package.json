@@ -19,7 +19,8 @@
     "pay": "npm run cli -- pay",
     "print-wallet-address": "npm run cli -- print-wallet-address",
     "test:payment-guard": "node --import tsx scripts/assert-payment-requires-hash.mts",
-    "test:genesis-reset-merge": "node --import tsx scripts/assert-genesis-reset-merge.mts"
+    "test:genesis-reset-merge": "node --import tsx scripts/assert-genesis-reset-merge.mts",
+    "test:tempo": "node --import tsx --test test/tempo-rail.test.ts"
   },
   "dependencies": {
     "@coinbase/cdp-sdk": "^1.55.0",
@@ -28,7 +29,8 @@
     "@x402/evm": "^2.25.0",
     "@x402/fetch": "^2.25.0",
     "@x402/svm": "^2.25.0",
-    "dotenv": "^16.4.7"
+    "dotenv": "^16.4.7",
+    "viem": "^2.56.3"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",

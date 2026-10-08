@@ -7,6 +7,8 @@
  *   POST /api/hold/request
  *   POST /api/hold/:id/approve | /api/hold/:id/deny
  *   GET  /healthz
+ * Tempo rail (only when TREASURER_TEMPO_ENABLED=true; Bearer TREASURER_SERVICE_TOKEN):
+ *   /api/tempo/*  — see tempo/http.ts
  */
 import http from "node:http";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -20,10 +22,14 @@ import {
 import { requireOperatorBearer } from "./operator-auth.js";
 import {
   expireStaleHolds,
+  findHeldEvent,
   getHoldResolution,
   listPendingHolds,
   recordDenied,
 } from "./hold.js";
+import { isTempoNetwork } from "@liquid-logic/shared";
+import { createTempoRuntime, type TempoRuntime } from "./tempo/runtime.js";
+import { handleTempoRoute } from "./tempo/http.js";
 import { approveHold, requestHold } from "./client.js";
 import {
   loadLedgerSyncConfigFromEnv,
@@ -77,12 +83,21 @@ export function startOperatorHttpServer(opts: {
   config: TreasurerConfig;
   port?: number;
   host?: string;
+  /** Optional Tempo rail (created from env when omitted; off unless TREASURER_TEMPO_ENABLED=true). */
+  tempo?: TempoRuntime;
 }): http.Server {
   const { config } = opts;
   const port =
     opts.port ?? Number(process.env.PORT ?? process.env.OPERATOR_HTTP_PORT ?? 10000);
   const host = opts.host ?? process.env.OPERATOR_HTTP_HOST ?? "0.0.0.0";
   const ledger = new LedgerStore(config.ledgerPath);
+  const tempo =
+    opts.tempo ??
+    createTempoRuntime({
+      ledger,
+      ledgerPath: config.ledgerPath,
+      holdTtlSeconds: config.holdTtlSeconds,
+    });
 
   const server = http.createServer(async (req, res) => {
     const method = (req.method ?? "GET").toUpperCase();
@@ -99,6 +114,7 @@ export function startOperatorHttpServer(opts: {
           holdAboveUsdc: config.holdAboveUsdc,
           holdTtlSeconds: config.holdTtlSeconds,
           pendingHolds: listPendingHolds(ledger, config.holdTtlSeconds).length,
+          tempo: tempo.health(),
         });
         return;
       }
@@ -162,6 +178,36 @@ export function startOperatorHttpServer(opts: {
             error: "Payments frozen — unfreeze before approving holds",
             holdId,
           });
+          return;
+        }
+
+        // Tempo holds pay from the Tempo payer, never through the Base x402 client.
+        const heldEvent = findHeldEvent(ledger.readAll(), holdId);
+        if (isTempoNetwork(heldEvent?.network)) {
+          if (!tempo.rail) {
+            sendJson(res, 409, {
+              ok: false,
+              error: "Tempo hold, but the Tempo rail is off on this treasurer",
+              holdId,
+            });
+            return;
+          }
+          try {
+            const { flow } = await tempo.rail.approve(holdId, "operator");
+            void maybeSyncLedger(config.ledgerPath);
+            sendJson(res, 200, {
+              ok: true,
+              holdId,
+              type: "tempo_approved",
+              flowId: flow.id,
+              status: flow.status,
+              approvedBy: "operator",
+            });
+          } catch (err) {
+            const message = err instanceof Error ? err.message : String(err);
+            const status = (err as { status?: number }).status ?? 500;
+            sendJson(res, status, { ok: false, error: message, holdId });
+          }
           return;
         }
 
@@ -347,6 +393,20 @@ export function startOperatorHttpServer(opts: {
           frozen: false,
           type: event.type,
           ts: event.timestamp,
+        });
+        return;
+      }
+
+      if (path === "/api/tempo" || path.startsWith("/api/tempo/")) {
+        await handleTempoRoute({
+          req,
+          res,
+          method,
+          path,
+          runtime: tempo,
+          readBody,
+          sendJson,
+          onLedgerChange: () => void maybeSyncLedger(config.ledgerPath),
         });
         return;
       }
