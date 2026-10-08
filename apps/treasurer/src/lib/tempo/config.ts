@@ -99,6 +99,42 @@ export function parseTempoAllowlist(raw: string | undefined): Address[] {
   return out;
 }
 
+export type TempoPayerKeyStatus = {
+  /** TEMPO_PAYER_PRIVATE_KEY is set (the value itself is never read out). */
+  keyPresent: boolean;
+  keyFormatOk: boolean;
+  expectedAddress: string | null;
+  /** Public address derived from the key. Public info, not a secret. */
+  derivedAddress: string | null;
+  /** True only when the key derives to TEMPO_PAYER_ADDRESS (the startup guard passes). */
+  match: boolean;
+};
+
+/**
+ * Non-secret view of the address-key guard, computed even while the rail flag is
+ * off, so Miles can see on /healthz that the pasted key belongs to the payer
+ * before turning the rail on. Never throws, never returns key material.
+ */
+export function tempoPayerKeyStatus(env: Env): TempoPayerKeyStatus {
+  const keyRaw = value(env, "TEMPO_PAYER_PRIVATE_KEY");
+  const expectedRaw = value(env, "TEMPO_PAYER_ADDRESS");
+  const expectedAddress = expectedRaw && isAddress(expectedRaw, { strict: false }) ? getAddress(expectedRaw) : null;
+  if (!keyRaw) return { keyPresent: false, keyFormatOk: false, expectedAddress, derivedAddress: null, match: false };
+  let derivedAddress: string | null = null;
+  try {
+    derivedAddress = privateKeyToAccount(parseKey(keyRaw)).address;
+  } catch {
+    return { keyPresent: true, keyFormatOk: false, expectedAddress, derivedAddress: null, match: false };
+  }
+  return {
+    keyPresent: true,
+    keyFormatOk: true,
+    expectedAddress,
+    derivedAddress,
+    match: !!expectedAddress && derivedAddress.toLowerCase() === expectedAddress.toLowerCase(),
+  };
+}
+
 function parseKey(raw: string): Hex {
   const key = (raw.startsWith("0x") ? raw : `0x${raw}`) as Hex;
   if (!/^0x[0-9a-fA-F]{64}$/.test(key)) {

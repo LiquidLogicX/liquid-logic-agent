@@ -22,7 +22,8 @@ import { LedgerStore } from "../src/lib/ledger-store.js";
 import { getHoldResolution } from "../src/lib/hold.js";
 import { startOperatorHttpServer } from "../src/lib/http-api.js";
 import { parseUsd6, formatUsd6 } from "../src/lib/tempo/amount.js";
-import { loadTempoRailConfig, publicTempoConfig, type TempoRailConfig } from "../src/lib/tempo/config.js";
+import { loadTempoRailConfig, publicTempoConfig, tempoPayerKeyStatus, type TempoRailConfig } from "../src/lib/tempo/config.js";
+import { createTempoRuntime } from "../src/lib/tempo/runtime.js";
 import { evaluateTempoPayment, tempoSpentTodayAtomic } from "../src/lib/tempo/policy.js";
 import { FlowStore, TempoRail, type DemoPayFlow } from "../src/lib/tempo/flows.js";
 import type { TempoChain } from "../src/lib/tempo/chain.js";
@@ -171,6 +172,32 @@ describe("Tempo rail config", () => {
     assert.equal(c.enabled, false);
     assert.match((c as { reason: string }).reason, /does not belong to TEMPO_PAYER_ADDRESS/);
     assert.ok(!(c as { reason: string }).reason.includes(KEY_A.slice(2)), "never echoes the key");
+  });
+
+  it("reports a non-secret payer key status (derived address match), even with the flag off", () => {
+    const ok = tempoPayerKeyStatus(env({ TREASURER_TEMPO_ENABLED: undefined }));
+    assert.deepEqual(ok, { keyPresent: true, keyFormatOk: true, expectedAddress: PAYER, derivedAddress: PAYER, match: true });
+    const bad = tempoPayerKeyStatus(env({ TEMPO_PAYER_ADDRESS: OTHER }));
+    assert.equal(bad.match, false);
+    assert.equal(bad.derivedAddress, PAYER);
+    assert.deepEqual(tempoPayerKeyStatus(env({ TEMPO_PAYER_PRIVATE_KEY: "0x12" })), {
+      keyPresent: true, keyFormatOk: false, expectedAddress: PAYER, derivedAddress: null, match: false,
+    });
+    assert.equal(tempoPayerKeyStatus(env({ TEMPO_PAYER_PRIVATE_KEY: undefined })).keyPresent, false);
+    assert.equal(tempoPayerKeyStatus(env({ TEMPO_PAYER_ADDRESS: undefined })).match, false);
+
+    const dir = tmpDir();
+    const ledgerPath = path.join(dir, "ledger.jsonl");
+    const rt = createTempoRuntime({
+      ledger: new LedgerStore(ledgerPath), ledgerPath, holdTtlSeconds: 900,
+      env: env({ TREASURER_TEMPO_ENABLED: undefined }) as NodeJS.ProcessEnv,
+    });
+    assert.equal(rt.rail, null);
+    const h = rt.health() as { enabled: boolean; payerKey: { match: boolean; derivedAddress: string } };
+    assert.equal(h.enabled, false);
+    assert.equal(h.payerKey.match, true);
+    assert.equal(h.payerKey.derivedAddress, PAYER);
+    assert.ok(!JSON.stringify(h).toLowerCase().includes(KEY_A.slice(2).toLowerCase()), "health never carries the key");
   });
 
   it("requires the key, the expected address, an allowlist and a service token", () => {

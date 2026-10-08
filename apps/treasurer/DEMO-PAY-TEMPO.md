@@ -46,6 +46,25 @@ The operator route `POST /api/hold/:id/approve` (Bearer `LLX_OPERATOR_TOKEN`) al
 works for Tempo holds: it dispatches to the Tempo payer, never the Base x402 client.
 `GET /healthz` gains a `tempo` block (enabled + public config, or the reason it's off).
 
+### Seeing the address-key guard pass
+
+`tempo.payerKey` on `GET /healthz` is computed **even while `TREASURER_TEMPO_ENABLED`
+is off**, and never contains key material:
+
+```json
+"payerKey": {
+  "keyPresent": true,
+  "keyFormatOk": true,
+  "expectedAddress": "0x9554509BA5Ac1B3F7b6382fEDac7709179289F6e",
+  "derivedAddress": "0x9554509BA5Ac1B3F7b6382fEDac7709179289F6e",
+  "match": true
+}
+```
+
+`match: true` means `TEMPO_PAYER_PRIVATE_KEY` derives to `TEMPO_PAYER_ADDRESS`. If it is
+`false`, the rail refuses to start even with the flag on (`tempo.reason` says why). The
+same check is logged at boot: `[treasurer] Tempo payer key check: MATCH (…)`.
+
 ## Env vars (service `liquid-logic-treasurer-web`)
 
 Secrets — **Miles pastes these in Render; crew never handles them**:
@@ -63,7 +82,7 @@ Non-secret:
 | --- | --- |
 | `TREASURER_TEMPO_ENABLED` | `true` to turn the rail on (unset = off) |
 | `TEMPO_PAYER_ADDRESS` | `0x9554509ba5ac1b3f7b6382fedac7709179289f6e` |
-| `TREASURER_TEMPO_ALLOWLIST` | demo payee address (comma-separated list) |
+| `TREASURER_TEMPO_ALLOWLIST` | the new OKX "LLX demo payee" wallet address (posted later). Comma-separated. **Not** the recorder wallet. |
 | `TEMPO_DEMO_PAYEE_ADDRESS` | optional, defaults to the first allowlist entry |
 | `TEMPO_DEMO_PAYEE_NAME` | optional, default `LLX demo payee` |
 | `TREASURER_TEMPO_MAX_PER_PAYMENT_USDC` | `5.00` (default) |

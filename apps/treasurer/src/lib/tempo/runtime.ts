@@ -6,7 +6,7 @@ import path from "node:path";
 import type { LedgerStore } from "../ledger-store.js";
 import { createHttpBridge } from "./bridge.js";
 import { createViemTempoChain } from "./chain.js";
-import { loadTempoRailConfig, publicTempoConfig, type TempoRailLoadResult } from "./config.js";
+import { tempoPayerKeyStatus, loadTempoRailConfig, publicTempoConfig, type TempoRailLoadResult } from "./config.js";
 import { FlowStore, TempoRail } from "./flows.js";
 import { createHttpRecorder } from "./recorder.js";
 
@@ -24,6 +24,14 @@ export function createTempoRuntime(opts: {
 }): TempoRuntime {
   const env = opts.env ?? process.env;
   const status = loadTempoRailConfig(env);
+  // Address-key guard status (non-secret), shown on /healthz even while the flag is off.
+  const payerKey = tempoPayerKeyStatus(env);
+  if (payerKey.keyPresent) {
+    console.log(
+      `[treasurer] Tempo payer key check: ${payerKey.match ? "MATCH" : "NO MATCH"} ` +
+        `(expected ${payerKey.expectedAddress ?? "TEMPO_PAYER_ADDRESS unset"}, derived ${payerKey.derivedAddress ?? "invalid key format"})`,
+    );
+  }
   if (!status.enabled) {
     if ((env.TREASURER_TEMPO_ENABLED ?? "").trim() === "true") {
       console.error(`[treasurer] Tempo rail NOT started: ${status.reason}`);
@@ -31,7 +39,7 @@ export function createTempoRuntime(opts: {
     return {
       status,
       rail: null,
-      health: () => ({ enabled: false, reason: status.reason }),
+      health: () => ({ enabled: false, reason: status.reason, payerKey }),
     };
   }
   const cfg = status;
@@ -52,5 +60,5 @@ export function createTempoRuntime(opts: {
       `caps ${publicTempoConfig(cfg).maxPerPaymentUsdc}/payment ${publicTempoConfig(cfg).dailyCapUsdc}/day, ` +
       `hold at/above ${publicTempoConfig(cfg).holdAboveUsdc}`,
   );
-  return { status, rail, health: () => publicTempoConfig(cfg) };
+  return { status, rail, health: () => ({ ...publicTempoConfig(cfg), payerKey }) };
 }
