@@ -27,7 +27,8 @@ import { createTempoRuntime } from "../src/lib/tempo/runtime.js";
 import { evaluateTempoPayment, tempoSpentTodayAtomic } from "../src/lib/tempo/policy.js";
 import { FlowStore, TempoRail, type DemoPayFlow } from "../src/lib/tempo/flows.js";
 import type { TempoChain } from "../src/lib/tempo/chain.js";
-import { RecorderError, type TempoRecorder } from "../src/lib/tempo/recorder.js";
+import { createHttpRecorder, RecorderError, type TempoRecorder } from "../src/lib/tempo/recorder.js";
+import { getLastProofAttempt, resetLastProofAttempt } from "../src/lib/tempo/last-proof-attempt.js";
 import type { BridgeMirror } from "../src/lib/tempo/bridge.js";
 import type { TempoRuntime } from "../src/lib/tempo/runtime.js";
 
@@ -490,6 +491,104 @@ describe("Demo Pay flow (mocked chain + recorder)", () => {
     const done = await (await rail.start({ amountUsdc: "1.00" })).settled;
     const store = new FlowStore(path.join(dir, "tempo-flows.json"));
     assert.equal(store.get(done.id)?.status, "done");
+  });
+});
+
+describe("last recorder proof attempt", () => {
+  it("records HTTP status + body preview and never stores the API key", async () => {
+    resetLastProofAttempt();
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const recorder = createHttpRecorder({
+      url: "https://recorder.test",
+      apiKey: "super-secret-recorder-key",
+      fetchImpl: async (url, init) => {
+        calls.push({ url: String(url), init });
+        return new Response(JSON.stringify({ error: "TIP-20 Transfer did not match", code: "TIP20_AMOUNT_UNVERIFIED" }), {
+          status: 400,
+          headers: { "content-type": "application/json" },
+        });
+      },
+    });
+    await assert.rejects(
+      () =>
+        recorder.recordProof({
+          txHash: TX_PAY,
+          payee: PAYEE,
+          amountAtomic: 1_000_000n,
+          memo: "demo",
+        }),
+      /TIP-20 Transfer did not match/,
+    );
+    const attempt = getLastProofAttempt();
+    assert.ok(attempt);
+    assert.equal(attempt!.paymentTxHash, TX_PAY);
+    assert.equal(attempt!.status, 400);
+    assert.equal(attempt!.ok, false);
+    assert.match(attempt!.error ?? "", /TIP-20/);
+    assert.match(attempt!.bodyPreview ?? "", /TIP20_AMOUNT_UNVERIFIED/);
+    assert.ok(!JSON.stringify(attempt).includes("super-secret-recorder-key"));
+    const auth = String((calls[0]!.init?.headers as Record<string, string>).authorization ?? "");
+    assert.match(auth, /^Bearer /);
+  });
+
+  it("surfaces lastProofAttempt on a failed Demo Pay flow and on /healthz + the debug route", async () => {
+    resetLastProofAttempt();
+    const { dir } = makeRail();
+    const httpRec = createHttpRecorder({
+      url: "https://recorder.test",
+      apiKey: "k",
+      fetchImpl: async () =>
+        new Response(JSON.stringify({ error: "fee token balance too low", code: "LOW_GAS_BALANCE" }), { status: 503 }),
+    });
+    // Swap in the HTTP recorder for this rail by making a dedicated rail.
+    const ledger = new LedgerStore(path.join(dir, "ledger2.jsonl"));
+    const cfg = cfgOrThrow();
+    const rail2 = new TempoRail({
+      cfg,
+      ledger,
+      chain: fakeChain(),
+      recorder: httpRec,
+      bridge: { post: async () => null },
+      store: new FlowStore(null),
+      holdTtlSeconds: 600,
+      recorderRetryDelaysMs: [],
+    });
+    const done = await (await rail2.start({ amountUsdc: "1.00" })).settled;
+    assert.equal(done.status, "failed");
+    assert.equal(done.error?.step, "proof");
+    assert.match(done.error?.message ?? "", /fee token balance too low/);
+    assert.match(done.steps.find((s) => s.key === "proof")!.detail ?? "", /fee token balance too low/);
+    assert.equal(done.lastProofAttempt?.status, 503);
+    assert.match(done.lastProofAttempt?.error ?? "", /fee token/);
+
+    const runtime: TempoRuntime = {
+      status: cfg,
+      rail: rail2,
+      health: () => ({ ...publicTempoConfig(cfg), lastProofAttempt: { status: done.lastProofAttempt!.status, at: done.lastProofAttempt!.at, error: done.lastProofAttempt!.error } }),
+    };
+    process.env.LLX_OPERATOR_TOKEN = "operator-test-token";
+    const config = loadConfig({ TREASURER_LEDGER_PATH: path.join(dir, "ledger-http.jsonl"), HOLD_ABOVE_USDC: "0.01" } as NodeJS.ProcessEnv);
+    const server = startOperatorHttpServer({ config, port: 0, host: "127.0.0.1", tempo: runtime });
+    await new Promise<void>((r) => server.once("listening", () => r()));
+    const { port } = server.address() as AddressInfo;
+    const base = `http://127.0.0.1:${port}`;
+    try {
+      const health = (await (await fetch(`${base}/healthz`)).json()) as { tempo: { lastProofAttempt: { status: number; error: string } } };
+      assert.equal(health.tempo.lastProofAttempt.status, 503);
+      assert.match(health.tempo.lastProofAttempt.error, /fee token/);
+
+      assert.equal((await fetch(`${base}/api/tempo/last-proof-attempt`)).status, 401);
+      const got = await fetch(`${base}/api/tempo/last-proof-attempt`, { headers: { authorization: `Bearer ${SERVICE_TOKEN}` } });
+      assert.equal(got.status, 200);
+      const body = (await got.json()) as { ok: boolean; attempt: { paymentTxHash: string; status: number; bodyPreview: string; error: string } };
+      assert.equal(body.ok, true);
+      assert.equal(body.attempt.paymentTxHash, TX_PAY);
+      assert.equal(body.attempt.status, 503);
+      assert.match(body.attempt.bodyPreview, /LOW_GAS_BALANCE/);
+      assert.match(body.attempt.error, /fee token/);
+    } finally {
+      server.close();
+    }
   });
 });
 

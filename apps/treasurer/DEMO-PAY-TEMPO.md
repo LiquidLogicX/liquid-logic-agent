@@ -38,13 +38,14 @@ Every step is appended to the ledger (`note` / `held` / `payment` rows with
 | Route | |
 | --- | --- |
 | `GET /api/tempo/config` | public, secret-free rail config for the Pay card |
+| `GET /api/tempo/last-proof-attempt` | last recorder call: `at`, `paymentTxHash`, HTTP `status`, `bodyPreview` (~300 chars), `error`, `ok` (never the API key) |
 | `POST /api/tempo/flows` | `{ amountUsdc, memo?, clientRequestId?, requestedBy? }` → flow |
-| `GET /api/tempo/flows/:id` | flow status (poll) |
+| `GET /api/tempo/flows/:id` | flow status (poll); on proof failure includes `error.message` + `lastProofAttempt` |
 | `POST /api/tempo/flows/:id/approve` / `deny` | answer a held flow |
 
 The operator route `POST /api/hold/:id/approve` (Bearer `LLX_OPERATOR_TOKEN`) also
 works for Tempo holds: it dispatches to the Tempo payer, never the Base x402 client.
-`GET /healthz` gains a `tempo` block (enabled + public config, or the reason it's off).
+`GET /healthz` gains a `tempo` block (enabled + public config, or the reason it's off). When a recorder call has been attempted since process start, `tempo.lastProofAttempt` is `{ status, at, error }` (no auth, no secrets).
 
 ### Seeing the address-key guard pass
 
