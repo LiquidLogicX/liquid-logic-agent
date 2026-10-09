@@ -3,6 +3,7 @@
  * Auth: Authorization: Bearer $TREASURER_SERVICE_TOKEN (not the operator token).
  *
  *   GET  /api/tempo/config
+ *   GET  /api/tempo/last-proof-attempt    last recorder call (status, body preview, payment tx)
  *   POST /api/tempo/flows                 { amountUsdc, memo?, clientRequestId?, requestedBy? }
  *   GET  /api/tempo/flows/:id
  *   POST /api/tempo/flows/:id/approve     { approvedBy? }
@@ -12,6 +13,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { requireServiceBearer } from "../operator-auth.js";
 import { publicTempoConfig } from "./config.js";
 import { TempoFlowError } from "./flows.js";
+import { getLastProofAttempt } from "./last-proof-attempt.js";
 import type { TempoRuntime } from "./runtime.js";
 
 type Send = (res: ServerResponse, status: number, body: Record<string, unknown>) => void;
@@ -55,6 +57,23 @@ export async function handleTempoRoute(opts: {
   try {
     if (method === "GET" && path === "/api/tempo/config") {
       sendJson(res, 200, { ok: true, ...publicTempoConfig(rail.cfg) });
+      return;
+    }
+    if (method === "GET" && path === "/api/tempo/last-proof-attempt") {
+      const attempt = getLastProofAttempt();
+      sendJson(res, 200, {
+        ok: true,
+        attempt: attempt
+          ? {
+              at: attempt.at,
+              paymentTxHash: attempt.paymentTxHash,
+              status: attempt.status,
+              bodyPreview: attempt.bodyPreview,
+              error: attempt.error,
+              ok: attempt.ok,
+            }
+          : null,
+      });
       return;
     }
     if (method === "POST" && path === "/api/tempo/flows") {

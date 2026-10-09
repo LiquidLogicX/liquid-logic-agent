@@ -8,6 +8,7 @@ import { createHttpBridge } from "./bridge.js";
 import { createViemTempoChain } from "./chain.js";
 import { tempoPayerKeyStatus, loadTempoRailConfig, publicTempoConfig, type TempoRailLoadResult } from "./config.js";
 import { FlowStore, TempoRail } from "./flows.js";
+import { lastProofAttemptForHealth } from "./last-proof-attempt.js";
 import { createHttpRecorder } from "./recorder.js";
 
 export type TempoRuntime = {
@@ -39,7 +40,7 @@ export function createTempoRuntime(opts: {
     return {
       status,
       rail: null,
-      health: () => ({ enabled: false, reason: status.reason, payerKey }),
+      health: () => ({ enabled: false, reason: status.reason, payerKey, lastProofAttempt: lastProofAttemptForHealth() }),
     };
   }
   const cfg = status;
@@ -60,5 +61,5 @@ export function createTempoRuntime(opts: {
       `caps ${publicTempoConfig(cfg).maxPerPaymentUsdc}/payment ${publicTempoConfig(cfg).dailyCapUsdc}/day, ` +
       `hold at/above ${publicTempoConfig(cfg).holdAboveUsdc}`,
   );
-  return { status, rail, health: () => ({ ...publicTempoConfig(cfg), payerKey }) };
+  return { status, rail, health: () => ({ ...publicTempoConfig(cfg), payerKey, lastProofAttempt: lastProofAttemptForHealth() }) };
 }

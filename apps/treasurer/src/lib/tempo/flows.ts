@@ -19,6 +19,7 @@ import type { BridgeMirror } from "./bridge.js";
 import { memoToBytes32, type TempoChain } from "./chain.js";
 import type { TempoRailConfig } from "./config.js";
 import { evaluateTempoPayment } from "./policy.js";
+import { getLastProofAttempt, type LastProofAttemptHealth } from "./last-proof-attempt.js";
 import { RecorderError, type TempoRecorder } from "./recorder.js";
 
 export type StepKey = "policy" | "payment" | "proof" | "receipt";
@@ -65,6 +66,8 @@ export type DemoPayFlow = {
   proof: { txHash: string | null; explorerUrl: string | null; refId: string | null } | null;
   verifyUrl: string | null;
   error: { step: StepKey; code: string; message: string } | null;
+  /** Last recorder attempt (same shape as /healthz tempo.lastProofAttempt). */
+  lastProofAttempt: LastProofAttemptHealth | null;
   bridgeThreadId: string | null;
   steps: FlowStep[];
 };
@@ -274,6 +277,7 @@ export class TempoRail {
       proof: null,
       verifyUrl: null,
       error: null,
+      lastProofAttempt: null,
       bridgeThreadId: null,
       steps: (Object.keys(STEP_LABELS) as StepKey[]).map((key) => ({
         key,
@@ -534,6 +538,10 @@ export class TempoRail {
           // Idempotent replays can lack the registry tx; never show a proof link we don't have.
           throw new RecorderError("Recorder returned no proof transaction hash", 502, "NO_PROOF_TX", attempt < delays.length);
         }
+        const okAttempt = getLastProofAttempt();
+        flow.lastProofAttempt = okAttempt
+          ? { status: okAttempt.status, at: okAttempt.at, error: okAttempt.error }
+          : { status: 200, at: this.iso(), error: null };
         flow.proof = { txHash: r.proofTxHash, explorerUrl: r.proofExplorerUrl ?? `${cfg.explorer}/tx/${r.proofTxHash}`, refId: r.refId };
         this.setStep(flow, "proof", {
           status: "done",
@@ -565,6 +573,14 @@ export class TempoRail {
         return;
       } catch (err) {
         lastErr = err;
+        const snap =
+          err instanceof RecorderError && err.attempt
+            ? err.attempt
+            : getLastProofAttempt();
+        if (snap) {
+          flow.lastProofAttempt = { status: snap.status, at: snap.at, error: snap.error };
+          this.d.store.save(flow);
+        }
         const retryable = err instanceof RecorderError ? err.retryable : true;
         if (!retryable || attempt === delays.length) break;
         await this.sleep(delays[attempt]!);
@@ -572,6 +588,11 @@ export class TempoRail {
     }
     const code = lastErr instanceof RecorderError ? lastErr.code ?? `HTTP_${lastErr.status}` : "RECORDER_ERROR";
     const message = lastErr instanceof Error ? lastErr.message : String(lastErr);
-    this.fail(flow, "proof", code, `Payment is on Tempo, but the proof was not recorded: ${message}`);
+    const httpBit =
+      lastErr instanceof RecorderError && lastErr.status
+        ? ` (recorder HTTP ${lastErr.status})`
+        : "";
+    // Put the real recorder error on the flow so the Demo Pay card shows it, not a generic "proof failed".
+    this.fail(flow, "proof", code, `Payment is on Tempo, but the proof was not recorded${httpBit}: ${message}`);
   }
 }

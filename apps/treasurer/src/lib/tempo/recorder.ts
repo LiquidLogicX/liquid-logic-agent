@@ -3,8 +3,16 @@
  * The recorder re-verifies the TIP-20 Transfer on Tempo (token allowlisted,
  * to == payee, exact 6-dec amount) before it writes the proof, so the treasurer
  * never asserts a payment the chain doesn't show.
+ *
+ * Every attempt (ok or fail) is written to the in-memory last-proof-attempt
+ * store for Demo Pay debugging — never the API key.
  */
 import type { Address, Hex } from "viem";
+import {
+  previewBody,
+  recordLastProofAttempt,
+  type LastProofAttempt,
+} from "./last-proof-attempt.js";
 
 export type RecorderProofResult = {
   proofTxHash: string | null;
@@ -29,12 +37,25 @@ export class RecorderError extends Error {
     readonly status: number,
     readonly code?: string,
     readonly retryable = false,
+    /** Snapshot of this attempt for the Demo Pay card / last-attempt route. */
+    readonly attempt?: LastProofAttempt,
   ) {
     super(message);
   }
 }
 
 type Fetch = typeof globalThis.fetch;
+
+function noteAttempt(partial: Omit<LastProofAttempt, "at"> & { at?: string }): LastProofAttempt {
+  return recordLastProofAttempt({
+    at: partial.at ?? new Date().toISOString(),
+    paymentTxHash: partial.paymentTxHash,
+    status: partial.status,
+    bodyPreview: partial.bodyPreview,
+    error: partial.error,
+    ok: partial.ok,
+  });
+}
 
 export function createHttpRecorder(opts: {
   url: string;
@@ -46,7 +67,20 @@ export function createHttpRecorder(opts: {
   return {
     async recordProof({ txHash, payee, amountAtomic, memo }) {
       if (!opts.apiKey) {
-        throw new RecorderError("RECORDER_API_KEY is not set on the treasurer", 503, "UNCONFIGURED");
+        const attempt = noteAttempt({
+          paymentTxHash: txHash,
+          status: 503,
+          bodyPreview: null,
+          error: "RECORDER_API_KEY is not set on the treasurer",
+          ok: false,
+        });
+        throw new RecorderError(
+          "RECORDER_API_KEY is not set on the treasurer",
+          503,
+          "UNCONFIGURED",
+          false,
+          attempt,
+        );
       }
       let res: Response;
       try {
@@ -65,14 +99,26 @@ export function createHttpRecorder(opts: {
           signal: AbortSignal.timeout(opts.timeoutMs ?? 60_000),
         });
       } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        const attempt = noteAttempt({
+          paymentTxHash: txHash,
+          status: null,
+          bodyPreview: previewBody(msg),
+          error: `Recorder unreachable: ${msg}`,
+          ok: false,
+        });
         throw new RecorderError(
-          `Recorder unreachable: ${err instanceof Error ? err.message : String(err)}`,
+          `Recorder unreachable: ${msg}`,
           502,
           "UNREACHABLE",
           true,
+          attempt,
         );
       }
-      const body = (await res.json().catch(() => ({}))) as {
+
+      const rawText = await res.text().catch(() => "");
+      const bodyPreview = previewBody(rawText);
+      let body: {
         error?: string;
         code?: string;
         idempotent?: boolean;
@@ -80,18 +126,53 @@ export function createHttpRecorder(opts: {
         proof?: { refId?: string };
         registry?: { txHash?: string | null; explorerUrl?: string };
         verifyUrl?: string;
-      };
+      } = {};
+      if (rawText.trim()) {
+        try {
+          body = JSON.parse(rawText) as typeof body;
+        } catch {
+          body = {};
+        }
+      }
+
       if (!res.ok) {
         // TX_NOT_CONFIRMED can race a just-mined tx; 5xx/429 are transient.
         const retryable = res.status >= 500 || res.status === 429 || body.code === "TX_NOT_CONFIRMED";
-        throw new RecorderError(
-          body.error ?? `Recorder HTTP ${res.status}`,
-          res.status,
-          body.code,
-          retryable,
-        );
+        const errorText =
+          (typeof body.error === "string" && body.error.trim()) ||
+          bodyPreview ||
+          `Recorder HTTP ${res.status}`;
+        const attempt = noteAttempt({
+          paymentTxHash: txHash,
+          status: res.status,
+          bodyPreview,
+          error: errorText,
+          ok: false,
+        });
+        throw new RecorderError(errorText, res.status, body.code, retryable, attempt);
       }
+
       const proofTxHash = body.proofTxHash ?? body.registry?.txHash ?? null;
+      if (!proofTxHash) {
+        const errorText = "Recorder returned no proof transaction hash";
+        const attempt = noteAttempt({
+          paymentTxHash: txHash,
+          status: res.status,
+          bodyPreview,
+          error: errorText,
+          ok: false,
+        });
+        throw new RecorderError(errorText, 502, "NO_PROOF_TX", true, attempt);
+      }
+
+      noteAttempt({
+        paymentTxHash: txHash,
+        status: res.status,
+        bodyPreview,
+        error: null,
+        ok: true,
+      });
+
       return {
         proofTxHash,
         proofExplorerUrl: proofTxHash ? body.registry?.explorerUrl ?? null : null,
