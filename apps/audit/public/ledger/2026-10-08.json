@@ -1,0 +1,31 @@
+{
+  "day": "2026-10-08",
+  "events": [
+    {
+      "type": "payment",
+      "timestamp": "2026-10-08T21:05:27.000Z",
+      "endpoint": "https://audit.liquidlogicx.com/api/allowance",
+      "amountUsdc": "0.001",
+      "asset": "USDC",
+      "network": "eip155:8453",
+      "txHash": "0x849cafd477a817531e2a06ff3e221c5ecb77b408acedf9aece57c297d0ee5cf6",
+      "basescanUrl": "https://basescan.org/tx/0x849cafd477a817531e2a06ff3e221c5ecb77b408acedf9aece57c297d0ee5cf6",
+      "walletAddress": "0x0ffab3cea2221070abfb6deb76206946d5e0daaf",
+      "payTo": "0x147991A1c25e78f6D9225d2dBA61eD93A6158c7b",
+      "reason": "x402 payment received by payTo (Base chain-sync)"
+    },
+    {
+      "type": "payment",
+      "timestamp": "2026-10-08T21:32:27.000Z",
+      "endpoint": "https://audit.liquidlogicx.com/api/allowance",
+      "amountUsdc": "0.001",
+      "asset": "USDC",
+      "network": "eip155:8453",
+      "txHash": "0xd00f68512cbfde07eff35e7e503bf7db88d52844abf7d9f845532dd9ce0cb840",
+      "basescanUrl": "https://basescan.org/tx/0xd00f68512cbfde07eff35e7e503bf7db88d52844abf7d9f845532dd9ce0cb840",
+      "walletAddress": "0xc9c7b38c0942914fc8ea12063bc92dcd3b581670",
+      "payTo": "0x147991A1c25e78f6D9225d2dBA61eD93A6158c7b",
+      "reason": "x402 payment received by payTo (Base chain-sync)"
+    }
+  ]
+}
