@@ -2,6 +2,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 
 const NAV = [
   { href: "/#llx-pay", label: "LLX Pay" },
+  { href: "https://xlock.liquidlogicx.com", label: "X-Lock" },
   { href: "/#controls", label: "Controls" },
   { href: "/ledger", label: "Ledger" },
   { href: "/docs", label: "Endpoint docs" },

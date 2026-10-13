@@ -24,3 +24,5 @@ export const SITE_DESCRIPTION =
 
 export const AUDIT_URL =
   process.env.NEXT_PUBLIC_AUDIT_URL ?? "https://audit.liquidlogicx.com";
+
+export const XLOCK_URL = "https://xlock.liquidlogicx.com";

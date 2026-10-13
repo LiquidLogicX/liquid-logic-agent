@@ -53,6 +53,11 @@ export function LlxSection() {
             buying.
           </p>
         </dd>
+        <dt>Utility</dt>
+        <dd>
+          $LLX utility: pays X-Lock fees at a discount. Token:{" "}
+          <span className="mono">{LLX_CONTRACT}</span> on Base.
+        </dd>
         <dt>Links</dt>
         <dd>
           <a href={LLX_BASESCAN} rel="noopener noreferrer" target="_blank">
