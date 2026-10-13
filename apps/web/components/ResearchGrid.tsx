@@ -2,14 +2,16 @@ export function ResearchGrid() {
   return (
     <div className="research">
       <article>
-        <div className="stage">Live on Base</div>
+        <div className="stage">Live on 10 chains</div>
         <h3>
           <a href="https://xlock.liquidlogicx.com">X-Lock</a>
         </h3>
         <p>
-          Token lock and vesting on Base mainnet. Fixed unlock dates,
-          permissionless release, every lock verifiable on Basescan. Fees in
-          USDC or $LLX. Launched October 2026.
+          Token lock and vesting on Base, BNB Chain, Ethereum, Arbitrum,
+          Polygon, Avalanche, Optimism, Arc, Tempo and Robinhood Chain.
+          Fixed unlock dates, permissionless release, every lock verifiable
+          on-chain. Fees in USDC (USDG on Robinhood Chain), or $LLX on Base.
+          Launched October 2026.
         </p>
       </article>
       <article>
