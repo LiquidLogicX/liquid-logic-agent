@@ -10,11 +10,11 @@ export function XLockSection() {
             Lock or vest any token on Base. Fixed unlock date, permissionless
             release, every lock verifiable on Basescan.
           </p>
-        </div>
-        <div>
-          <p className="intro" style={{ marginTop: 0, marginBottom: 18 }}>
+          <p className="intro">
             10 USDC per lock, or pay in $LLX at a discount.
           </p>
+        </div>
+        <div>
           <div className="llxpay-buttons">
             <a
               className="btn primary"
