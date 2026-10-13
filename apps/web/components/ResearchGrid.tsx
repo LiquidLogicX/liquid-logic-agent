@@ -3,6 +3,25 @@ export function ResearchGrid() {
     <div className="research">
       <article>
         <div className="stage">Live on Base</div>
+        <h3>
+          <a href="https://xlock.liquidlogicx.com">X-Lock</a>
+        </h3>
+        <p>
+          Token lock and vesting on Base mainnet. Fixed unlock dates,
+          permissionless release, every lock verifiable on Basescan. Fees in
+          USDC or $LLX. Launched October 2026.
+        </p>
+      </article>
+      <article>
+        <div className="stage">Live on Tempo</div>
+        <h3>Settlement proofs on Tempo</h3>
+        <p>
+          LLX Pay runs on Tempo mainnet with on-chain settlement proofs and a
+          public verifier at proofs.liquidlogicx.com.
+        </p>
+      </article>
+      <article>
+        <div className="stage">Live on Base</div>
         <h3>Treasurer, ledger and audit endpoint</h3>
         <p>The capped spending stack described on this site.</p>
       </article>
@@ -32,11 +51,11 @@ export function ResearchGrid() {
         </p>
       </article>
       <article>
-        <div className="stage">Coming soon</div>
+        <div className="stage">Live</div>
         <h3>$LLX for X-Lock and LLX Pay</h3>
         <p>
-          Pay X-Lock fees in $LLX at a discount, and get early access to new
-          LLX Pay features as a holder.
+          Pay X-Lock fees in $LLX at a discount — live now. Early access to new
+          LLX Pay features for holders is next.
         </p>
       </article>
       <article>

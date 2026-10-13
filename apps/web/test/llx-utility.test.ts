@@ -25,11 +25,15 @@ const allCopy = [
   ...LLX_UTILITY.flatMap((i) => [i.title, i.detail]),
 ].join("\n");
 
-test("three utility items, none marked live until x402 $LLX accept ships", () => {
+test("three utility items; only X-Lock fees in $LLX are live", () => {
   assert.equal(LLX_UTILITY.length, 3);
   for (const item of LLX_UTILITY) {
-    assert.equal(item.status, "coming_soon", item.id);
-    assert.equal(utilityStatusLabel(item.status), "Coming soon");
+    const expected = item.id === "x-lock-fees" ? "live" : "coming_soon";
+    assert.equal(item.status, expected, item.id);
+    assert.equal(
+      utilityStatusLabel(item.status),
+      expected === "live" ? "Live" : "Coming soon",
+    );
   }
 });
 
