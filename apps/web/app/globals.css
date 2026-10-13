@@ -196,6 +196,108 @@ nav.primary a:hover {
   cursor: pointer;
 }
 
+.top-main {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  min-width: 0;
+}
+
+.brand-x {
+  color: inherit;
+}
+
+nav.primary {
+  align-items: center;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.nav-more {
+  position: relative;
+}
+
+.nav-more-btn {
+  font: inherit;
+  color: var(--slate);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.nav-more-btn:hover,
+.nav-more-btn[aria-expanded="true"] {
+  color: var(--ink);
+}
+
+.nav-more-icon {
+  display: none;
+}
+
+.nav-more-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 50;
+  list-style: none;
+  margin: 0;
+  padding: 6px 0;
+  min-width: 180px;
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  box-shadow: 0 6px 18px rgba(24, 32, 47, 0.12);
+}
+
+.nav-more-menu[hidden] {
+  display: none;
+}
+
+.nav-more-menu a {
+  display: block;
+  padding: 8px 14px;
+}
+
+@media (max-width: 860px) {
+  header.top .top-inner {
+    gap: 8px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .top-main {
+    width: 100%;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .brand {
+    gap: 8px;
+    font-size: 15px;
+    white-space: nowrap;
+  }
+
+  .mark {
+    width: 32px;
+    height: 32px;
+  }
+
+  nav.primary {
+    gap: 12px;
+  }
+
+  .nav-more-label {
+    display: none;
+  }
+
+  .nav-more-icon {
+    display: inline;
+    font-size: 17px;
+    line-height: 1;
+  }
+}
+
 /* —— Hero —— */
 .hero {
   padding: 64px 0 56px;
@@ -769,16 +871,6 @@ pre {
 .endpoint-label {
   overflow-wrap: anywhere;
   word-break: break-word;
-}
-
-/* —— Brand: silver chrome X in the "Liquid Logic X" wordmark —— */
-.chrome-x {
-  background: linear-gradient(180deg, #f2f5f8 0%, #c9d2dc 50%, #8e9aa6 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0.5px 0 rgba(24, 32, 47, 0.55));
 }
 
 /* —— LLX Pay —— */
