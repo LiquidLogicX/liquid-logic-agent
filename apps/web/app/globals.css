@@ -221,9 +221,10 @@ nav.primary {
 nav.primary a.app-tile {
   display: block;
   flex-shrink: 0;
-  width: 52px;
-  height: 60px;
-  border-radius: 11px;
+  width: 32px;
+  height: 37px;
+  border-radius: 7px;
+  align-self: center;
   line-height: 0;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
@@ -248,9 +249,9 @@ nav.primary a.app-tile:focus-visible {
 
 @media (max-width: 860px) {
   nav.primary a.app-tile {
-    width: 40px;
-    height: 46px;
-    border-radius: 9px;
+    width: 28px;
+    height: 32px;
+    border-radius: 6px;
   }
 }
 
