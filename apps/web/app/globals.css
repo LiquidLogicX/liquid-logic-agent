@@ -1336,3 +1336,11 @@ pre {
     scroll-behavior: auto !important;
   }
 }
+
+/* /addresses */
+.addr-table th[scope="row"] { text-align: left; font-weight: 600; white-space: nowrap; }
+.addr-table td, .addr-table th { vertical-align: top; }
+.addr-cell code { word-break: break-all; font-size: 0.85em; }
+.addr-cell .copy { margin-left: 0.4rem; }
+.addr-chains { display: block; margin-top: 0.35rem; font-size: 0.9em; }
+.addr-footer { margin-top: 1.5rem; }
