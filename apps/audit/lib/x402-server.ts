@@ -3,6 +3,7 @@
  * - GET/POST /api/audit     $0.05 USDC on Base
  * - GET/POST /api/allowance $0.001 USDC on Base (cheaper; call before spending)
  * - GET/POST /api/prove     $0.02 USDC on Base (settlement proof on Arc)
+ * - GET/POST /api/lock-status $0.005 USDC on Base (X-Lock lock check, 10 chains)
  */
 import {
   createX402Server,
@@ -15,6 +16,7 @@ import {
   ALLOWANCE_PRICE_LABEL,
   AUDIT_PRICE_LABEL,
   NETWORK_BASE,
+  LOCK_STATUS_PRICE_LABEL,
   PROVE_PRICE_LABEL,
 } from "@liquid-logic/shared";
 import { AUDIT_OUTPUT_EXAMPLE } from "./audit-output-example";
@@ -25,7 +27,13 @@ import {
   PROVE_DESCRIPTION,
 } from "./prove/discovery";
 import {
+  getLockStatusDiscovery,
+  LOCK_STATUS_DESCRIPTION,
+  postLockStatusDiscovery,
+} from "./lock-status/discovery";
+import {
   ALLOWANCE_META,
+  LOCK_STATUS_META,
   AUDIT_META,
   BAZAAR_ICON_URL,
   PROVE_META,
@@ -49,6 +57,22 @@ export const PROVE_ROUTES: Record<"GET /api/prove" | "POST /api/prove", CdpRoute
     networks: [NETWORK_BASE],
     description: PROVE_DESCRIPTION,
     extensions: { ...postProveDiscovery },
+  },
+};
+
+/** /api/lock-status routes (Base only, charge only on < 400). Exported for tests. */
+export const LOCK_STATUS_ROUTES: Record<"GET /api/lock-status" | "POST /api/lock-status", CdpRouteConfig> = {
+  "GET /api/lock-status": {
+    price: LOCK_STATUS_PRICE_LABEL,
+    networks: [NETWORK_BASE],
+    description: LOCK_STATUS_DESCRIPTION,
+    extensions: { ...getLockStatusDiscovery },
+  },
+  "POST /api/lock-status": {
+    price: LOCK_STATUS_PRICE_LABEL,
+    networks: [NETWORK_BASE],
+    description: LOCK_STATUS_DESCRIPTION,
+    extensions: { ...postLockStatusDiscovery },
   },
 };
 
@@ -200,6 +224,8 @@ export function getAuditX402Server(): Promise<X402Server> {
           description: ALLOWANCE_DESCRIPTION,
           extensions: { ...postAllowanceDiscovery },
         }, ALLOWANCE_META),
+        "GET /api/lock-status": withServiceMeta(LOCK_STATUS_ROUTES["GET /api/lock-status"], LOCK_STATUS_META),
+        "POST /api/lock-status": withServiceMeta(LOCK_STATUS_ROUTES["POST /api/lock-status"], LOCK_STATUS_META),
         "GET /api/prove": withServiceMeta(PROVE_ROUTES["GET /api/prove"], PROVE_META),
         "POST /api/prove": withServiceMeta(PROVE_ROUTES["POST /api/prove"], PROVE_META),
       },
