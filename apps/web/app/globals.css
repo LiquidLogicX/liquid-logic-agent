@@ -217,6 +217,44 @@ nav.primary {
   position: relative;
 }
 
+/* App icon tiles (LLX Pay, X-Lock): identical size */
+nav.primary a.app-tile {
+  display: block;
+  flex-shrink: 0;
+  width: 32px;
+  height: 37px;
+  border-radius: 7px;
+  align-self: center;
+  line-height: 0;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+nav.primary a.app-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  display: block;
+}
+
+nav.primary a.app-tile:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(76, 29, 149, 0.35);
+}
+
+nav.primary a.app-tile:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+@media (max-width: 860px) {
+  nav.primary a.app-tile {
+    width: 28px;
+    height: 32px;
+    border-radius: 6px;
+  }
+}
+
 .nav-more-btn {
   font: inherit;
   color: var(--slate);
