@@ -13,12 +13,13 @@ import {
   AUDIT_META,
   BAZAAR_ICON_URL,
   LOCK_STATUS_META,
+  ESCROW_STATUS_META,
   PROVE_META,
 } from "../lib/bazaar-meta";
 import { PROVE_DESCRIPTION } from "../lib/prove/discovery";
 import { PROVE_ROUTES } from "../lib/x402-server";
 
-const ALL = { prove: PROVE_META, audit: AUDIT_META, allowance: ALLOWANCE_META, lockStatus: LOCK_STATUS_META };
+const ALL = { prove: PROVE_META, audit: AUDIT_META, allowance: ALLOWANCE_META, lockStatus: LOCK_STATUS_META, escrowStatus: ESCROW_STATUS_META };
 
 for (const [route, meta] of Object.entries(ALL)) {
   test(`${route}: serviceName is valid x402 (<= 32 printable ASCII)`, () => {
