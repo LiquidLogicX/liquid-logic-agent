@@ -1,9 +1,9 @@
 import { NavMoreMenu } from "@/components/NavMoreMenu";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
-const APP_TILES = [
-  { href: "/#llx-pay", label: "LLX Pay", src: "/tile-llx-pay.webp" },
-  { href: "https://xlock.liquidlogicx.com", label: "X-Lock", src: "/tile-x-lock.webp" },
+const APP_PILLS = [
+  { href: "/#llx-pay", label: "LLX Pay" },
+  { href: "https://xlock.liquidlogicx.com", label: "X-Lock" },
 ] as const;
 
 const NAV = [{ href: "/#llx", label: "$LLX" }] as const;
@@ -35,15 +35,9 @@ export function SiteHeader() {
             </span>
           </a>
           <nav className="primary" aria-label="Primary">
-            {APP_TILES.map((tile) => (
-              <a
-                key={tile.href}
-                className="app-tile"
-                href={tile.href}
-                aria-label={tile.label}
-                title={tile.label}
-              >
-                <img src={tile.src} width={440} height={512} alt={tile.label} />
+            {APP_PILLS.map((pill) => (
+              <a key={pill.href} className="nav-pill nav-pill-desktop" href={pill.href}>
+                {pill.label}
               </a>
             ))}
             {NAV.map((item) => (
@@ -55,6 +49,15 @@ export function SiteHeader() {
           </nav>
         </div>
         <div className="top-trailing">
+          {APP_PILLS.map((pill) => (
+            <a
+              key={pill.href}
+              className="nav-pill nav-pill-mobile"
+              href={pill.href}
+            >
+              {pill.label}
+            </a>
+          ))}
           <ThemeToggle />
           <span className="status">
             <i aria-hidden="true" />
