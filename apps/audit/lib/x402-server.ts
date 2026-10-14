@@ -4,6 +4,7 @@
  * - GET/POST /api/allowance $0.001 USDC on Base (cheaper; call before spending)
  * - GET/POST /api/prove     $0.02 USDC on Base (settlement proof on Arc)
  * - GET/POST /api/lock-status $0.005 USDC on Base (X-Lock lock check, 10 chains)
+ * - GET/POST /api/escrow-status $0.005 USDC on Base (X-Escrow state check)
  */
 import {
   createX402Server,
@@ -17,6 +18,7 @@ import {
   AUDIT_PRICE_LABEL,
   NETWORK_BASE,
   LOCK_STATUS_PRICE_LABEL,
+  ESCROW_STATUS_PRICE_LABEL,
   PROVE_PRICE_LABEL,
 } from "@liquid-logic/shared";
 import { AUDIT_OUTPUT_EXAMPLE } from "./audit-output-example";
@@ -32,8 +34,14 @@ import {
   postLockStatusDiscovery,
 } from "./lock-status/discovery";
 import {
+  ESCROW_STATUS_DESCRIPTION,
+  getEscrowStatusDiscovery,
+  postEscrowStatusDiscovery,
+} from "./escrow-status/discovery";
+import {
   ALLOWANCE_META,
   LOCK_STATUS_META,
+  ESCROW_STATUS_META,
   AUDIT_META,
   BAZAAR_ICON_URL,
   PROVE_META,
@@ -73,6 +81,22 @@ export const LOCK_STATUS_ROUTES: Record<"GET /api/lock-status" | "POST /api/lock
     networks: [NETWORK_BASE],
     description: LOCK_STATUS_DESCRIPTION,
     extensions: { ...postLockStatusDiscovery },
+  },
+};
+
+/** /api/escrow-status routes (Base only, charge only on < 400). Exported for tests. */
+export const ESCROW_STATUS_ROUTES: Record<"GET /api/escrow-status" | "POST /api/escrow-status", CdpRouteConfig> = {
+  "GET /api/escrow-status": {
+    price: ESCROW_STATUS_PRICE_LABEL,
+    networks: [NETWORK_BASE],
+    description: ESCROW_STATUS_DESCRIPTION,
+    extensions: { ...getEscrowStatusDiscovery },
+  },
+  "POST /api/escrow-status": {
+    price: ESCROW_STATUS_PRICE_LABEL,
+    networks: [NETWORK_BASE],
+    description: ESCROW_STATUS_DESCRIPTION,
+    extensions: { ...postEscrowStatusDiscovery },
   },
 };
 
@@ -226,6 +250,8 @@ export function getAuditX402Server(): Promise<X402Server> {
         }, ALLOWANCE_META),
         "GET /api/lock-status": withServiceMeta(LOCK_STATUS_ROUTES["GET /api/lock-status"], LOCK_STATUS_META),
         "POST /api/lock-status": withServiceMeta(LOCK_STATUS_ROUTES["POST /api/lock-status"], LOCK_STATUS_META),
+        "GET /api/escrow-status": withServiceMeta(ESCROW_STATUS_ROUTES["GET /api/escrow-status"], ESCROW_STATUS_META),
+        "POST /api/escrow-status": withServiceMeta(ESCROW_STATUS_ROUTES["POST /api/escrow-status"], ESCROW_STATUS_META),
         "GET /api/prove": withServiceMeta(PROVE_ROUTES["GET /api/prove"], PROVE_META),
         "POST /api/prove": withServiceMeta(PROVE_ROUTES["POST /api/prove"], PROVE_META),
       },

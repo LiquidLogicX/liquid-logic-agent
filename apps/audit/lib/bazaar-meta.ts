@@ -67,3 +67,13 @@ export const LOCK_STATUS_META: BazaarMeta = {
     "Output: JSON from onchain X-Lock reads by Liquid Logic X: every lock (beneficiary, amount, start/cliff/end, released, claimable, lock page), totals, % of supply locked, next unlock, chains checked. " +
     "$0.005 USDC on Base.",
 };
+
+export const ESCROW_STATUS_META: BazaarMeta = {
+  serviceName: "Escrow Status Check",
+  tags: ["escrow", "agent-payments", "payment-status", "usdc", "x-escrow"],
+  description:
+    "Check an X-Escrow before you start or deliver paid work. " +
+    "Input: chain + escrow id, or a buyer/seller wallet address (optional chain; testnet: base-sepolia). " +
+    "Output: JSON from onchain X-Escrow reads by Liquid Logic X: state (funded, released, refunded), buyer, seller, token, amount, deadline, verifier, created time, refundable now, escrow page. " +
+    "$0.005 USDC on Base.",
+};

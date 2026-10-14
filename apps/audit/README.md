@@ -8,6 +8,7 @@ Vercel / Next.js App Router service exposing **x402-paid** endpoints on Base
 | `GET/POST /api/audit` | `$0.05` USDC | Full spend summary (where USDC went) |
 | `GET/POST /api/allowance` | `$0.001` USDC | **Before spending** — can this wallet pay that endpoint, and what’s left under the daily cap? |
 | `GET/POST /api/prove` | `$0.02` USDC | Settlement receipt: Base USDC tx hash in, proof on Arc + public verify link out |
+| `GET/POST /api/escrow-status` | `$0.005` USDC | **Before starting/delivering paid work**: what state is this X-Escrow in (funded / released / refunded), who are the parties, when can it be refunded? |
 | `GET/POST /api/lock-status` | `$0.005` USDC | **Before buying/listing**: is this token locked in X-Lock (10 chains), how much, when does it unlock? |
 
 ## Input / output
@@ -39,6 +40,14 @@ Vercel / Next.js App Router service exposing **x402-paid** endpoints on Base
 - Output: `{ isLocked, totalLocks, nextUnlock, chainsChecked, chainsFailed, chains[{ status, lockCount, totalLockedAmount, pctOfSupplyLocked, nextUnlock, locks[{ lockId, kind, beneficiary, amount, start, cliff, end, released, claimable, stillLocked, status, lockUrl }] }] }`.
 - Read-only public RPCs (viem, 8s timeout, fallbacks), successful per-chain reads cached 60s in memory; a failing chain is reported in `chainsFailed` without failing the call. 400 bad input and 503 (every chain failed) are free.
 - No new env vars. Tests: `npm run check-lock-status` (mocked RPC). Live read-only smoke: `npm run check-lock-status-live` (optional `LOCK_TOKEN`).
+
+**Escrow status**
+
+- Input: `?chain=base-sepolia&id=3` or `?address=0x…` (buyer or seller), or JSON `{ "chain", "id" }` / `{ "address" }`. Exactly one of `id` / `address`. `chain` optional (key, chain id or `eip155:<id>`); omit to read every live X-Escrow chain.
+- Live: Base Sepolia testnet (`0xAd45…574F`). Mainnet chains are configured slots (`factory: null` in `lib/escrow-status/chains.ts`); asking for one returns 400 `CHAIN_NOT_LIVE` (free) until its deploy lands.
+- Output: `{ found, total, chainsChecked, chainsFailed, escrows[{ chain, escrowId, state, buyer, seller, token, amount, deadline, verifier, createdAt, refundableNow, secondsToDeadline, escrowUrl }], chains[] }`.
+- Public RPCs (viem, 8s timeout, fallbacks), successful per-chain reads cached 15s; failing chains reported in `chainsFailed`. 400 bad input and 503 (every chain failed) are free.
+- No new env vars. Tests: `npm run check-escrow-status` (mocked RPC). Live read-only smoke: `npm run check-escrow-status-live`.
 
 ## Env
 
