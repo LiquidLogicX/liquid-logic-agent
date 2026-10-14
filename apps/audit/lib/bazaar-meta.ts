@@ -57,3 +57,13 @@ export const ALLOWANCE_META: BazaarMeta = {
     "Omit endpoint for remaining cap + allowlist. " +
     "$0.001 USDC on Base. Site: https://liquidlogicx.com",
 };
+
+export const LOCK_STATUS_META: BazaarMeta = {
+  serviceName: "Token Lock/Vesting Check",
+  tags: ["token-lock", "vesting", "rug-check", "liquidity-lock", "multichain"],
+  description:
+    "Check if a token's supply or LP is locked before you buy or list it. " +
+    "Input: an ERC-20 token address (optional chain: base, bnb, ethereum, arbitrum, polygon, avalanche, optimism, arc, tempo, robinhood; omit to scan all 10). " +
+    "Output: JSON from onchain X-Lock reads by Liquid Logic X: every lock (beneficiary, amount, start/cliff/end, released, claimable, lock page), totals, % of supply locked, next unlock, chains checked. " +
+    "$0.005 USDC on Base.",
+};

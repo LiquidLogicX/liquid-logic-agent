@@ -13,7 +13,9 @@
     "check-arc": "node --import tsx scripts/check-arc-x402.ts",
     "check-prove": "node --import tsx --test scripts/check-prove.ts",
     "check-bazaar-meta": "node --import tsx --test scripts/check-bazaar-meta.ts",
-    "paid-prove": "node --import tsx scripts/paid-prove-call.ts"
+    "paid-prove": "node --import tsx scripts/paid-prove-call.ts",
+    "check-lock-status": "node --import tsx --test scripts/check-lock-status.ts",
+    "check-lock-status-live": "node --import tsx scripts/check-lock-status-live.ts"
   },
   "dependencies": {
     "@circle-fin/x402-batching": "^3.5.0",
