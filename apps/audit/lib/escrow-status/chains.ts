@@ -15,7 +15,8 @@ export type XEscrowChain = {
 };
 
 export const XESCROW_SITE = "https://xlock.liquidlogicx.com";
-export const XESCROW_TESTNET_FACTORY = "0xAd45eFa49A7BD027823b01453dC8468AA756574F" as const;
+/** Review-fix redeploy (salt XEscrowT2). Superseded pre-review factory: 0xAd45eFa49A7BD027823b01453dC8468AA756574F. */
+export const XESCROW_TESTNET_FACTORY = "0x72770D23497950EbA870154a6C5B4087Ab47F99f" as const;
 
 const soon = (key: string, name: string, chainId: number, rpcUrls: string[], explorer: string): XEscrowChain =>
   ({ key, name, chainId, factory: null, rpcUrls, explorer });
