@@ -782,6 +782,149 @@ footer.site-foot p {
   max-width: 70ch;
 }
 
+/* —— /addresses —— */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.addr-table table {
+  min-width: 860px;
+}
+
+.addr-table th.addr-name {
+  vertical-align: top;
+  background: transparent;
+  color: var(--ink);
+  font-weight: 600;
+  border-bottom: 1px solid var(--rule);
+  padding: 13px 16px;
+  white-space: normal;
+}
+
+.addr-table tr:last-child th.addr-name {
+  border-bottom: 0;
+}
+
+.addr-ca {
+  margin-top: 0;
+  flex-wrap: nowrap;
+}
+
+.addr-ca button.copy {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.addr-ca code {
+  font-size: 13px;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: normal;
+  background: transparent;
+  padding: 0;
+}
+
+.addr-purpose {
+  color: var(--slate);
+  min-width: 220px;
+}
+
+.addr-explorers {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+}
+
+.addr-link {
+  white-space: nowrap;
+}
+
+.addr-none {
+  color: var(--slate);
+  font-size: 13px;
+}
+
+.addr-disclaimer {
+  margin: 20px 0 0;
+  color: var(--ink);
+}
+
+@media (max-width: 760px) {
+  .addr-table {
+    background: transparent;
+    border: 0;
+    overflow-x: visible;
+  }
+
+  .addr-table table,
+  .addr-table tbody,
+  .addr-table tr,
+  .addr-table th.addr-name,
+  .addr-table td {
+    display: block;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .addr-table thead {
+    display: none;
+  }
+
+  .addr-table tr {
+    background: var(--sheet);
+    border: 1px solid var(--rule);
+    margin-bottom: 12px;
+    padding: 14px 16px;
+  }
+
+  .addr-table th.addr-name,
+  .addr-table td {
+    padding: 0;
+    border-bottom: 0;
+  }
+
+  .addr-table th.addr-name {
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+
+  .addr-table td + td {
+    margin-top: 8px;
+  }
+
+  .addr-ca {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .addr-ca code {
+    white-space: normal;
+    word-break: break-all;
+    font-size: 13px;
+  }
+
+  .addr-purpose {
+    min-width: 0;
+  }
+}
+
+footer.site-foot .foot-links a {
+  color: var(--slate);
+}
+
+footer.site-foot .foot-links a:hover {
+  color: var(--ink);
+}
+
 /* —— Inner pages —— */
 main.page {
   max-width: 1120px;
