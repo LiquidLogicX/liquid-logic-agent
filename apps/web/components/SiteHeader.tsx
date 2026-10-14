@@ -1,11 +1,12 @@
 import { NavMoreMenu } from "@/components/NavMoreMenu";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
-const NAV = [
-  { href: "/#llx-pay", label: "LLX Pay" },
-  { href: "https://xlock.liquidlogicx.com", label: "X-Lock" },
-  { href: "/#llx", label: "$LLX" },
+const APP_TILES = [
+  { href: "/#llx-pay", label: "LLX Pay", src: "/tile-llx-pay.webp" },
+  { href: "https://xlock.liquidlogicx.com", label: "X-Lock", src: "/tile-x-lock.webp" },
 ] as const;
+
+const NAV = [{ href: "/#llx", label: "$LLX" }] as const;
 
 const MORE = [
   { href: "/#controls", label: "Controls" },
@@ -34,6 +35,17 @@ export function SiteHeader() {
             </span>
           </a>
           <nav className="primary" aria-label="Primary">
+            {APP_TILES.map((tile) => (
+              <a
+                key={tile.href}
+                className="app-tile"
+                href={tile.href}
+                aria-label={tile.label}
+                title={tile.label}
+              >
+                <img src={tile.src} width={440} height={512} alt={tile.label} />
+              </a>
+            ))}
             {NAV.map((item) => (
               <a key={item.href} href={item.href}>
                 {item.label}
