@@ -1,7 +1,7 @@
 /**
  * X-Lock deployments that /api/lock-status scans. Mirrors llx-lock
  * web/src/lib/chains.ts (keys, chain ids, public RPCs, lock page paths).
- * Base runs the original XLockFactory; the other 9 chains share the
+ * Base runs the original XLockFactory; the other 10 chains share the
  * CreateX-deployed XLockFactoryV2. Both expose the same read ABI.
  */
 export type XLockChain = {
@@ -31,6 +31,7 @@ export const XLOCK_CHAINS: XLockChain[] = [
   v2("arc", "Arc", 5042, ["https://rpc.mainnet.arc.io"], "https://arc.etherscan.io"),
   v2("tempo", "Tempo", 4217, ["https://rpc.tempo.xyz"], "https://explore.tempo.xyz"),
   v2("robinhood", "Robinhood Chain", 4663, ["https://rpc.mainnet.chain.robinhood.com"], "https://robin.etherscan.io"),
+  v2("xrplevm", "XRPL EVM", 1440000, ["https://rpc.xrplevm.org"], "https://explorer.xrplevm.org"),
 ];
 
 /** Accepts key ("bnb"), numeric id ("56"), or CAIP-2 ("eip155:56"). */

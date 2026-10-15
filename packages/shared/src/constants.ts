@@ -29,7 +29,7 @@ export const ALLOWANCE_PRICE_LABEL = "$0.001";
 export const PROVE_PRICE_USDC = "0.02";
 export const PROVE_PRICE_LABEL = `$${PROVE_PRICE_USDC}`;
 
-/** /api/lock-status: is this token locked in X-Lock (10 chains). */
+/** /api/lock-status: is this token locked in X-Lock (11 chains). */
 export const LOCK_STATUS_PRICE_USDC = "0.005";
 export const LOCK_STATUS_PRICE_LABEL = `$${LOCK_STATUS_PRICE_USDC}`;
 

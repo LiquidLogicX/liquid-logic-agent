@@ -16,7 +16,7 @@ Official addresses: https://liquidlogicx.com/addresses
 
 ## X-Lock + X-Escrow (X-Crow)
 
-Time locks, vesting, and non-custodial escrow across Base and nine other chains. Read lock/escrow status over x402 ($0.005 USDC on Base). Create locks and escrows from an agent wallet.
+Time locks, vesting, and non-custodial escrow across Base and ten other chains. Read lock/escrow status over x402 ($0.005 USDC on Base). Create locks and escrows from an agent wallet.
 
 **Skill:** https://xlock.liquidlogicx.com/skill.md  
 (also https://xlock.liquidlogicx.com/.well-known/skill.md)

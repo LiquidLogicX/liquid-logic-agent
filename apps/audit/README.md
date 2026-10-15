@@ -9,7 +9,7 @@ Vercel / Next.js App Router service exposing **x402-paid** endpoints on Base
 | `GET/POST /api/allowance` | `$0.001` USDC | **Before spending** — can this wallet pay that endpoint, and what’s left under the daily cap? |
 | `GET/POST /api/prove` | `$0.02` USDC | Settlement receipt: Base USDC tx hash in, proof on Arc + public verify link out |
 | `GET/POST /api/escrow-status` | `$0.005` USDC | **Before starting/delivering paid work**: what state is this X-Escrow in (funded / released / refunded), who are the parties, when can it be refunded? |
-| `GET/POST /api/lock-status` | `$0.005` USDC | **Before buying/listing**: is this token locked in X-Lock (10 chains), how much, when does it unlock? |
+| `GET/POST /api/lock-status` | `$0.005` USDC | **Before buying/listing**: is this token locked in X-Lock (11 chains), how much, when does it unlock? |
 
 ## Input / output
 
@@ -36,7 +36,7 @@ Vercel / Next.js App Router service exposing **x402-paid** endpoints on Base
 
 **Lock status**
 
-- Input: `?token=0x…&chain=base` or JSON `{ "token": "0x…", "chain": "base" }`. `chain` is optional (key, chain id or `eip155:<id>`); omit to scan all 10 X-Lock chains (Base V1 factory `0xD473…20ec`; shared V2 `0x54b3…9D44` on BNB, Ethereum, Arbitrum, Polygon, Avalanche, Optimism, Arc, Tempo, Robinhood).
+- Input: `?token=0x…&chain=base` or JSON `{ "token": "0x…", "chain": "base" }`. `chain` is optional (key, chain id or `eip155:<id>`); omit to scan all 11 X-Lock chains (Base V1 factory `0xD473…20ec`; shared V2 `0x54b3…9D44` on BNB, Ethereum, Arbitrum, Polygon, Avalanche, Optimism, Arc, Tempo, Robinhood, XRPL EVM).
 - Output: `{ isLocked, totalLocks, nextUnlock, chainsChecked, chainsFailed, chains[{ status, lockCount, totalLockedAmount, pctOfSupplyLocked, nextUnlock, locks[{ lockId, kind, beneficiary, amount, start, cliff, end, released, claimable, stillLocked, status, lockUrl }] }] }`.
 - Read-only public RPCs (viem, 8s timeout, fallbacks), successful per-chain reads cached 60s in memory; a failing chain is reported in `chainsFailed` without failing the call. 400 bad input and 503 (every chain failed) are free.
 - No new env vars. Tests: `npm run check-lock-status` (mocked RPC). Live read-only smoke: `npm run check-lock-status-live` (optional `LOCK_TOKEN`).

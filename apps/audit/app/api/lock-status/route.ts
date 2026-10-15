@@ -1,6 +1,6 @@
 /**
  * GET/POST /api/lock-status — $0.005 USDC on Base (same CDP facilitator + payTo as /api/audit).
- * Is this token locked in X-Lock? Read-only onchain lookups across all 10 X-Lock chains.
+ * Is this token locked in X-Lock? Read-only onchain lookups across all 11 X-Lock chains.
  *
  * Order: x402 verify → handler → settle. @x402/next only settles when the handler
  * returns < 400, so bad input (400) and "every RPC failed" (503) are free.

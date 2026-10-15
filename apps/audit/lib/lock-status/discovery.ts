@@ -21,7 +21,7 @@ export const LOCK_STATUS_INPUT_SCHEMA = {
     chain: {
       type: "string",
       enum: XLOCK_CHAINS.map((c) => c.key),
-      description: "Optional. One chain key (chain id or eip155:<id> also accepted). Omit to scan all 10 X-Lock chains.",
+      description: "Optional. One chain key (chain id or eip155:<id> also accepted). Omit to scan all 11 X-Lock chains.",
     },
   },
   required: ["token"],
