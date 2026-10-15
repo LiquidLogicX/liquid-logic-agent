@@ -41,6 +41,9 @@ export const metadata: Metadata = {
     ],
     apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
   },
+  other: {
+    "agent-skill": "https://liquidlogicx.com/skill.md",
+  },
 };
 
 const themeBoot = `(function(){try{var t=localStorage.getItem("llx-theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t);}else{document.documentElement.removeAttribute("data-theme");}}catch(e){}})();`;
@@ -48,6 +51,10 @@ const themeBoot = `(function(){try{var t=localStorage.getItem("llx-theme");if(t=
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="alternate" type="text/markdown" href="/skill.md" title="Agent skill" />
+        <link rel="agent-skill" href="/skill.md" />
+      </head>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeBoot }} />
       </head>
