@@ -54,8 +54,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         <link rel="alternate" type="text/markdown" href="/skill.md" title="Agent skill" />
         <link rel="agent-skill" href="/skill.md" />
-      </head>
-      <head>
         <script dangerouslySetInnerHTML={{ __html: themeBoot }} />
       </head>
       <body>
