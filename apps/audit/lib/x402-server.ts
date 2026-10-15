@@ -3,7 +3,7 @@
  * - GET/POST /api/audit     $0.05 USDC on Base
  * - GET/POST /api/allowance $0.001 USDC on Base (cheaper; call before spending)
  * - GET/POST /api/prove     $0.02 USDC on Base (settlement proof on Arc)
- * - GET/POST /api/lock-status $0.005 USDC on Base (X-Lock lock check, 10 chains)
+ * - GET/POST /api/lock-status $0.005 USDC on Base (X-Lock lock check, 11 chains)
  * - GET/POST /api/escrow-status $0.005 USDC on Base (X-Escrow state check)
  */
 import {

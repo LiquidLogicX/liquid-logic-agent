@@ -37,7 +37,7 @@ export const OFFICIAL_ADDRESSES: OfficialAddress[] = [
     name: "X-Lock Factory V2 (all other chains)",
     address: XLOCK_V2,
     purpose:
-      "Creates X-Lock token locks. Same address on BNB, Ethereum, Arbitrum, Polygon, Avalanche, Optimism, Arc, Tempo and Robinhood Chain. Not deployed on Base.",
+      "Creates X-Lock token locks. Same address on BNB, Ethereum, Arbitrum, Polygon, Avalanche, Optimism, Arc, Tempo, Robinhood Chain and XRPL EVM. Not deployed on Base.",
     explorer: { label: "Etherscan", href: `https://etherscan.io/address/${XLOCK_V2}` },
     chains: [
       { label: "BNB", href: `https://bscscan.com/address/${XLOCK_V2}` },
@@ -49,6 +49,7 @@ export const OFFICIAL_ADDRESSES: OfficialAddress[] = [
       { label: "Arc", href: `https://arc.etherscan.io/address/${XLOCK_V2}` },
       { label: "Tempo", href: `https://explore.tempo.xyz/address/${XLOCK_V2}` },
       { label: "Robinhood Chain", href: `https://robin.etherscan.io/address/${XLOCK_V2}` },
+      { label: "XRPL EVM", href: `https://explorer.xrplevm.org/address/${XLOCK_V2}` },
     ],
   },
   {

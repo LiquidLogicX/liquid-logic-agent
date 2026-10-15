@@ -1,6 +1,6 @@
 /**
  * Read-only live smoke test: calls the lock-status core directly against public
- * RPCs on all 10 chains. No x402, no payment, no signing.
+ * RPCs on all 11 chains. No x402, no payment, no signing.
  *   LOCK_TOKEN=0x… npm run check-lock-status-live -w @liquid-logic/audit
  * Defaults to $LLX on Base.
  */

@@ -23,7 +23,7 @@ test("addresses page lists every official address in full", () => {
     assert.ok(r.explorer.href.endsWith(r.address));
   }
   const v2 = OFFICIAL_ADDRESSES[2];
-  assert.equal(v2.chains?.length, 9);
+  assert.equal(v2.chains?.length, 10);
 });
 
 test("footer links to /addresses and page has no wallet connect", () => {

@@ -15,8 +15,8 @@ import { LOCK_STATUS_INPUT_SCHEMA } from "../lib/lock-status/discovery";
 beforeEach(() => clearLockStatusCache());
 const base = XLOCK_CHAINS.filter((c) => c.key === "base");
 
-test("10 chains: Base on V1 factory, other 9 on shared V2", () => {
-  assert.equal(XLOCK_CHAINS.length, 10);
+test("11 chains: Base on V1 factory, other 10 on shared V2", () => {
+  assert.equal(XLOCK_CHAINS.length, 11);
   assert.equal(resolveChain("base")!.factory, BASE_FACTORY);
   for (const c of XLOCK_CHAINS.filter((c) => c.key !== "base")) assert.equal(c.factory, V2_FACTORY, c.key);
   assert.equal(resolveChain("eip155:56")!.key, "bnb");
@@ -62,7 +62,7 @@ test("one chain RPC failing is reported per chain, others still answer", async (
     token: EXAMPLE_TOKEN, now: EXAMPLE_NOW,
     readerFor: (c) => (c.key === "bnb" ? failingReader : c.key === "base" ? fixtureReader() : emptyReader),
   });
-  assert.equal(r.chainsChecked.length, 9);
+  assert.equal(r.chainsChecked.length, 10);
   assert.deepEqual(r.chainsFailed, ["bnb"]);
   const bnb = r.chains.find((c) => c.chain === "bnb")!;
   assert.equal(bnb.status, "error");

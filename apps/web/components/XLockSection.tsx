@@ -7,13 +7,13 @@ export function XLockSection() {
         <div>
           <h2>X-Lock</h2>
           <p className="intro">
-            Lock or vest any token on 10 live chains: Base, BNB Chain,
-            Ethereum, Arbitrum, Polygon, Avalanche, Optimism, Arc, Tempo and
-            Robinhood Chain. Fixed unlock date, permissionless release, every
+            Lock or vest any token on 11 live chains: Base, BNB Chain,
+            Ethereum, Arbitrum, Polygon, Avalanche, Optimism, Arc, Tempo,
+            Robinhood Chain and XRPL EVM. Fixed unlock date, permissionless release, every
             lock verifiable on the chain&apos;s block explorer.
           </p>
           <p className="intro">
-            10 USDC per lock (10 USDG on Robinhood Chain), or pay in $LLX at a
+            10 USDC per lock (10 USDG on Robinhood Chain, 10 RLUSD on XRPL EVM), or pay in $LLX at a
             discount on Base.
           </p>
         </div>
