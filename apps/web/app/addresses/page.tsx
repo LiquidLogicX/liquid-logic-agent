@@ -17,6 +17,13 @@ export default function AddressesPage() {
       <h1>{ADDRESSES_TITLE}</h1>
       <p className="page-lede">
         Network: Base, unless noted. Check any address against this list before you send funds or trade.
+        Agents:{" "}
+        <a href="/skill.md">liquidlogicx.com/skill.md</a>
+        {" "}(index) ·{" "}
+        <a href="https://xlock.liquidlogicx.com/skill.md" rel="noopener noreferrer">
+          xlock.liquidlogicx.com/skill.md
+        </a>
+        .
       </p>
 
       <div className="tablewrap">
