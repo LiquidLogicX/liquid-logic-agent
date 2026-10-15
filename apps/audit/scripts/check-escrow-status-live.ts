@@ -1,5 +1,5 @@
 /**
- * Live read-only smoke against Base Sepolia (no payment, no x402): factory 0x7277…F99f (review-fix redeploy):
+ * Live read-only smoke against Base Sepolia (no payment, no x402): factory 0x8247…7BC3 (XEscrowT5 launch-cap redeploy):
  * escrows #1 (released), #2 (refunded after deadline), #3 (cancelled with the seller's M1 Cancel signature → refunded).
  *   npm run check-escrow-status-live -w @liquid-logic/audit
  */

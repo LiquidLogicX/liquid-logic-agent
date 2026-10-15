@@ -20,7 +20,7 @@ export const ESCROW_STATUS_OUTPUT_EXAMPLE: EscrowStatusResponse = {
       "chainId": 84532,
       "caip2": "eip155:84532",
       "testnet": true,
-      "factory": "0x3eB3cB09f8690d310F4CD88450762beE8C731caC",
+      "factory": "0x8247E07B2e821a5f6E6260e74EA3daB0d6867BC3",
       "escrowId": 3,
       "state": "funded" as const,
       "buyer": "0x793E8C977CB0c188332a72E34e9774dc1Dc762a0",
