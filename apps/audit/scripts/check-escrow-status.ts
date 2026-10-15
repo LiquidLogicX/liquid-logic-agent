@@ -4,7 +4,7 @@
  */
 import assert from "node:assert/strict";
 import { beforeEach, test } from "node:test";
-import { escrowUrl, liveEscrowChains, resolveEscrowChain, XESCROW_CHAINS, XESCROW_TESTNET_FACTORY } from "../lib/escrow-status/chains";
+import { escrowUrl, liveEscrowChains, resolveEscrowChain, XESCROW_CHAINS, XESCROW_BASE_FACTORY, XESCROW_TESTNET_FACTORY } from "../lib/escrow-status/chains";
 import { buildEscrowStatus, clearEscrowStatusCache, MAX_PER_CHAIN, type EscrowReader, type RawEscrow } from "../lib/escrow-status/core";
 import { BUYER, EXAMPLE_NOW, failingEscrowReader, FIXTURE_ESCROWS, fixtureEscrowReader, SELLER } from "../lib/escrow-status/fixture";
 import { handleEscrowStatusInput } from "../lib/escrow-status/handler";
@@ -13,12 +13,15 @@ import { ESCROW_STATUS_INPUT_SCHEMA } from "../lib/escrow-status/discovery";
 import { ESCROW_STATUS_ROUTES } from "../lib/x402-server";
 
 beforeEach(() => clearEscrowStatusCache());
+const SEPOLIA_ONLY = [resolveEscrowChain("base-sepolia")!]; // fixtures mirror Base Sepolia; Base mainnet is also live now
 const deps = { readerFor: () => fixtureEscrowReader(), now: EXAMPLE_NOW };
 
-test("chains: only Base Sepolia live; mainnet slots configured but empty", () => {
-  assert.deepEqual(liveEscrowChains().map((c) => c.key), ["base-sepolia"]);
+test("chains: Base mainnet + Base Sepolia live; other mainnet slots configured but empty", () => {
+  assert.deepEqual(liveEscrowChains().map((c) => c.key), ["base", "base-sepolia"]);
+  assert.equal(resolveEscrowChain("8453")!.factory, XESCROW_BASE_FACTORY);
+  assert.equal(resolveEscrowChain("base")!.factory, "0xa01454C9102052a00dd9B7a5a2eDBA159E93e385");
   assert.equal(resolveEscrowChain("eip155:84532")!.factory, XESCROW_TESTNET_FACTORY);
-  assert.equal(resolveEscrowChain("8453")!.factory, null);
+  assert.equal(resolveEscrowChain("56")!.factory, null);
   assert.equal(XESCROW_CHAINS.length, 11);
   assert.equal(escrowUrl(resolveEscrowChain("base-sepolia")!, 2), "https://xlock.liquidlogicx.com/escrow/base-sepolia/2");
 });
@@ -48,24 +51,24 @@ test("by id: unknown id answers 200 found:false (still a real answer)", async ()
 });
 
 test("by address: buyer and seller both match, newest first, deduped, capped", async () => {
-  const b = await buildEscrowStatus({ address: BUYER, ...deps });
+  const b = await buildEscrowStatus({ address: BUYER, chains: SEPOLIA_ONLY, ...deps });
   assert.deepEqual(b.escrows.map((e) => e.escrowId), [3, 2, 1]);
-  const s = await buildEscrowStatus({ address: SELLER.toLowerCase() as `0x${string}`, ...deps });
+  const s = await buildEscrowStatus({ address: SELLER.toLowerCase() as `0x${string}`, chains: SEPOLIA_ONLY, ...deps });
   assert.equal(s.total, 3);
   const many: Record<string, RawEscrow> = {};
   for (let i = 1; i <= MAX_PER_CHAIN + 5; i++) many[String(i)] = FIXTURE_ESCROWS["3"];
   clearEscrowStatusCache();
-  const capped = await buildEscrowStatus({ address: BUYER, readerFor: () => fixtureEscrowReader(many), now: EXAMPLE_NOW });
+  const capped = await buildEscrowStatus({ address: BUYER, chains: SEPOLIA_ONLY, readerFor: () => fixtureEscrowReader(many), now: EXAMPLE_NOW });
   assert.equal(capped.total, MAX_PER_CHAIN);
   assert.equal(capped.escrows[0].escrowId, MAX_PER_CHAIN + 5);
   assert.equal(capped.chains[0].truncated, true);
 });
 
 test("per-chain RPC failure reported; other chains still answer", async () => {
-  const two = [resolveEscrowChain("base-sepolia")!, { ...resolveEscrowChain("base")!, factory: "0x1111111111111111111111111111111111111111" as const }];
-  const r = await buildEscrowStatus({ id: 2, chains: two, readerFor: (c) => (c.key === "base" ? failingEscrowReader : fixtureEscrowReader()), now: EXAMPLE_NOW });
+  const two = [resolveEscrowChain("base-sepolia")!, { ...resolveEscrowChain("bnb")!, factory: "0x1111111111111111111111111111111111111111" as const }];
+  const r = await buildEscrowStatus({ id: 2, chains: two, readerFor: (c) => (c.key === "bnb" ? failingEscrowReader : fixtureEscrowReader()), now: EXAMPLE_NOW });
   assert.deepEqual(r.chainsChecked, ["base-sepolia"]);
-  assert.deepEqual(r.chainsFailed, ["base"]);
+  assert.deepEqual(r.chainsFailed, ["bnb"]);
   assert.match(r.chains[1].error!, /RPC read failed/);
   assert.equal(r.total, 1);
 });
@@ -74,15 +77,15 @@ test("cache: ok results reused within TTL, failures not cached", async () => {
   let calls = 0;
   const counting: EscrowReader = { ...fixtureEscrowReader(), escrowCount: async () => { calls++; return 3n; } };
   const at = (ms: number) => new Date(EXAMPLE_NOW.getTime() + ms);
-  await buildEscrowStatus({ id: 2, readerFor: () => counting, now: at(0) });
-  await buildEscrowStatus({ id: 2, readerFor: () => counting, now: at(10_000) });
+  await buildEscrowStatus({ chains: SEPOLIA_ONLY, id: 2, readerFor: () => counting, now: at(0) });
+  await buildEscrowStatus({ chains: SEPOLIA_ONLY, id: 2, readerFor: () => counting, now: at(10_000) });
   assert.equal(calls, 1);
-  await buildEscrowStatus({ id: 2, readerFor: () => counting, now: at(16_000) });
+  await buildEscrowStatus({ chains: SEPOLIA_ONLY, id: 2, readerFor: () => counting, now: at(16_000) });
   assert.equal(calls, 2);
   let fails = 0;
   const f: EscrowReader = { ...failingEscrowReader, escrowCount: async () => { fails++; throw new Error("down"); } };
-  await buildEscrowStatus({ id: 7, readerFor: () => f, now: at(0) });
-  await buildEscrowStatus({ id: 7, readerFor: () => f, now: at(0) });
+  await buildEscrowStatus({ chains: SEPOLIA_ONLY, id: 7, readerFor: () => f, now: at(0) });
+  await buildEscrowStatus({ chains: SEPOLIA_ONLY, id: 7, readerFor: () => f, now: at(0) });
   assert.equal(fails, 2);
 });
 
@@ -97,7 +100,7 @@ test("handler: 400s are free (bad query/id/address/chain, chain not live), 503 w
   assert.deepEqual(await code({ id: "1.5" }), [400, "BAD_ID"]);
   assert.deepEqual(await code({ address: "0x12" }), [400, "BAD_ADDRESS"]);
   assert.deepEqual(await code({ id: 1, chain: "solana" }), [400, "BAD_CHAIN"]);
-  assert.deepEqual(await code({ id: 1, chain: "base" }), [400, "CHAIN_NOT_LIVE"]);
+  assert.deepEqual(await code({ id: 1, chain: "bnb" }), [400, "CHAIN_NOT_LIVE"]);
   const down = await handleEscrowStatusInput({ id: 1 }, { readerFor: () => failingEscrowReader });
   assert.equal(down.status, 503);
   assert.equal((down.body as { code: string }).code, "RPC_UNAVAILABLE");
