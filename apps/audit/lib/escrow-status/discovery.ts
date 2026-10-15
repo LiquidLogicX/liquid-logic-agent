@@ -13,7 +13,7 @@ export const ESCROW_STATUS_INPUT_SCHEMA = {
     chain: {
       type: "string",
       enum: XESCROW_CHAINS.map((c) => c.key),
-      description: "Optional. Chain key (chain id or eip155:<id> also accepted). Omit to check every live X-Escrow chain. Live now: base-sepolia (testnet); mainnet keys answer 400 CHAIN_NOT_LIVE (free) until deployed.",
+      description: "Optional. Chain key (chain id or eip155:<id> also accepted). Omit to check every live X-Escrow chain. Live now: base (mainnet, launch caps) and base-sepolia (testnet); other mainnet keys answer 400 CHAIN_NOT_LIVE (free) until deployed.",
     },
     id: { type: "integer", minimum: 1, description: "Escrow id on that chain. Give id OR address." },
     address: { type: "string", pattern: "^0x[0-9a-fA-F]{40}$", description: "Buyer or seller wallet: returns its escrows (newest 50 per chain). Give id OR address." },
