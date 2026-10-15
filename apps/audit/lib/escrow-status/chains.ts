@@ -15,7 +15,8 @@ export type XEscrowChain = {
 };
 
 export const XESCROW_SITE = "https://xlock.liquidlogicx.com";
-export const XESCROW_TESTNET_FACTORY = "0xAd45eFa49A7BD027823b01453dC8468AA756574F" as const;
+/** Launch-cap redeploy (salt XEscrowT5: USDC 2,500 / 1.0 ETH per escrow, capRequired). Superseded: T4 0x465E…4a62, T3 0x3eB3…1caC, T2 0x7277…F99f, T1 0xAd45…574F. */
+export const XESCROW_TESTNET_FACTORY = "0x8247E07B2e821a5f6E6260e74EA3daB0d6867BC3" as const;
 
 const soon = (key: string, name: string, chainId: number, rpcUrls: string[], explorer: string): XEscrowChain =>
   ({ key, name, chainId, factory: null, rpcUrls, explorer });
