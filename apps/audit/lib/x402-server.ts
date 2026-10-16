@@ -142,7 +142,7 @@ const walletInputSchema = {
   properties: {
     wallet: {
       type: "string",
-      description: "Agent wallet address (0x…)",
+      description: "Agent wallet address to audit (0x + 40 hex), e.g. 0x1111111111111111111111111111111111111111",
     },
   },
   required: ["wallet"],
@@ -153,7 +153,7 @@ const allowanceInputSchema = {
     wallet: {
       type: "string",
       description:
-        "Wallet to check (Liquid Logic treasurer is 0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D)",
+        "Agent wallet address to check (0x + 40 hex), e.g. 0x1111111111111111111111111111111111111111",
     },
     endpoint: {
       type: "string",
