@@ -15,6 +15,7 @@
     "check-bazaar-meta": "node --import tsx --test scripts/check-bazaar-meta.ts",
     "paid-prove": "node --import tsx scripts/paid-prove-call.ts",
     "check-lock-status": "node --import tsx --test scripts/check-lock-status.ts",
+    "check-test-call": "node --import tsx --test scripts/check-test-call.ts",
     "check-lock-status-live": "node --import tsx scripts/check-lock-status-live.ts",
     "check-escrow-status": "node --import tsx --test scripts/check-escrow-status.ts",
     "check-escrow-status-live": "node --import tsx scripts/check-escrow-status-live.ts"
