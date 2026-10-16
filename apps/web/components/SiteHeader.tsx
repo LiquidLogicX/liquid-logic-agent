@@ -2,6 +2,7 @@ import { NavMoreMenu } from "@/components/NavMoreMenu";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 const APP_PILLS = [
+  { href: "https://xlock.liquidlogicx.com/escrow", label: "X-Escrow" },
   { href: "/#llx-pay", label: "LLX Pay" },
   { href: "https://xlock.liquidlogicx.com", label: "X-Lock" },
 ] as const;
