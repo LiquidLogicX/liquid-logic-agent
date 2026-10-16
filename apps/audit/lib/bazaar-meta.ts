@@ -73,7 +73,7 @@ export const ESCROW_STATUS_META: BazaarMeta = {
   tags: ["escrow", "agent-payments", "payment-status", "usdc", "x-escrow"],
   description:
     "Check an X-Escrow before you start or deliver paid work. " +
-    "Input: chain + escrow id, or a buyer/seller wallet address (optional chain; testnet: base-sepolia). " +
+    "Input: chain + escrow id, or a buyer/seller wallet address (optional chain; testnet: base-sepolia). Reads all ten X-Escrow mainnets (Base, Arbitrum, Optimism, BNB, Polygon, Avalanche, Ethereum, Arc, Tempo, Robinhood). " +
     "Output: JSON from onchain X-Escrow reads by Liquid Logic X: state (funded, released, refunded), buyer, seller, token, amount, deadline, verifier, created time, refundable now, escrow page. " +
     "$0.005 USDC on Base.",
 };
