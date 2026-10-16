@@ -68,7 +68,7 @@ export const PROVE_ROUTES: Record<"GET /api/prove" | "POST /api/prove", CdpRoute
   },
 };
 
-/** /api/lock-status routes (Base only, charge only on < 400). Exported for tests. */
+/** /api/lock-status routes (paid in USDC on Base; reads all ten X-Escrow mainnets plus Base Sepolia; charge only on < 400). Exported for tests. */
 export const LOCK_STATUS_ROUTES: Record<"GET /api/lock-status" | "POST /api/lock-status", CdpRouteConfig> = {
   "GET /api/lock-status": {
     price: LOCK_STATUS_PRICE_LABEL,
@@ -84,7 +84,7 @@ export const LOCK_STATUS_ROUTES: Record<"GET /api/lock-status" | "POST /api/lock
   },
 };
 
-/** /api/escrow-status routes (Base only, charge only on < 400). Exported for tests. */
+/** /api/escrow-status routes (paid in USDC on Base; reads all ten X-Escrow mainnets plus Base Sepolia; charge only on < 400). Exported for tests. */
 export const ESCROW_STATUS_ROUTES: Record<"GET /api/escrow-status" | "POST /api/escrow-status", CdpRouteConfig> = {
   "GET /api/escrow-status": {
     price: ESCROW_STATUS_PRICE_LABEL,

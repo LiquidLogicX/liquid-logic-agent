@@ -44,7 +44,7 @@ Vercel / Next.js App Router service exposing **x402-paid** endpoints on Base
 **Escrow status**
 
 - Input: `?chain=base-sepolia&id=3` or `?address=0x…` (buyer or seller), or JSON `{ "chain", "id" }` / `{ "address" }`. Exactly one of `id` / `address`. `chain` optional (key, chain id or `eip155:<id>`); omit to read every live X-Escrow chain.
-- Live: Base mainnet (`0xa014…e385`, launch caps: 2,500 USDC / 1.0 ETH / 10M LLX per escrow) and Base Sepolia testnet fallback (`0x8247…7BC3`). Other mainnet chains are configured slots (`factory: null` in `lib/escrow-status/chains.ts`); asking for one returns 400 `CHAIN_NOT_LIVE` (free) until its deploy lands.
+- Live: all ten mainnets (Base, Arbitrum, Optimism, BNB, Polygon, Avalanche, Ethereum, Arc, Tempo, Robinhood Chain) at the same factory `0xa014…e385` (per-escrow launch caps: 2,500 stablecoin, native about $2,500 or 1.0 ETH, 10M LLX on Base), and Base Sepolia testnet fallback (`0x8247…7BC3`). A chain slot with `factory: null` in `lib/escrow-status/chains.ts` returns 400 `CHAIN_NOT_LIVE` (free). Payment stays $0.005 USDC on Base.
 - Output: `{ found, total, chainsChecked, chainsFailed, escrows[{ chain, escrowId, state, buyer, seller, token, amount, deadline, verifier, createdAt, refundableNow, secondsToDeadline, escrowUrl }], chains[] }`.
 - Public RPCs (viem, 8s timeout, fallbacks), successful per-chain reads cached 15s; failing chains reported in `chainsFailed`. 400 bad input and 503 (every chain failed) are free.
 - No new env vars. Tests: `npm run check-escrow-status` (mocked RPC). Live read-only smoke: `npm run check-escrow-status-live`.

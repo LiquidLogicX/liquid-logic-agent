@@ -16,12 +16,13 @@ beforeEach(() => clearEscrowStatusCache());
 const SEPOLIA_ONLY = [resolveEscrowChain("base-sepolia")!]; // fixtures mirror Base Sepolia; Base mainnet is also live now
 const deps = { readerFor: () => fixtureEscrowReader(), now: EXAMPLE_NOW };
 
-test("chains: Base mainnet + Base Sepolia live; other mainnet slots configured but empty", () => {
-  assert.deepEqual(liveEscrowChains().map((c) => c.key), ["base", "base-sepolia"]);
+test("chains: all ten mainnets + Base Sepolia live, one shared factory", () => {
+  assert.deepEqual(liveEscrowChains().map((c) => c.key), ["base", "base-sepolia", "bnb", "ethereum", "arbitrum", "polygon", "avalanche", "optimism", "arc", "tempo", "robinhood"]);
+  for (const c of XESCROW_CHAINS.filter((c) => !c.testnet)) assert.equal(c.factory, XESCROW_BASE_FACTORY, c.key);
   assert.equal(resolveEscrowChain("8453")!.factory, XESCROW_BASE_FACTORY);
   assert.equal(resolveEscrowChain("base")!.factory, "0xa01454C9102052a00dd9B7a5a2eDBA159E93e385");
   assert.equal(resolveEscrowChain("eip155:84532")!.factory, XESCROW_TESTNET_FACTORY);
-  assert.equal(resolveEscrowChain("56")!.factory, null);
+  assert.equal(resolveEscrowChain("56")!.factory, XESCROW_BASE_FACTORY);
   assert.equal(XESCROW_CHAINS.length, 11);
   assert.equal(escrowUrl(resolveEscrowChain("base-sepolia")!, 2), "https://xlock.liquidlogicx.com/escrow/base-sepolia/2");
 });
@@ -100,7 +101,7 @@ test("handler: 400s are free (bad query/id/address/chain, chain not live), 503 w
   assert.deepEqual(await code({ id: "1.5" }), [400, "BAD_ID"]);
   assert.deepEqual(await code({ address: "0x12" }), [400, "BAD_ADDRESS"]);
   assert.deepEqual(await code({ id: 1, chain: "solana" }), [400, "BAD_CHAIN"]);
-  assert.deepEqual(await code({ id: 1, chain: "bnb" }), [400, "CHAIN_NOT_LIVE"]);
+  assert.deepEqual(await code({ id: 1, chain: "solana" }), [400, "BAD_CHAIN"]);
   const down = await handleEscrowStatusInput({ id: 1 }, { readerFor: () => failingEscrowReader });
   assert.equal(down.status, 503);
   assert.equal((down.body as { code: string }).code, "RPC_UNAVAILABLE");
