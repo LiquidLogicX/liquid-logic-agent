@@ -1,5 +1,5 @@
 /**
- * External client: pay $0.05 USDC on Base via CDP x402, then call /api/audit.
+ * External client: pay $0.03 USDC on Base via CDP x402, then call /api/audit.
  *
  * Usage:
  *   AUDIT_URL=https://audit.liquidlogicx.com \

@@ -170,7 +170,7 @@ export default async function HomePage() {
                       A spend summary for an agent wallet: destinations, totals
                       and BaseScan links.
                     </td>
-                    <td className="num">0.05 USDC</td>
+                    <td className="num">0.03 USDC</td>
                   </tr>
                 </tbody>
               </table>

@@ -81,7 +81,7 @@ export function resolveArcPayTo(): string {
 
 /**
  * Build Arc v2 payment requirements matching Circle GatewayWalletBatched.
- * Amount is USDC atomic (6 decimals), e.g. "50000" for $0.05.
+ * Amount is USDC atomic (6 decimals), e.g. "30000" for $0.03.
  */
 export function buildArcPaymentRequirements(opts: {
   amountUsdc: string;

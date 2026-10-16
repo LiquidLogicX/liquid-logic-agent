@@ -15,8 +15,8 @@ export const NETWORK_BASE_SEPOLIA = "eip155:84532" as const;
 export const BASESCAN_TX = "https://basescan.org/tx/";
 export const BASESCAN_ADDRESS = "https://basescan.org/address/";
 
-export const AUDIT_PRICE_USDC = "0.05";
-export const AUDIT_PRICE_LABEL = "$0.05";
+export const AUDIT_PRICE_USDC = "0.03";
+export const AUDIT_PRICE_LABEL = "$0.03";
 
 /** Allowance pre-flight — cheaper than audit so agents can ask before spending. */
 export const ALLOWANCE_PRICE_USDC = "0.001";

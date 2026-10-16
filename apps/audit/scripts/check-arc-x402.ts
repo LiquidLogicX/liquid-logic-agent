@@ -35,12 +35,12 @@ delete process.env.ENABLE_X402_ARC;
 
 // --- Arc accept shape ---
 const arc = buildArcPaymentRequirements({
-  amountUsdc: "0.05",
+  amountUsdc: "0.03",
   payTo: "0xe9bf3457f1e59ffa507141e64e8eb259f966c2c2",
 });
 assert.equal(arc.scheme, "exact");
 assert.equal(arc.network, NETWORK_ARC);
-assert.equal(arc.amount, "50000");
+assert.equal(arc.amount, "30000");
 assert.equal(arc.asset, "0x3600000000000000000000000000000000000000");
 assert.equal(arc.extra.name, "GatewayWalletBatched");
 assert.equal(arc.extra.version, "1");
@@ -58,7 +58,7 @@ const baseOnly = {
     {
       scheme: "exact",
       network: "eip155:8453",
-      amount: "50000",
+      amount: "30000",
       asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
       payTo: "0x147991A1c25e78f6D9225d2dBA61eD93A6158c7b",
       maxTimeoutSeconds: 300,

@@ -1,6 +1,6 @@
 /**
  * CDP x402 seller for audit + treasurer allowance pre-flight.
- * - GET/POST /api/audit     $0.05 USDC on Base
+ * - GET/POST /api/audit     $0.03 USDC on Base
  * - GET/POST /api/allowance $0.001 USDC on Base (cheaper; call before spending)
  * - GET/POST /api/prove     $0.02 USDC on Base (settlement proof on Arc)
  * - GET/POST /api/lock-status $0.005 USDC on Base (X-Lock lock check, 11 chains)
@@ -142,7 +142,7 @@ const walletInputSchema = {
   properties: {
     wallet: {
       type: "string",
-      description: "Agent wallet address (0x…)",
+      description: "Agent wallet address to audit (0x + 40 hex), e.g. 0x1111111111111111111111111111111111111111",
     },
   },
   required: ["wallet"],
@@ -153,7 +153,7 @@ const allowanceInputSchema = {
     wallet: {
       type: "string",
       description:
-        "Wallet to check (Liquid Logic treasurer is 0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D)",
+        "Agent wallet address to check (0x + 40 hex), e.g. 0x1111111111111111111111111111111111111111",
     },
     endpoint: {
       type: "string",

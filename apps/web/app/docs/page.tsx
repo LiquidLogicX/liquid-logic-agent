@@ -73,7 +73,7 @@ GET ${AUDIT_URL}/api/allowance?wallet=0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D
         </p>
         <ul>
           <li>
-            Fee: <strong>0.05 USDC</strong>
+            Fee: <strong>0.03 USDC</strong>
           </li>
           <li>
             Network: Base (<code>eip155:8453</code>)
