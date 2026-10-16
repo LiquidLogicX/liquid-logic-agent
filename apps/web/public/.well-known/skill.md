@@ -23,6 +23,14 @@ Time locks, vesting, and non-custodial escrow across Base and ten other chains. 
 
 Site: https://xlock.liquidlogicx.com · Tutorial: https://xlock.liquidlogicx.com/tutorial
 
+### Escrow status check (x402)
+
+`GET https://audit.liquidlogicx.com/api/escrow-status` costs $0.005 USDC on Base and reads X-Escrow onchain. Pass `chain` plus an escrow `id`, or a buyer/seller wallet address (chain optional).
+
+Chain keys (X-Escrow mainnets): `base`, `arbitrum`, `optimism`, `bnb`, `polygon`, `avalanche`, `ethereum`, `arc`, `tempo`, `robinhood`. Testnet: `base-sepolia`.
+
+X-Escrow factory (same address on every chain): `0xa01454C9102052a00dd9B7a5a2eDBA159E93e385`.
+
 ## LLX Pay
 
 Coming after the current hold. When it ships, agents will use a **policy SDK** shape (not live endpoints yet), for example:
