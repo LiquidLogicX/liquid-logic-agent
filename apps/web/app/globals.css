@@ -184,6 +184,29 @@ nav.primary a:hover {
   height: 7px;
   border-radius: 50%;
   background: currentColor;
+  animation: status-blink 1.4s ease-in-out infinite;
+}
+
+@keyframes status-blink {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 currentColor;
+  }
+  50% {
+    opacity: 0.25;
+    box-shadow: 0 0 6px 2px transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status i {
+    animation: none;
+  }
+}
+
+.top-trailing .status {
+  margin-left: auto;
 }
 
 .theme-toggle {
@@ -1344,3 +1367,9 @@ pre {
 .addr-cell .copy { margin-left: 0.4rem; }
 .addr-chains { display: block; margin-top: 0.35rem; font-size: 0.9em; }
 .addr-footer { margin-top: 1.5rem; }
+
+@media (max-width: 860px) {
+  .top-trailing {
+    width: 100%;
+  }
+}
