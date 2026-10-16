@@ -1,4 +1,4 @@
-import TestCallButton from "./test-call-button";
+import TestCallButton, { EscrowTestCallButton } from "./test-call-button";
 
 export default function Page() {
   return (
@@ -18,6 +18,10 @@ export default function Page() {
         Lock check: <code>GET /api/lock-status?token=0x…</code> — <strong>$0.005 USDC</strong>. Is this token locked in X-Lock on any of 10 chains?
       </p>
       <TestCallButton />
+      <p>
+        Escrow check: <code>GET /api/escrow-status?chain=base&amp;id=1</code> — <strong>$0.005 USDC</strong>. What state is this X-Escrow in? Reads all ten X-Escrow mainnets.
+      </p>
+      <EscrowTestCallButton />
       <p>See <code>scripts/paid-audit-call.ts</code>, <code>scripts/paid-allowance-call.ts</code>, and <code>acceptance/</code>.</p>
     </main>
   );

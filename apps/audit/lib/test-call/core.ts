@@ -16,6 +16,17 @@ export function lockStatusPath(token: string, chain = "all"): string {
   return `/api/lock-status?${q.toString()}`;
 }
 
+export const DEFAULT_ESCROW_CHAIN = "base";
+export const DEFAULT_ESCROW_ID = "1";
+
+export function escrowStatusPath(chain = DEFAULT_ESCROW_CHAIN, id = DEFAULT_ESCROW_ID): string {
+  const c = chain.trim().toLowerCase();
+  const i = id.trim();
+  if (!/^[a-z0-9-]{2,32}$/.test(c)) throw new Error("Enter a chain key like base, ethereum or arbitrum.");
+  if (!/^[1-9][0-9]{0,11}$/.test(i)) throw new Error("Enter an escrow id (a positive whole number).");
+  return `/api/escrow-status?${new URLSearchParams({ chain: c, id: i }).toString()}`;
+}
+
 export function basescanTx(tx: string): string {
   return `https://basescan.org/tx/${tx}`;
 }
