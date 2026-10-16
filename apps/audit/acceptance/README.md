@@ -4,7 +4,7 @@ Store real payment + paid audit call evidence here (Task C format):
 
 - `paid-audit-*.json` from `npm run paid-call` (Base / CDP)
 - `paid-audit-arc-*.json` from Arc rail paid calls when `ENABLE_X402_ARC=1`
-- Explorer tx URLs for the `$0.05` USDC settlement (BaseScan or Arc explorer)
+- Explorer tx URLs for the `$0.03` USDC settlement (BaseScan or Arc explorer)
 - Optional screenshots
 - `circle-supported-arc.json` — live `GET …/v1/x402/supported` Arc kind snapshot
 
@@ -16,7 +16,7 @@ Flag **on**: v2 `accepts = [Base, Arc eip155:5042]`; Base settles via CDP; Arc s
 
 ### Paid acceptance blockers (Miles)
 
-Paid Arc testnet then mainnet `$0.05` calls need:
+Paid Arc testnet then mainnet `$0.03` calls need:
 
 1. Deploy / preview with `ENABLE_X402_ARC=1` and `ARC_PAY_TO_EVM=0xe9bf3457f1e59ffa507141e64e8eb259f966c2c2` (or confirmed dedicated Arc payTo).
 2. Payer wallet with **USDC on Arc** (`eip155:5042`) — gas on Arc is USDC; Circle Gateway settles EIP-3009 via GatewayWalletBatched.

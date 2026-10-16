@@ -70,6 +70,7 @@ export type ChainTransfer = {
 export function endpointForAmount(amountUsdc: string): string {
   const table: Array<[unknown, string]> = [
     [AUDIT_PRICE_USDC, "/api/audit"],
+    ["0.05", "/api/audit"], // legacy audit price (before the $0.03 change); keeps old payments mapped
     [ALLOWANCE_PRICE_USDC, "/api/allowance"],
     [(shared as Record<string, unknown>).PROVE_PRICE_USDC, "/api/prove"],
   ];

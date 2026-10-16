@@ -21,7 +21,7 @@ Date: 2026-09-20 (PT)
 | Step | Need | Status |
 |------|------|--------|
 | Arc testnet paid call | Testnet payer + USDC + client for GatewayWalletBatched | **BLOCKED** — no Arc payer key/funds in this environment |
-| Arc mainnet `$0.05` | Funded Arc USDC at payer; `ENABLE_X402_ARC=1` on deployed audit; payTo `0xe9bf…c2c2` | **BLOCKED** |
+| Arc mainnet `$0.03` | Funded Arc USDC at payer; `ENABLE_X402_ARC=1` on deployed audit; payTo `0xe9bf…c2c2` | **BLOCKED** |
 | Ledger artifact | Real tx hash written to `data/ledger.jsonl` with `network: eip155:5042` + Arc explorer URL | **BLOCKED** until paid settle |
 
 Provide: Arc-capable payer private key or CDP/OKX wallet with Arc USDC, confirm payTo wallet control, set `ENABLE_X402_ARC=1` on Vercel audit project.

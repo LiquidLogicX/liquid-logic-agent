@@ -92,7 +92,8 @@ describe("reconcile", () => {
 
 describe("endpointForAmount (prices are unique per endpoint)", () => {
   it("maps audit / allowance prices", () => {
-    assert.equal(endpointForAmount("0.05"), "https://audit.liquidlogicx.com/api/audit");
+    assert.equal(endpointForAmount("0.03"), "https://audit.liquidlogicx.com/api/audit");
+    assert.equal(endpointForAmount("0.05"), "https://audit.liquidlogicx.com/api/audit"); // legacy price
     assert.equal(endpointForAmount("0.001"), "https://audit.liquidlogicx.com/api/allowance");
     assert.match(endpointForAmount("0.3"), /unrecognized amount/);
   });

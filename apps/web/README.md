@@ -4,7 +4,7 @@ Next.js App Router marketing + ledger surface.
 
 - Explains the agent ("Agent spending settles in USDC today. $LLX payments coming soon.")
 - Live ledger embed + links
-- Endpoint docs for the $0.05 audit fee
+- Endpoint docs for the $0.03 audit fee
 - `$LLX` token facts with the official contract (`lib/site.ts`) and one check-the-address line
 - `$LLX utility` section (`#llx-utility`, data in `lib/llxUtility.ts`). Items stay "Coming soon" until they ship in code; x402 endpoints accept USDC only today
 - Site-wide footer: "Nothing on this site is financial advice." and "© 2026 Liquid Logic X LLC".

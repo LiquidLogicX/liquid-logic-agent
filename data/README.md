@@ -40,7 +40,7 @@ reads every Base USDC `Transfer` to the x402 payTo
 `0x147991A1c25e78f6D9225d2dBA61eD93A6158c7b` over JSON-RPC and appends a
 `payment` row for any tx hash not already in this file (existing rows are never
 edited). Rows carry `walletAddress` = payer, `payTo`, and an endpoint inferred
-from the price (`0.05` → `/api/audit`, `0.001` → `/api/allowance`, `0.02` →
+from the price (`0.03` → `/api/audit`, legacy `0.05`, `0.001` → `/api/allowance`, `0.02` →
 `/api/prove`). `data/chain-sync.json` is the scan cursor (only committed with a
 real ledger change).
 

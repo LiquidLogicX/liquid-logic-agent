@@ -1,6 +1,6 @@
 # Liquid Logic Agent
 
-Monorepo for the **Liquid Logic** autonomous agent: pays **USDC on Base** to allowlisted **x402** service endpoints, publishes a verifiable spend ledger, sells a **$0.05 USDC** wallet-audit API, and a **$0.001 USDC** allowance pre-flight.
+Monorepo for the **Liquid Logic** autonomous agent: pays **USDC on Base** to allowlisted **x402** service endpoints, publishes a verifiable spend ledger, sells a **$0.03 USDC** wallet-audit API, and a **$0.001 USDC** allowance pre-flight.
 
 **Repo:** [LiquidLogicX/liquid-logic-agent](https://github.com/LiquidLogicX/liquid-logic-agent)  
 **Not** `liquid-logic-x` (Sepolia FHE contracts) — do not mix scopes.
@@ -12,7 +12,7 @@ Hard rules: see [`GUARDRAILS.md`](./GUARDRAILS.md). Live acceptance blockers: [`
 ```
 liquid-logic-agent/
 ├── apps/treasurer      # CDP CdpX402Client payer + CLI + Docker/Render
-├── apps/audit          # Next.js x402-paid GET/POST /api/audit ($0.05 USDC)
+├── apps/audit          # Next.js x402-paid GET/POST /api/audit ($0.03 USDC)
 ├── apps/web            # liquidlogicx.com — agent explainer + ledger + docs
 ├── packages/shared     # USDC constants, ledger types, guardrail helpers
 ├── packages/ledger-publisher  # JSONL → public/ledger + drafts/social
@@ -25,7 +25,7 @@ liquid-logic-agent/
 |-----------|------|
 | Treasurer | CDP-managed wallet + `wrapFetchWithPayment`; allowlist / max / daily cap; JSONL ledger; operator freeze + hold HTTP |
 | Ledger publisher | Cron / GitHub Action → `latest.json`, daily JSON/HTML, social markdown drafts |
-| Audit | `createX402Server` seller; `$0.05` spend summary + `$0.001` allowance pre-flight |
+| Audit | `createX402Server` seller; `$0.03` spend summary + `$0.001` allowance pre-flight |
 | Web | Public site; ledger embed; endpoint docs |
 
 **Networks:** production omits development env → **Base mainnet**. Set `CDP_X402_ENVIRONMENT=development` only for Base Sepolia testing.

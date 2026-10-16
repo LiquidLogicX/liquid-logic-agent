@@ -17,7 +17,7 @@ Scaffold is complete and pushed. The following are required before real Base pay
 ## Acceptance criteria (cannot run until blockers clear)
 
 1. **Real Base pay**: `npm run treasurer -- pay <allowlisted-url>` settles USDC on Base mainnet; tx hash appears in JSONL and BaseScan.
-2. **Paid audit call**: Client pays `$0.05` USDC via x402 to `POST/GET /api/audit` and receives a structured spend summary.
+2. **Paid audit call**: Client pays `$0.03` USDC via x402 to `POST/GET /api/audit` and receives a structured spend summary.
 3. Artifacts: save request/response + BaseScan links under `apps/audit/acceptance/`.
 
 ## Deploy steps (when auth is available)

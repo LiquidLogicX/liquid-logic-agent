@@ -35,7 +35,7 @@ export const AUDIT_META: BazaarMeta = {
   serviceName: "x402 Agent Spend Audit",
   tags: ["audit", "agent-spend", "x402", "usdc", "base"],
   description:
-    "Audit an x402 agent wallet on Base with Liquid Logic X: send a wallet address, get payment count, USDC total, per-endpoint breakdown and recent payments with Basescan links, from the public ledger. $0.05 USDC on Base.",
+    "Audit an x402 agent wallet on Base with Liquid Logic X: send a wallet address, get payment count, USDC total, per-endpoint breakdown and recent payments with Basescan links, from the public ledger. $0.03 USDC on Base.",
 };
 
 export const ALLOWANCE_META: BazaarMeta = {

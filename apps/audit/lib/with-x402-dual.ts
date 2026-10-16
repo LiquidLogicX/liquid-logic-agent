@@ -23,7 +23,7 @@ import {
 } from "./arc-x402";
 
 export type DualRailPrice = {
-  /** Human label e.g. "$0.05" — unused for Arc amount (atomic from amountUsdc). */
+  /** Human label e.g. "$0.03" — unused for Arc amount (atomic from amountUsdc). */
   label: string;
   amountUsdc: string;
 };

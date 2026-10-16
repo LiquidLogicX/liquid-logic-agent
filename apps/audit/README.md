@@ -5,7 +5,7 @@ Vercel / Next.js App Router service exposing **x402-paid** endpoints on Base
 
 | Route | Price | When to call |
 |-------|-------|----------------|
-| `GET/POST /api/audit` | `$0.05` USDC | Full spend summary (where USDC went) |
+| `GET/POST /api/audit` | `$0.03` USDC | Full spend summary (where USDC went) |
 | `GET/POST /api/allowance` | `$0.001` USDC | **Before spending** — can this wallet pay that endpoint, and what’s left under the daily cap? |
 | `GET/POST /api/prove` | `$0.02` USDC | Settlement receipt: Base USDC tx hash in, proof on Arc + public verify link out |
 | `GET/POST /api/escrow-status` | `$0.005` USDC | **Before starting/delivering paid work**: what state is this X-Escrow in (funded / released / refunded), who are the parties, when can it be refunded? |
@@ -83,7 +83,7 @@ Static manifests served from this origin (same origin as the endpoints, as ERC-8
 
 | Manifest | Endpoint | Price |
 |----------|----------|-------|
-| `/.well-known/ai-tool/audit.json` | `/api/audit` | 50000 base units (0.05 USDC, Base) — x402 Agent Spend Audit |
+| `/.well-known/ai-tool/audit.json` | `/api/audit` | 30000 base units (0.03 USDC, Base) — x402 Agent Spend Audit |
 | `/.well-known/ai-tool/allowance.json` | `/api/allowance` | 1000 base units (0.001 USDC, Base) — x402 Spend Cap/Allowance Check |
 | `/.well-known/ai-tool/prove.json` | `/api/prove` | 20000 base units (0.02 USDC, Base) — Payment Receipt/Settlement Proof |
 

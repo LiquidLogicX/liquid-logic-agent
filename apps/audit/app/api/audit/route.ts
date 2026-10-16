@@ -123,7 +123,7 @@ async function paidHandler(req: NextRequest): Promise<NextResponse> {
   try {
     const server = await getAuditX402Server();
     const wrapped = withX402DualRail(handleAudit, server, {
-      label: "$0.05",
+      label: "$0.03",
       amountUsdc: AUDIT_PRICE_USDC,
     });
     return wrapped(req);
@@ -136,7 +136,7 @@ async function paidHandler(req: NextRequest): Promise<NextResponse> {
       {
         error: "x402 audit endpoint requires CDP credentials",
         detail: message,
-        price: "$0.05",
+        price: "$0.03",
         network: "eip155:8453",
       },
       { status: 503 },

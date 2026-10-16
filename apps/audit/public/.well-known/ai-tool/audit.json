@@ -1,7 +1,7 @@
 {
   "type": "https://ercs.ethereum.org/ERCS/erc-8257#tool-manifest-v1",
   "name": "x402 Agent Spend Audit",
-  "description": "x402 agent spend audit by Liquid Logic X: where an agent wallet's USDC went. Input: a wallet address (0x...). Output: JSON spend summary of x402 payments in Base USDC (count, total, per-endpoint breakdown, recent payments with Basescan tx links, holds/denials). Source: the Liquid Logic X public ledger (its treasurer agent's spend); anyone can verify each payment onchain. $0.05 USDC on Base. Site: https://liquidlogicx.com",
+  "description": "Audit an x402 agent wallet on Base with Liquid Logic X: send a wallet address, get payment count, USDC total, per-endpoint breakdown and recent payments with Basescan links, from the public ledger. $0.03 USDC on Base.",
   "endpoint": "https://audit.liquidlogicx.com/api/audit",
   "inputs": {
     "type": "object",
@@ -161,7 +161,7 @@
   ],
   "pricing": [
     {
-      "amount": "50000",
+      "amount": "30000",
       "asset": "eip155:8453/erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
       "recipient": "eip155:8453:0x147991a1c25e78f6d9225d2dba61ed93a6158c7b",
       "protocol": "x402"
