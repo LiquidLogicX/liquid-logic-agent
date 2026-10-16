@@ -52,7 +52,23 @@ export default function TestCallButton() {
         try { const s = decodePaymentResponseHeader(header) as { transaction?: string }; if (s.transaction) setTx(s.transaction); } catch { /* ignore */ }
       }
       setResult(body);
-      if (!res.ok) { setPhase("error"); setMsg(`HTTP ${res.status} (not charged for 4xx/5xx)`); return; }
+      if (!res.ok) {
+        let reason = "";
+        if (res.status === 402) {
+          // Signed retry was rejected: the facilitator's reason is in the PAYMENT-REQUIRED header (body is empty).
+          const pr = res.headers.get("PAYMENT-REQUIRED");
+          if (pr) {
+            try { const d = JSON.parse(atob(pr)) as { error?: string }; if (d.error) reason = d.error; } catch { /* ignore */ }
+          }
+          const ar = res.headers.get("PAYMENT-RESPONSE");
+          if (!reason && ar) {
+            try { const d = decodePaymentResponseHeader(ar) as { errorReason?: string }; if (d.errorReason) reason = d.errorReason; } catch { /* ignore */ }
+          }
+        }
+        setPhase("error");
+        setMsg(`HTTP ${res.status}${reason ? `: ${reason}` : ""} (not charged for 4xx/5xx)`);
+        return;
+      }
       setPhase("done");
     } catch (e) {
       setPhase("error");
