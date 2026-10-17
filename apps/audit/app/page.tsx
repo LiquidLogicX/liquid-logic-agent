@@ -22,6 +22,9 @@ export default function Page() {
         Escrow check: <code>GET /api/escrow-status?chain=base&amp;id=1</code> — <strong>$0.005 USDC</strong>. What state is this X-Escrow in? Reads all ten X-Escrow mainnets.
       </p>
       <EscrowTestCallButton />
+      <p>
+        Leak check: <code>POST /api/leak-check</code> — <strong>$0.02 USDC</strong>. Review a redacted agent setup for data-leak risks. Static, never stored.
+      </p>
       <p>See <code>scripts/paid-audit-call.ts</code>, <code>scripts/paid-allowance-call.ts</code>, and <code>acceptance/</code>.</p>
     </main>
   );

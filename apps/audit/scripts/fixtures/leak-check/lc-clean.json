@@ -1,0 +1,49 @@
+{
+  "agent": {
+    "name": "notes-agent",
+    "readsData": [
+      "finance.reports"
+    ]
+  },
+  "connections": [
+    {
+      "provider": "slack",
+      "kind": "channel",
+      "displayName": "finance-private",
+      "visibility": "private",
+      "id": "C-FIN-01"
+    }
+  ],
+  "instructions": [
+    "Send the weekly summary to C-FIN-01 only"
+  ],
+  "policy": {
+    "present": true,
+    "defaultAction": "deny",
+    "rules": [
+      {
+        "class": "finance.reports",
+        "destination": "C-FIN-01",
+        "audience": "named"
+      }
+    ],
+    "limits": {
+      "maxBytesPerSend": 4096,
+      "maxSendsPerDay": 5
+    },
+    "approval": {
+      "required": true,
+      "forAudiences": [
+        "workspace",
+        "public"
+      ]
+    }
+  },
+  "tools": [
+    {
+      "name": "send_message",
+      "canSend": true,
+      "egressGated": true
+    }
+  ]
+}

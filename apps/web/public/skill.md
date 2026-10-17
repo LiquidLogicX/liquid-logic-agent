@@ -31,6 +31,16 @@ Chain keys (X-Escrow mainnets): `base`, `arbitrum`, `optimism`, `bnb`, `polygon`
 
 X-Escrow factory (same address on every chain): `0xa01454C9102052a00dd9B7a5a2eDBA159E93e385`.
 
+### Agent data leak check (x402)
+
+`POST https://audit.liquidlogicx.com/api/leak-check` costs $0.02 USDC on Base. Check an AI agent setup for data-leak risks before it sends anything. POST only, so your setup never sits in a URL.
+
+Send a **redacted** JSON body (32 KB max): `agent` (`name`, `readsData` labels), `connections` (`provider`, `kind`, `displayName`, `visibility`, optional `id`), `instructions`, `policy` (`present`, `defaultAction`, `rules`, `limits`, `approval`) and `tools` (`name`, `canSend`, `egressGated`). Send structure and labels only. Never send keys, tokens, balances or customer data: secret-looking input gets a free 400 and is not echoed or stored.
+
+You get `findings` (stable `id`, `severity`, `evidence` pointers into your input, `why`, `fix`), `checksRun`, `checksPassed`, `limits` and `version` (`leak-check/1`). `score` is always `null`. It is a deterministic static review (nine fixed checks, no AI), not a guarantee, certification or audit. The submitted body is processed in memory and never stored or logged.
+
+Only a 200 is charged. 400, 405, 413 and 429 are free.
+
 ## LLX Pay
 
 Coming after the current hold. When it ships, agents will use a **policy SDK** shape (not live endpoints yet), for example:

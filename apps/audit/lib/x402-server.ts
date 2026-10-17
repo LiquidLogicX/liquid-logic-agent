@@ -5,6 +5,7 @@
  * - GET/POST /api/prove     $0.02 USDC on Base (settlement proof on Arc)
  * - GET/POST /api/lock-status $0.005 USDC on Base (X-Lock lock check, 11 chains)
  * - GET/POST /api/escrow-status $0.005 USDC on Base (X-Escrow state check)
+ * - POST /api/leak-check $0.02 USDC on Base (agent data-leak review; POST only so bodies never sit in URLs/logs)
  */
 import {
   createX402Server,
@@ -19,6 +20,7 @@ import {
   NETWORK_BASE,
   LOCK_STATUS_PRICE_LABEL,
   ESCROW_STATUS_PRICE_LABEL,
+  LEAK_CHECK_PRICE_LABEL,
   PROVE_PRICE_LABEL,
 } from "@liquid-logic/shared";
 import { AUDIT_OUTPUT_EXAMPLE } from "./audit-output-example";
@@ -38,8 +40,10 @@ import {
   getEscrowStatusDiscovery,
   postEscrowStatusDiscovery,
 } from "./escrow-status/discovery";
+import { LEAK_CHECK_DESCRIPTION, postLeakCheckDiscovery } from "./leak-check/discovery";
 import {
   ALLOWANCE_META,
+  LEAK_CHECK_META,
   LOCK_STATUS_META,
   ESCROW_STATUS_META,
   AUDIT_META,
@@ -97,6 +101,16 @@ export const ESCROW_STATUS_ROUTES: Record<"GET /api/escrow-status" | "POST /api/
     networks: [NETWORK_BASE],
     description: ESCROW_STATUS_DESCRIPTION,
     extensions: { ...postEscrowStatusDiscovery },
+  },
+};
+
+/** /api/leak-check route (POST only; paid in USDC on Base; charge only on < 400). Exported for tests. */
+export const LEAK_CHECK_ROUTES: Record<"POST /api/leak-check", CdpRouteConfig> = {
+  "POST /api/leak-check": {
+    price: LEAK_CHECK_PRICE_LABEL,
+    networks: [NETWORK_BASE],
+    description: LEAK_CHECK_DESCRIPTION,
+    extensions: { ...postLeakCheckDiscovery },
   },
 };
 
@@ -252,6 +266,7 @@ export function getAuditX402Server(): Promise<X402Server> {
         "POST /api/lock-status": withServiceMeta(LOCK_STATUS_ROUTES["POST /api/lock-status"], LOCK_STATUS_META),
         "GET /api/escrow-status": withServiceMeta(ESCROW_STATUS_ROUTES["GET /api/escrow-status"], ESCROW_STATUS_META),
         "POST /api/escrow-status": withServiceMeta(ESCROW_STATUS_ROUTES["POST /api/escrow-status"], ESCROW_STATUS_META),
+        "POST /api/leak-check": withServiceMeta(LEAK_CHECK_ROUTES["POST /api/leak-check"], LEAK_CHECK_META),
         "GET /api/prove": withServiceMeta(PROVE_ROUTES["GET /api/prove"], PROVE_META),
         "POST /api/prove": withServiceMeta(PROVE_ROUTES["POST /api/prove"], PROVE_META),
       },
