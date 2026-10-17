@@ -1,0 +1,25 @@
+{
+  "agent": {
+    "name": "helper",
+    "readsData": [
+      "calendar"
+    ]
+  },
+  "connections": [
+    {
+      "provider": "email",
+      "kind": "address",
+      "displayName": "team-list",
+      "visibility": "named",
+      "id": "L1"
+    }
+  ],
+  "instructions": [],
+  "policy": null,
+  "tools": [
+    {
+      "name": "send_email",
+      "canSend": true
+    }
+  ]
+}

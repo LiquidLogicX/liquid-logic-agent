@@ -1,0 +1,36 @@
+{
+  "agent": {
+    "name": "cfo-agent",
+    "readsData": [
+      "finance.personal"
+    ]
+  },
+  "connections": [
+    {
+      "provider": "slack",
+      "kind": "channel",
+      "displayName": "exec-team",
+      "visibility": "workspace"
+    },
+    {
+      "provider": "chat",
+      "kind": "group",
+      "displayName": "exec-team",
+      "visibility": "named"
+    }
+  ],
+  "instructions": [
+    "Update Exec team every Monday"
+  ],
+  "policy": {
+    "present": true,
+    "defaultAction": "allow",
+    "rules": []
+  },
+  "tools": [
+    {
+      "name": "send_message",
+      "canSend": true
+    }
+  ]
+}

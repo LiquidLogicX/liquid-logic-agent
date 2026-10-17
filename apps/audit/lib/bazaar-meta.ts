@@ -58,3 +58,10 @@ export const ESCROW_STATUS_META: BazaarMeta = {
   description:
     "Check an X-Escrow before you deliver paid work, via Liquid Logic X: send chain + escrow id or a buyer/seller wallet (default all 10 mainnets), get state, parties, amount, deadline and refundable-now. $0.005 USDC on Base.",
 };
+
+export const LEAK_CHECK_META: BazaarMeta = {
+  serviceName: "Agent Data Leak Check",
+  tags: ["agent-privacy", "leak-check", "agent-security", "policy", "usdc"],
+  description:
+    "Check an AI agent setup for data-leak risks before it sends anything, via Liquid Logic X: POST a redacted JSON of connections, instructions, tools and policy, get findings with evidence and fixes. Static review, never stored. $0.02 USDC on Base.",
+};

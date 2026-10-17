@@ -37,6 +37,10 @@ export const LOCK_STATUS_PRICE_LABEL = `$${LOCK_STATUS_PRICE_USDC}`;
 export const ESCROW_STATUS_PRICE_USDC = "0.005";
 export const ESCROW_STATUS_PRICE_LABEL = `$${ESCROW_STATUS_PRICE_USDC}`;
 
+/** /api/leak-check: deterministic leak-risk review of a redacted agent setup. */
+export const LEAK_CHECK_PRICE_USDC = "0.02";
+export const LEAK_CHECK_PRICE_LABEL = `$${LEAK_CHECK_PRICE_USDC}`;
+
 /** CDP-managed Liquid Logic Agent treasurer (Base). */
 export const TREASURER_WALLET_ADDRESS =
   "0xEA24bafbBAF6d7Ba58bE860EE906f0Fe533d167D" as const;

@@ -9,6 +9,7 @@ Vercel / Next.js App Router service exposing **x402-paid** endpoints on Base
 | `GET/POST /api/allowance` | `$0.001` USDC | **Before spending** — can this wallet pay that endpoint, and what’s left under the daily cap? |
 | `GET/POST /api/prove` | `$0.02` USDC | Settlement receipt: Base USDC tx hash in, proof on Arc + public verify link out |
 | `GET/POST /api/escrow-status` | `$0.005` USDC | **Before starting/delivering paid work**: what state is this X-Escrow in (funded / released / refunded), who are the parties, when can it be refunded? |
+| `POST /api/leak-check` | `$0.02` USDC | **Before an agent sends data**: deterministic leak-risk review of a redacted agent setup (connections, instructions, tools, policy). POST only, never stored or logged. |
 | `GET/POST /api/lock-status` | `$0.005` USDC | **Before buying/listing**: is this token locked in X-Lock (11 chains), how much, when does it unlock? |
 
 ## Input / output
@@ -40,6 +41,14 @@ Vercel / Next.js App Router service exposing **x402-paid** endpoints on Base
 - Output: `{ isLocked, totalLocks, nextUnlock, chainsChecked, chainsFailed, chains[{ status, lockCount, totalLockedAmount, pctOfSupplyLocked, nextUnlock, locks[{ lockId, kind, beneficiary, amount, start, cliff, end, released, claimable, stillLocked, status, lockUrl }] }] }`.
 - Read-only public RPCs (viem, 8s timeout, fallbacks), successful per-chain reads cached 60s in memory; a failing chain is reported in `chainsFailed` without failing the call. 400 bad input and 503 (every chain failed) are free.
 - No new env vars. Tests: `npm run check-lock-status` (mocked RPC). Live read-only smoke: `npm run check-lock-status-live` (optional `LOCK_TOKEN`).
+
+**Leak check**
+
+- Input: POST JSON only (32 KB cap), structure and labels, never secrets: `{ agent{name,readsData[]}, connections[{provider,kind,displayName,visibility,id?}], instructions[], policy{present,defaultAction,rules[],limits,approval}|null, tools[{name,canSend,egressGated?}] }`. Fixtures: `scripts/fixtures/leak-check/`.
+- Output: `{ score: null, findings[{ id, severity, evidence[], why, fix }], checksRun: 9, checksPassed, limits, version: "leak-check/1" }`. Nine deterministic checks (`AMBIGUOUS_DESTINATION`, `NAME_BASED_INSTRUCTION`, `MIXED_DOMAINS`, `NO_POLICY`/`DEFAULT_ALLOW`, `NO_AUDIENCE_RULES`, `BROAD_AUDIENCE`, `UNGATED_SEND_TOOL`, `NO_LIMITS`, `NO_APPROVAL_PATH`). No LLM, no RPC, no outbound calls, no storage.
+- Free statuses (never settled): 400 (bad JSON, schema, or secret-looking input, nothing echoed), 405 (GET: URLs get logged, so the body must be POSTed), 413 (over 32 KB), 429 (30/min per IP and per payer, per instance).
+- Privacy: the body is never logged, stored or cached. The only log line is `{event, ts, status, bytes, findings ids | code}`; JSON parser errors are not forwarded. A canary-string test enforces this.
+- No new env vars (reuses `AUDIT_PAY_TO_EVM`, `CDP_*`). Tests: `npm run check-leak-check -w @liquid-logic/audit`. Spec: `docs/agent-privacy-specs.md` (Spec 2) in `LiquidLogicX/liquid-logic-x`.
 
 **Escrow status**
 

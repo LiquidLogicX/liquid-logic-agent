@@ -1,0 +1,43 @@
+{
+  "agent": {
+    "name": "life-agent",
+    "readsData": [
+      "personal.health"
+    ]
+  },
+  "connections": [
+    {
+      "provider": "slack",
+      "kind": "channel",
+      "displayName": "all-hands",
+      "visibility": "workspace",
+      "id": "C-ALL"
+    }
+  ],
+  "instructions": [],
+  "policy": {
+    "present": true,
+    "defaultAction": "deny",
+    "rules": [
+      {
+        "class": "personal.health",
+        "destination": "C-ALL",
+        "audience": "named"
+      }
+    ],
+    "limits": {
+      "maxBytesPerSend": 1024,
+      "maxSendsPerDay": 3
+    },
+    "approval": {
+      "required": true
+    }
+  },
+  "tools": [
+    {
+      "name": "send_message",
+      "canSend": true,
+      "egressGated": true
+    }
+  ]
+}
