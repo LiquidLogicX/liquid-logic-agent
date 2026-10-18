@@ -44,11 +44,6 @@ export const ABOUT_PRODUCTS: readonly AboutProduct[] = [
 
 export const COMPANY_LINE = "Liquid Logic X LLC · California, USA · Founded 2026";
 
-export const FOUNDER_NAME = "Miles Francisco";
-
-export const FOUNDER_LINKEDIN =
-  "https://www.linkedin.com/in/miles-francisco-53b311138";
-
 export const CONTACT_EMAIL = "hello@liquidlogicx.com";
 
 export const CONTACT_X = "https://x.com/LiquidLogicX";

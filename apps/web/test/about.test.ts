@@ -10,7 +10,6 @@ import {
   CONTACT_EMAIL,
   CONTACT_TELEGRAM,
   CONTACT_X,
-  FOUNDER_LINKEDIN,
   TOKEN_HEADING,
   TOKEN_LABEL,
   TOKEN_NOTE,
@@ -86,7 +85,7 @@ test("contact links", () => {
   assert.equal(CONTACT_EMAIL, "hello@liquidlogicx.com");
   assert.equal(CONTACT_X, "https://x.com/LiquidLogicX");
   assert.equal(CONTACT_TELEGRAM, "https://t.me/LiquidLogicXofficial");
-  assert.match(FOUNDER_LINKEDIN, /^https:\/\/www\.linkedin\.com\/in\/miles-francisco-/);
+  assert.doesNotMatch(pageSrc, /linkedin|Founder|Miles|Francisco/i);
   assert.match(pageSrc, /href=\{`mailto:\$\{CONTACT_EMAIL\}`\}/);
 });
 

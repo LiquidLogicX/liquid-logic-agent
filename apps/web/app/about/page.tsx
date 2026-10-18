@@ -7,8 +7,6 @@ import {
   CONTACT_EMAIL,
   CONTACT_TELEGRAM,
   CONTACT_X,
-  FOUNDER_LINKEDIN,
-  FOUNDER_NAME,
   TOKEN_HEADING,
   TOKEN_LABEL,
   TOKEN_NOTE,
@@ -69,12 +67,6 @@ export default function AboutPage() {
       <section className="docs-card" aria-labelledby="about-company">
         <h2 id="about-company">Company</h2>
         <p>{COMPANY_LINE}</p>
-        <p>
-          Founder &amp; CEO:{" "}
-          <a href={FOUNDER_LINKEDIN} rel="noopener noreferrer">
-            {FOUNDER_NAME}
-          </a>
-        </p>
       </section>
 
       <section className="docs-card" aria-labelledby="about-contact">
@@ -93,12 +85,6 @@ export default function AboutPage() {
             Telegram:{" "}
             <a href={CONTACT_TELEGRAM} rel="noopener noreferrer">
               t.me/LiquidLogicXofficial
-            </a>
-          </li>
-          <li>
-            LinkedIn:{" "}
-            <a href={FOUNDER_LINKEDIN} rel="noopener noreferrer">
-              {FOUNDER_NAME}
             </a>
           </li>
         </ul>
