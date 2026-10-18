@@ -10,7 +10,6 @@ import {
   CONTACT_EMAIL,
   CONTACT_TELEGRAM,
   CONTACT_X,
-  FOUNDER_LINKEDIN,
   TOKEN_HEADING,
   TOKEN_LABEL,
   TOKEN_NOTE,
@@ -86,8 +85,12 @@ test("contact links", () => {
   assert.equal(CONTACT_EMAIL, "hello@liquidlogicx.com");
   assert.equal(CONTACT_X, "https://x.com/LiquidLogicX");
   assert.equal(CONTACT_TELEGRAM, "https://t.me/LiquidLogicXofficial");
-  assert.match(FOUNDER_LINKEDIN, /^https:\/\/www\.linkedin\.com\/in\/miles-francisco-/);
   assert.match(pageSrc, /href=\{`mailto:\$\{CONTACT_EMAIL\}`\}/);
+});
+
+test("about page has no founder's personal name or LinkedIn link", () => {
+  assert.doesNotMatch(pageCode, /Miles|Francisco|linkedin\.com/i);
+  assert.doesNotMatch(pageCode, /FOUNDER_|Founder/);
 });
 
 test("about page has no street address, entity number or phone", () => {
