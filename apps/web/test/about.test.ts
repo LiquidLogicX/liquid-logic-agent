@@ -54,12 +54,12 @@ test("about copy never promises price, returns, yield or profit", () => {
   for (const re of BANNED) assert.doesNotMatch(allCopy, re);
 });
 
-test("about page never links the Liquid Pay production app", () => {
+test("about page never links the Liquid X Pay production app", () => {
   assert.doesNotMatch(pageCode, /pay\.liquidlogicx\.com/i);
 });
 
-test("Liquid Pay is in development, unlinked, and never called live", () => {
-  const pay = ABOUT_PRODUCTS.find((p) => p.name === "Liquid Pay");
+test("Liquid X Pay is in development, unlinked, and never called live", () => {
+  const pay = ABOUT_PRODUCTS.find((p) => p.name === "Liquid X Pay");
   assert.ok(pay);
   assert.equal(pay.href, undefined);
   assert.match(pay.detail, /In development\./);

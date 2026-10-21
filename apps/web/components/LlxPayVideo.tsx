@@ -11,7 +11,7 @@ import { soundButtonLabel, toggleVideoSound } from "@/lib/videoSound";
  * If the files are missing, the styled frame underneath stays visible and the
  * sound button is hidden.
  */
-const VIDEO_HTML = `<video autoplay muted loop playsinline preload="metadata" poster="${LLX_PAY_VIDEO_POSTER}" aria-label="Liquid Pay demo: sending and approving a USDC payment on a phone"><source src="${LLX_PAY_VIDEO_SRC}" type="video/mp4"></video>`;
+const VIDEO_HTML = `<video autoplay muted loop playsinline preload="metadata" poster="${LLX_PAY_VIDEO_POSTER}" aria-label="Liquid X Pay demo: sending and approving a USDC payment on a phone"><source src="${LLX_PAY_VIDEO_SRC}" type="video/mp4"></video>`;
 
 function SpeakerIcon({ muted }: { muted: boolean }) {
   return (
@@ -76,7 +76,7 @@ export function LlxPayVideo() {
     <div className="phone" data-missing={missing ? "true" : undefined}>
       <div className="phone-screen">
         <div className="phone-fallback" aria-hidden={!missing}>
-          <span className="phone-fallback-mark">Liquid Pay</span>
+          <span className="phone-fallback-mark">Liquid X Pay</span>
           <span className="phone-fallback-note">Demo video</span>
         </div>
         <div
