@@ -22,7 +22,7 @@ export default async function HomePage() {
       <div className="hero">
         <div className="wrap">
           <div>
-            <h1>Spending controls for autonomous agents.</h1>
+            <h1>Programmable spend policy at scale.</h1>
             <p className="lede">
               Liquid Logic Agent pays approved x402 services in USDC on Base,
               inside published limits. Every settled payment is recorded on a
