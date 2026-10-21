@@ -1382,8 +1382,16 @@ pre {
   border: 1px solid currentColor;
   opacity: 0.8;
 }
-.cllx-zero-art { display: flex; justify-content: center; align-items: center; }
-.cllx-zero-art img { width: 100%; max-width: 280px; height: auto; border-radius: 50%; }
+.cllx-zero-art { display: block; text-align: center; }
+.cllx-zero-art picture { display: inline-block; }
+.cllx-zero-art img {
+  display: block;
+  width: 280px;
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+}
 @media (max-width: 700px) {
-  .cllx-zero-art img { max-width: 200px; margin-top: 16px; }
+  .cllx-zero-art img { width: 200px; margin-top: 16px; }
 }
