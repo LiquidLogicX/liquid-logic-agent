@@ -5,12 +5,24 @@ import {
   TREASURER_WALLET_ADDRESS,
   assertAllowlistedEndpoint,
   evaluateAllowance,
+  atomicToUsdc,
+  usdcToAtomic,
 } from "@liquid-logic/shared";
+import {
+  committedTodayAtomic,
+  quoteGuardedFetch,
+  release,
+  reserve,
+  withBasePaymentLock,
+  type PriceQuote,
+} from "./base-pay.js";
 import type { TreasurerConfig } from "./config.js";
 import { LedgerStore } from "./ledger-store.js";
 import { assertPaymentAsset } from "./usdc-guard.js";
 import { isPaymentsFrozen } from "./freeze.js";
 import {
+  claimHoldForApproval,
+  releaseHoldApproval,
   amountMeetsHoldThreshold,
   expireStaleHolds,
   findHeldEvent,
@@ -70,9 +82,7 @@ export function createX402PayClient(config: TreasurerConfig): CdpX402Client {
 export async function getWalletAddress(
   config: TreasurerConfig,
 ): Promise<string> {
-  const client = createX402PayClient(config);
-  const { evmAddress } = await client.getAddresses();
-  return evmAddress;
+  return transport.getAddress(config);
 }
 
 function extractTxHash(response: Response): string | undefined {
@@ -124,10 +134,65 @@ export type PayResult = {
 };
 
 /**
- * Execute an x402 payment (no hold gate). Caller must enforce freeze / allowlist /
- * allowance / hold resolution. Used by operator approve and by payEndpoint.
+ * How the Base rail reaches x402. Production: one cached CdpX402Client per
+ * process (so CDP's 24h maxCumulativeSpend actually accumulates) wrapped by
+ * @x402/fetch. Tests swap in a mocked facilitator via setBasePaymentTransportForTests.
+ */
+export type BasePaymentTransport = {
+  getAddress(config: TreasurerConfig): Promise<string>;
+  /** `fetchImpl` is the quote-guarded fetch; the transport must route the unpaid request through it. */
+  payFetch(config: TreasurerConfig, url: string, fetchImpl: typeof fetch): Promise<Response>;
+};
+
+let cachedClient: { key: string; client: CdpX402Client } | null = null;
+function sharedClient(config: TreasurerConfig): CdpX402Client {
+  const key = `${config.walletAccountName}|${config.network}|${config.maxPerPaymentAtomic}|${config.dailyCapAtomic}`;
+  if (!cachedClient || cachedClient.key !== key) {
+    cachedClient = { key, client: createX402PayClient(config) };
+  }
+  return cachedClient.client;
+}
+
+const cdpTransport: BasePaymentTransport = {
+  async getAddress(config) {
+    return (await sharedClient(config).getAddresses()).evmAddress;
+  },
+  payFetch(config, url, fetchImpl) {
+    return wrapFetchWithPayment(fetchImpl, sharedClient(config) as never)(url);
+  },
+};
+
+let transport: BasePaymentTransport = cdpTransport;
+let innerFetch: typeof fetch = (...a) => globalThis.fetch(...a);
+/** Test hook: mock facilitator. Pass null to restore the CDP transport. */
+export function setBasePaymentTransportForTests(
+  t: BasePaymentTransport | null,
+  fetchImpl?: typeof fetch,
+): void {
+  transport = t ?? cdpTransport;
+  innerFetch = fetchImpl ?? ((...a) => globalThis.fetch(...a));
+}
+
+/**
+ * Execute an x402 payment (no hold gate). Runs under the process-wide Base
+ * payment lock. Order inside the lock:
+ *   freeze/allowlist → 402 quote (refuse if unknown) → per-payment max →
+ *   daily cap incl. open reservations → `reserved` row → sign + settle →
+ *   payment row with the quoted (actual) amount, or `reservation_released`.
  */
 export async function executePayment(opts: {
+  config: TreasurerConfig;
+  ledger: LedgerStore;
+  url: string;
+  reason?: string;
+  maxAmountHintUsdc?: string;
+  holdId?: string;
+  approvedBy?: string;
+}): Promise<PayResult> {
+  return withBasePaymentLock(() => executePaymentLocked(opts));
+}
+
+async function executePaymentLocked(opts: {
   config: TreasurerConfig;
   ledger: LedgerStore;
   url: string;
@@ -147,6 +212,16 @@ export async function executePayment(opts: {
 
   const endpoint = assertAllowlistedEndpoint(opts.url, config.allowlist);
 
+  let hintAtomic: bigint | null = null;
+  if (opts.maxAmountHintUsdc != null && opts.maxAmountHintUsdc !== "") {
+    try {
+      hintAtomic = usdcToAtomic(opts.maxAmountHintUsdc);
+    } catch {
+      throw new Error(`GUARDRAIL: invalid amount ${opts.maxAmountHintUsdc}`);
+    }
+    if (hintAtomic <= 0n) throw new Error("GUARDRAIL: amount must be greater than 0");
+  }
+
   const preview = evaluateAllowance({
     policy: {
       ...DEFAULT_TREASURER_POLICY,
@@ -163,16 +238,57 @@ export async function executePayment(opts: {
     throw new Error(`GUARDRAIL: ${preview.reason}`);
   }
 
-  const client = createX402PayClient(config);
-  const { evmAddress } = await client.getAddresses();
-  const fetchWithPayment = wrapFetchWithPayment(globalThis.fetch, client as never);
+  const evmAddress = await transport.getAddress(config);
   const payUrl = withWalletQuery(endpoint, evmAddress);
+
+  let quote: PriceQuote | null = null;
+  let reservationId: string | null = null;
+  const guarded = quoteGuardedFetch(
+    innerFetch,
+    { network: config.network, asset: config.usdcAddress },
+    (q) => {
+      // Runs on the unpaid 402, before the x402 client creates a payment payload.
+      if (!q) {
+        throw new Error("GUARDRAIL: PRICE_UNKNOWN — 402 has no parseable USDC price on this network; refusing to pay");
+      }
+      if (q.atomic <= 0n) throw new Error("GUARDRAIL: quoted price must be greater than 0");
+      if (hintAtomic != null && q.atomic > hintAtomic) {
+        throw new Error(
+          `GUARDRAIL: quoted ${atomicToUsdc(q.atomic)} USDC exceeds the stated amount ${atomicToUsdc(hintAtomic)} USDC`,
+        );
+      }
+      if (q.atomic > config.maxPerPaymentAtomic) {
+        throw new Error(
+          `GUARDRAIL: quoted ${atomicToUsdc(q.atomic)} USDC exceeds maxPerPaymentUsdc ${config.maxPerPaymentUsdc}`,
+        );
+      }
+      if (!opts.holdId && config.holdAboveUsdc && q.atomic >= usdcToAtomic(config.holdAboveUsdc)) {
+        throw new Error(
+          `GUARDRAIL: quoted ${atomicToUsdc(q.atomic)} USDC is at/above HOLD_ABOVE_USDC=${config.holdAboveUsdc}; request a hold with the amount`,
+        );
+      }
+      const committed = committedTodayAtomic(ledger.readAll());
+      if (committed + q.atomic > config.dailyCapAtomic) {
+        throw new Error(
+          `GUARDRAIL: daily cap ${config.dailyCapUsdc} USDC — ${atomicToUsdc(committed)} committed today (UTC), ${atomicToUsdc(q.atomic)} more would exceed it`,
+        );
+      }
+      quote = q;
+      reservationId = reserve(ledger, {
+        endpoint,
+        atomic: q.atomic,
+        network: config.network,
+        holdId: opts.holdId,
+      });
+    },
+  );
 
   let response: Response;
   try {
-    response = await fetchWithPayment(payUrl);
+    response = await transport.payFetch(config, payUrl, guarded);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
+    if (reservationId) release(ledger, reservationId, message);
     ledger.append({
       type: "payment_failed",
       timestamp: new Date().toISOString(),
@@ -184,27 +300,40 @@ export async function executePayment(opts: {
     throw err;
   }
 
+  const q = quote as PriceQuote | null;
+  if (!q || !reservationId) {
+    // Endpoint answered without a 402 (or the client skipped it): nothing was
+    // quoted, so we never reserved and must not record an amount.
+    const body = await response.text();
+    ledger.append({
+      type: "payment_failed",
+      timestamp: new Date().toISOString(),
+      endpoint,
+      error: `HTTP ${response.status} without an x402 quote — no payment recorded`,
+      walletAddress: evmAddress,
+      reason: opts.reason,
+    });
+    return { status: response.status, body, walletAddress: evmAddress, holdId: opts.holdId };
+  }
+
   const extracted = extractTxHash(response);
   const settlement = checkPaymentSettlement({
     status: response.status,
     txHash: extracted,
   });
-  const amountUsdc = opts.maxAmountHintUsdc ?? "unknown";
-  const paymentMeta = {
-    holdId: opts.holdId,
-    approvedBy: opts.approvedBy,
-  };
+  const amountUsdc = atomicToUsdc(q.atomic);
 
   // NEVER append type=payment without a real txHash + HTTP 2xx.
   if (!settlement.settled || !settlement.txHash) {
     const error =
       settlement.error ??
       `HTTP ${response.status}; missing txHash — refusing payment ledger row`;
+    release(ledger, reservationId, error);
     ledger.append({
       type: "payment_failed",
       timestamp: new Date().toISOString(),
       endpoint,
-      amountUsdc: amountUsdc !== "unknown" ? amountUsdc : undefined,
+      amountUsdc,
       error,
       walletAddress: evmAddress,
       reason: opts.reason,
@@ -220,19 +349,18 @@ export async function executePayment(opts: {
   }
 
   const txHash = settlement.txHash;
-  ledger.recordPayment({
+  const recorded = ledger.recordPayment({
     endpoint,
-    amountUsdc: amountUsdc !== "unknown" ? amountUsdc : "0",
+    amountUsdc,
     network: config.network,
     txHash,
     walletAddress: evmAddress,
-    reason:
-      opts.reason ??
-      (amountUsdc === "unknown"
-        ? "x402 payment (amount from settlement; see BaseScan)"
-        : undefined),
-    ...paymentMeta,
+    reason: opts.reason ?? "x402 service payment",
+    holdId: opts.holdId,
+    approvedBy: opts.approvedBy,
+    reservationId,
   });
+  if (!recorded) release(ledger, reservationId, `duplicate txHash ${txHash}`);
 
   const body = await response.text();
   return {
@@ -422,7 +550,11 @@ export function requestHold(opts: {
   };
 }
 
-/** Approve a pending hold: execute payment and append payment with holdId + approvedBy. */
+/**
+ * Approve a pending hold. The pending → approving transition is atomic
+ * (claimHoldForApproval), so of N concurrent approvers exactly one pays; the
+ * rest get HOLD_NOT_PENDING. A failed payment returns the hold to pending.
+ */
 export async function approveHold(opts: {
   config: TreasurerConfig;
   ledger: LedgerStore;
@@ -432,32 +564,37 @@ export async function approveHold(opts: {
   const { config, ledger, holdId } = opts;
   expireStaleHolds(ledger, config.holdTtlSeconds);
 
-  const resolution = getHoldResolution(ledger.readAll(), holdId);
-  if (resolution === null) {
-    throw new Error(`HOLD_NOT_FOUND: ${holdId}`);
-  }
-  if (resolution === "paid") {
-    throw new Error(`HOLD_ALREADY_PAID: ${holdId}`);
-  }
-  if (resolution === "denied") {
-    throw new Error(`HOLD_ALREADY_DENIED: ${holdId}`);
-  }
-  if (resolution === "expired") {
-    throw new Error(`HOLD_ALREADY_EXPIRED: ${holdId}`);
-  }
-
   const held = findHeldEvent(ledger.readAll(), holdId);
   if (!held) {
     throw new Error(`HOLD_NOT_FOUND: ${holdId}`);
   }
+  const approvedBy = opts.approvedBy ?? "operator";
+  const claim = claimHoldForApproval(ledger, holdId, approvedBy);
+  if (!claim.ok) {
+    const r = claim.resolution;
+    if (r === "paid") throw new Error(`HOLD_ALREADY_PAID: ${holdId}`);
+    if (r === "denied") throw new Error(`HOLD_ALREADY_DENIED: ${holdId}`);
+    if (r === "expired") throw new Error(`HOLD_ALREADY_EXPIRED: ${holdId}`);
+    if (r === "approving") throw new Error(`HOLD_NOT_PENDING: ${holdId} is already being approved`);
+    throw new Error(`HOLD_NOT_FOUND: ${holdId}`);
+  }
 
-  return executePayment({
-    config,
-    ledger,
-    url: held.endpoint,
-    maxAmountHintUsdc: held.amountUsdc,
-    reason: held.reason ?? `Operator-approved hold ${holdId}`,
-    holdId,
-    approvedBy: opts.approvedBy ?? "operator",
-  });
+  try {
+    const result = await executePayment({
+      config,
+      ledger,
+      url: held.endpoint,
+      maxAmountHintUsdc: held.amountUsdc,
+      reason: held.reason ?? `Operator-approved hold ${holdId}`,
+      holdId,
+      approvedBy,
+    });
+    if (!(result.status >= 200 && result.status < 300 && result.txHash)) {
+      releaseHoldApproval(ledger, holdId, `settlement incomplete (HTTP ${result.status})`);
+    }
+    return result;
+  } catch (err) {
+    releaseHoldApproval(ledger, holdId, err instanceof Error ? err.message : String(err));
+    throw err;
+  }
 }

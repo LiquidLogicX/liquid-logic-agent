@@ -8,7 +8,7 @@ import type { LedgerStore } from "./ledger-store.js";
 
 export const DEFAULT_HOLD_TTL_SECONDS = 3600;
 
-export type HoldResolution = "pending" | "denied" | "expired" | "paid";
+export type HoldResolution = "pending" | "approving" | "denied" | "expired" | "paid";
 
 export type PendingHold = {
   holdId: string;
@@ -59,6 +59,8 @@ export function getHoldResolution(
     else if (e.type === "denied" && e.holdId === holdId) status = "denied";
     else if (e.type === "expired" && e.holdId === holdId) status = "expired";
     else if (e.type === "payment" && e.holdId === holdId) status = "paid";
+    else if (e.type === "approving" && e.holdId === holdId && status === "pending") status = "approving";
+    else if (e.type === "approve_failed" && e.holdId === holdId && status === "approving") status = "pending";
   }
   return status;
 }
@@ -174,6 +176,39 @@ export function expireStaleHolds(
     }
   }
   return expiredIds;
+}
+
+/**
+ * Atomic pending → approving transition for a hold. Synchronous on purpose: the
+ * read and the append happen in one turn of the event loop with no await in
+ * between, so of N concurrent approvers in this process exactly one wins.
+ * Returns the resolution that blocked the claim when it fails.
+ */
+export function claimHoldForApproval(
+  ledger: LedgerStore,
+  holdId: string,
+  approvedBy: string,
+): { ok: true } | { ok: false; resolution: HoldResolution | null } {
+  const resolution = getHoldResolution(ledger.readAll(), holdId);
+  if (resolution !== "pending") return { ok: false, resolution };
+  ledger.append({
+    type: "approving",
+    holdId,
+    approvedBy,
+    timestamp: new Date().toISOString(),
+  });
+  return { ok: true };
+}
+
+/** Approval finished without a settled payment: hold goes back to pending. */
+export function releaseHoldApproval(ledger: LedgerStore, holdId: string, error: string): void {
+  if (getHoldResolution(ledger.readAll(), holdId) !== "approving") return;
+  ledger.append({
+    type: "approve_failed",
+    holdId,
+    error: error.slice(0, 300),
+    timestamp: new Date().toISOString(),
+  });
 }
 
 export function sleep(ms: number): Promise<void> {

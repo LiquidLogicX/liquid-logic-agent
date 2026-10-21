@@ -22,7 +22,12 @@ export type LedgerEventType =
   | "denied"
   | "expired"
   | "frozen"
-  | "unfrozen";
+  | "unfrozen"
+  // Base-rail payment serialization (treasurer client.ts)
+  | "approving"
+  | "approve_failed"
+  | "reserved"
+  | "reservation_released";
 
 /**
  * CAIP-2 networks a ledger spend row can carry. Tempo (4217 / 42431) rows are
@@ -75,6 +80,8 @@ export interface PaymentEvent extends LedgerEventBase {
   /** Present when payment followed an operator-approved hold. */
   holdId?: string;
   approvedBy?: string;
+  /** Base rail: closes the matching `reserved` row. */
+  reservationId?: string;
   /** Tempo rail: TIP-20 symbol actually sent (e.g. "USDC.e"); asset stays "USDC". */
   tokenSymbol?: string;
 }
@@ -131,6 +138,40 @@ export interface UnfrozenEvent extends LedgerEventBase {
   type: "unfrozen";
 }
 
+/** Base rail: an operator won the pending→approving transition for a hold. */
+export interface ApprovingEvent extends LedgerEventBase {
+  type: "approving";
+  holdId: string;
+  approvedBy?: string;
+}
+
+/** Base rail: approval attempt finished without a payment; hold returns to pending. */
+export interface ApproveFailedEvent extends LedgerEventBase {
+  type: "approve_failed";
+  holdId: string;
+  error?: string;
+}
+
+/**
+ * Base rail: spend reserved against the daily cap before an x402 payment is signed.
+ * Counts toward today's spend until a payment row (same reservationId) or a
+ * reservation_released row closes it. A crash mid-payment therefore fails safe.
+ */
+export interface ReservedEvent extends LedgerEventBase {
+  type: "reserved";
+  reservationId: string;
+  endpoint: string;
+  amountUsdc: string;
+  network?: LedgerNetwork;
+  holdId?: string;
+}
+
+export interface ReservationReleasedEvent extends LedgerEventBase {
+  type: "reservation_released";
+  reservationId: string;
+  error?: string;
+}
+
 export type LedgerEvent =
   | AllowanceSetEvent
   | TopUpEvent
@@ -143,7 +184,11 @@ export type LedgerEvent =
   | DeniedEvent
   | ExpiredEvent
   | FrozenEvent
-  | UnfrozenEvent;
+  | UnfrozenEvent
+  | ApprovingEvent
+  | ApproveFailedEvent
+  | ReservedEvent
+  | ReservationReleasedEvent;
 
 /**
  * True for spend that counts toward payment totals / daily cap.

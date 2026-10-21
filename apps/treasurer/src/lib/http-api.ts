@@ -258,7 +258,11 @@ export function startOperatorHttpServer(opts: {
             ? 423
             : message.startsWith("GUARDRAIL:")
               ? 400
-              : 500;
+              : message.startsWith("HOLD_NOT_PENDING:") || message.startsWith("HOLD_ALREADY_")
+                ? 409
+                : message.startsWith("HOLD_NOT_FOUND:")
+                  ? 404
+                  : 500;
           sendJson(res, status, { ok: false, error: message, holdId });
         }
         return;
