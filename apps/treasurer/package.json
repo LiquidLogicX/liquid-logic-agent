@@ -20,7 +20,8 @@
     "print-wallet-address": "npm run cli -- print-wallet-address",
     "test:payment-guard": "node --import tsx scripts/assert-payment-requires-hash.mts",
     "test:genesis-reset-merge": "node --import tsx scripts/assert-genesis-reset-merge.mts",
-    "test:tempo": "node --import tsx --test test/tempo-rail.test.ts"
+    "test:tempo": "node --import tsx --test test/tempo-rail.test.ts",
+    "test:base-rail": "node --import tsx --test test/base-rail-races.test.ts"
   },
   "dependencies": {
     "@coinbase/cdp-sdk": "^1.55.0",
