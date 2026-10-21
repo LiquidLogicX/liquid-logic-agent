@@ -6,7 +6,7 @@ import {
   PROOFS_VERIFIER_URL,
 } from "@/lib/proofs";
 
-/** Settlement proof verifier links, shown with Liquid X Pay. */
+/** Settlement proof verifier links, shown with Liquid X-Pay. */
 export function SettlementProofs() {
   return (
     <div className="proofs-cta" id="settlement-proofs">

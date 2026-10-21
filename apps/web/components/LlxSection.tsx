@@ -55,7 +55,7 @@ export function LlxSection() {
         </dd>
         <dt>Utility</dt>
         <dd>
-          $LLX utility: pays Liquid X Lock fees at a discount. Token:{" "}
+          $LLX utility: pays Liquid X-Lock fees at a discount. Token:{" "}
           <span className="mono">{LLX_CONTRACT}</span> on Base.
         </dd>
         <dt>Links</dt>

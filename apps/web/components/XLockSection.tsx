@@ -5,7 +5,7 @@ export function XLockSection() {
     <section className="block" id="xlock">
       <div className="wrap sec-head">
         <div>
-          <h2>Liquid X Lock</h2>
+          <h2>Liquid X-Lock</h2>
           <p className="intro">
             Lock or vest any token on 11 live chains: Base, BNB Chain,
             Ethereum, Arbitrum, Polygon, Avalanche, Optimism, Arc, Tempo,
@@ -25,7 +25,7 @@ export function XLockSection() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              Open Liquid X Lock
+              Open Liquid X-Lock
             </a>
           </div>
         </div>

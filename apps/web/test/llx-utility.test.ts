@@ -25,7 +25,7 @@ const allCopy = [
   ...LLX_UTILITY.flatMap((i) => [i.title, i.detail]),
 ].join("\n");
 
-test("three utility items; only Liquid X Lock fees in $LLX are live", () => {
+test("three utility items; only Liquid X-Lock fees in $LLX are live", () => {
   assert.equal(LLX_UTILITY.length, 3);
   for (const item of LLX_UTILITY) {
     const expected = item.id === "x-lock-fees" ? "live" : "coming_soon";
@@ -103,6 +103,6 @@ test("policy section says agent spending settles in USDC today", () => {
   assert.doesNotMatch(src, /never buys, sells or holds/);
 });
 
-test("Liquid X Pay still says LLX never holds your keys", () => {
+test("Liquid X-Pay still says LLX never holds your keys", () => {
   assert.match(read("LlxPaySection.tsx"), /never holds your keys/);
 });
