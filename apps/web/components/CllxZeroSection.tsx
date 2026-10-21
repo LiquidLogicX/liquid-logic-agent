@@ -1,4 +1,5 @@
 const CLLX_ZERO_URL = "https://zk.liquidlogicx.com";
+const CLLX_SEND_URL = "https://cllx.liquidlogicx.com";
 
 export function CllxZeroSection() {
   return (
@@ -20,6 +21,14 @@ export function CllxZeroSection() {
               rel="noopener noreferrer"
             >
               Open Liquid Zero
+            </a>
+            <a
+              className="btn primary"
+              href={CLLX_SEND_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              cLLX Send
             </a>
           </div>
         </div>
