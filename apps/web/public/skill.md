@@ -41,7 +41,7 @@ You get `findings` (stable `id`, `severity`, `evidence` pointers into your input
 
 Only a 200 is charged. 400, 405, 413 and 429 are free.
 
-## LLX Pay
+## Liquid Pay
 
 Coming after the current hold. When it ships, agents will use a **policy SDK** shape (not live endpoints yet), for example:
 
