@@ -25,9 +25,9 @@ export default async function HomePage() {
             <h1>Programmable spend policy at scale.</h1>
             <p className="lede">
               Liquid Logic X lets businesses and agents set spend policy that is
-              enforced on-chain: approved USDC payments with Liquid X Pay, token
-              locks with Liquid X Lock, private balances with cLLX Send, and
-              private sends on Base with Liquid X Zero (Beta). Every settled payment
+              enforced on-chain: approved USDC payments with Liquid X-Pay, token
+              locks with Liquid X-Lock, private balances with cLLX Send, and
+              private sends on Base with Liquid X-Zero (Beta). Every settled payment
               can be checked on a block explorer.
             </p>
             <div className="actions">

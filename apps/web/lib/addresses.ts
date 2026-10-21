@@ -7,9 +7,9 @@ export type OfficialAddress = {
   purpose: string;
   /** Explorer link for the address (Basescan unless the contract is not on Base). */
   explorer: { label: string; href: string };
-  /** Extra per-chain explorer links (Liquid X Lock Factory V2). */
+  /** Extra per-chain explorer links (Liquid X-Lock Factory V2). */
   chains?: { label: string; href: string }[];
-  /** Optional related link (e.g. the Liquid X Lock lock page). */
+  /** Optional related link (e.g. the Liquid X-Lock lock page). */
   related?: { label: string; href: string };
 };
 
@@ -28,16 +28,16 @@ export const OFFICIAL_ADDRESSES: OfficialAddress[] = [
     explorer: { label: "Basescan", href: basescan(LLX_CONTRACT) },
   },
   {
-    name: "Liquid X Lock Factory (Base, V1)",
+    name: "Liquid X-Lock Factory (Base, V1)",
     address: "0xD47326d2B5822355D9c4dfF5265849a5bb5D20ec",
-    purpose: "Creates Liquid X Lock token locks on Base.",
+    purpose: "Creates Liquid X-Lock token locks on Base.",
     explorer: { label: "Basescan", href: basescan("0xD47326d2B5822355D9c4dfF5265849a5bb5D20ec") },
   },
   {
-    name: "Liquid X Lock Factory V2 (all other chains)",
+    name: "Liquid X-Lock Factory V2 (all other chains)",
     address: XLOCK_V2,
     purpose:
-      "Creates Liquid X Lock token locks. Same address on BNB, Ethereum, Arbitrum, Polygon, Avalanche, Optimism, Arc, Tempo, Robinhood Chain and XRPL EVM. Not deployed on Base.",
+      "Creates Liquid X-Lock token locks. Same address on BNB, Ethereum, Arbitrum, Polygon, Avalanche, Optimism, Arc, Tempo, Robinhood Chain and XRPL EVM. Not deployed on Base.",
     explorer: { label: "Etherscan", href: `https://etherscan.io/address/${XLOCK_V2}` },
     chains: [
       { label: "BNB", href: `https://bscscan.com/address/${XLOCK_V2}` },
@@ -55,9 +55,9 @@ export const OFFICIAL_ADDRESSES: OfficialAddress[] = [
   {
     name: "Partnerships",
     address: "0x33e3c3f9c92f2045e1d3928599737e47a9d0dd8b",
-    purpose: "Partnerships allocation. 200M LLX locked in Liquid X Lock #1 until Jan 13, 2027.",
+    purpose: "Partnerships allocation. 200M LLX locked in Liquid X-Lock #1 until Jan 13, 2027.",
     explorer: { label: "Basescan", href: basescan("0x33e3c3f9c92f2045e1d3928599737e47a9d0dd8b") },
-    related: { label: "Liquid X Lock #1", href: "https://xlock.liquidlogicx.com/lock/1" },
+    related: { label: "Liquid X-Lock #1", href: "https://xlock.liquidlogicx.com/lock/1" },
   },
   {
     name: "Team",
@@ -66,15 +66,15 @@ export const OFFICIAL_ADDRESSES: OfficialAddress[] = [
     explorer: { label: "Basescan", href: basescan("0x95672ca9b03b7d07c9efc1f7d71fe137c748ecdc") },
   },
   {
-    name: "Liquid X Lock Fees",
+    name: "Liquid X-Lock Fees",
     address: "0x8e351267f713e8fa21befd4aad2ed4ae4146cb38",
-    purpose: "Receives Liquid X Lock fees (fee recipient on every Liquid X Lock factory).",
+    purpose: "Receives Liquid X-Lock fees (fee recipient on every Liquid X-Lock factory).",
     explorer: { label: "Basescan", href: basescan("0x8e351267f713e8fa21befd4aad2ed4ae4146cb38") },
   },
   {
-    name: "Liquid X Lock Owner",
+    name: "Liquid X-Lock Owner",
     address: "0x931b89e025beb0b4243faa63c70e8d64c43bc9b8",
-    purpose: "Owner of every Liquid X Lock factory. It has no function that can touch locked tokens.",
+    purpose: "Owner of every Liquid X-Lock factory. It has no function that can touch locked tokens.",
     explorer: { label: "Basescan", href: basescan("0x931b89e025beb0b4243faa63c70e8d64c43bc9b8") },
   },
 ];

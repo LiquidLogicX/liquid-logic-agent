@@ -3,7 +3,7 @@ version: 2026-10-14
 name: liquid-logic-x-agent-skill
 description: >-
   Index of Liquid Logic X agent skills. Paste "connect to
-  liquidlogicx.com/skill.md" into an agent to discover Liquid X Lock, X-Escrow, and
+  liquidlogicx.com/skill.md" into an agent to discover Liquid X-Lock, X-Escrow, and
   other LLX products.
 ---
 
@@ -14,7 +14,7 @@ Liquid Logic X builds non-custodial onchain tools for agents and humans: token l
 Also at: https://liquidlogicx.com/.well-known/skill.md  
 Official addresses: https://liquidlogicx.com/addresses
 
-## Liquid X Lock + X-Escrow (X-Crow)
+## Liquid X-Lock + X-Escrow (X-Crow)
 
 Time locks, vesting, and non-custodial escrow across Base and ten other chains. Read lock/escrow status over x402 ($0.005 USDC on Base). Create locks and escrows from an agent wallet.
 
@@ -41,7 +41,7 @@ You get `findings` (stable `id`, `severity`, `evidence` pointers into your input
 
 Only a 200 is charged. 400, 405, 413 and 429 are free.
 
-## Liquid X Pay
+## Liquid X-Pay
 
 Coming after the current hold. When it ships, agents will use a **policy SDK** shape (not live endpoints yet), for example:
 

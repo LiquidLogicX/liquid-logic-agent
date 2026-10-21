@@ -4,7 +4,7 @@
  * Copy rules: describe use only. Never promise price, returns, yield,
  * buybacks or holder profit. Anything not shipped in code stays
  * `status: "coming_soon"` (x402 endpoints accept USDC only today).
- * Liquid X Lock fees in $LLX are live (Base mainnet, October 2026).
+ * Liquid X-Lock fees in $LLX are live (Base mainnet, October 2026).
  */
 export type LlxUtilityStatus = "live" | "coming_soon";
 
@@ -25,15 +25,15 @@ export const LLX_UTILITY: LlxUtilityItem[] = [
   },
   {
     id: "x-lock-fees",
-    title: "Pay Liquid X Lock fees in $LLX",
+    title: "Pay Liquid X-Lock fees in $LLX",
     detail:
       "Pay token lock and vesting fees in $LLX, at a discount to the USDC fee.",
     status: "live",
   },
   {
     id: "llx-pay-early-access",
-    title: "Early access to Liquid X Pay",
-    detail: "$LLX holders get first access to new Liquid X Pay features.",
+    title: "Early access to Liquid X-Pay",
+    detail: "$LLX holders get first access to new Liquid X-Pay features.",
     status: "coming_soon",
   },
 ];
