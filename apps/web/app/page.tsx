@@ -24,9 +24,11 @@ export default async function HomePage() {
           <div>
             <h1>Programmable spend policy at scale.</h1>
             <p className="lede">
-              Liquid Logic Agent pays approved x402 services in USDC on Base,
-              inside published limits. Every settled payment is recorded on a
-              public ledger and can be checked on BaseScan.
+              Liquid Logic X lets businesses and agents set spend policy that is
+              enforced on-chain: approved USDC payments with Liquid X Pay, token
+              locks with Liquid X Lock, private balances with cLLX Send, and
+              private sends on Base with Liquid X0 (Beta). Every settled payment
+              can be checked on a block explorer.
             </p>
             <div className="actions">
               <a className="btn primary" href="#ledger">
