@@ -24,13 +24,16 @@ export function CllxZeroSection() {
           </div>
         </div>
         <div className="cllx-zero-art">
-          <img
-            src="/cllx-vault.webp"
-            width={440}
-            height={440}
-            alt="Steel vault door"
-            loading="lazy"
-          />
+          <picture>
+            <source srcSet="/cllx-vault.webp" type="image/webp" />
+            <img
+              src="/cllx-vault.jpg"
+              width={440}
+              height={440}
+              alt="Steel vault door"
+              decoding="async"
+            />
+          </picture>
         </div>
       </div>
     </section>
