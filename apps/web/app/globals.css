@@ -1395,3 +1395,25 @@ pre {
 @media (max-width: 700px) {
   .cllx-zero-art img { width: 200px; margin-top: 16px; }
 }
+
+/* Header nav in brand violet (matches theme-color: #4e3fb3 light, #a89cf0 dark) */
+nav.primary a,
+.nav-more-btn,
+.nav-more-menu a {
+  color: var(--violet);
+}
+nav.primary a.nav-pill,
+.top-trailing a.nav-pill {
+  color: var(--violet);
+  border-color: var(--violet);
+}
+nav.primary a:hover,
+.nav-more-btn:hover,
+.nav-more-btn[aria-expanded="true"],
+.nav-more-menu a:hover,
+nav.primary a.nav-pill:hover,
+.top-trailing a.nav-pill:hover {
+  color: var(--violet);
+  border-color: var(--violet);
+  background: var(--violet-soft);
+}
