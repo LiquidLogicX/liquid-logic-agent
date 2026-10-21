@@ -6,6 +6,7 @@ import { LlxUtility } from "@/components/LlxUtility";
 import { PolicyTermsheet } from "@/components/PolicyTermsheet";
 import { ResearchGrid } from "@/components/ResearchGrid";
 import { XLockSection } from "@/components/XLockSection";
+import { CllxZeroSection } from "@/components/CllxZeroSection";
 import { AUDIT_URL } from "@/lib/site";
 import { loadLedgerLatestFromPublic } from "@/lib/loadLedgerLatest";
 
@@ -43,6 +44,8 @@ export default async function HomePage() {
       <LlxPaySection />
 
       <XLockSection />
+
+      <CllxZeroSection />
 
       <section className="block" id="controls">
         <div className="wrap sec-head">

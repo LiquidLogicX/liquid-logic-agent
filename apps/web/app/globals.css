@@ -1373,3 +1373,17 @@ pre {
     width: 100%;
   }
 }
+
+.cllx-zero-badge {
+  font-size: 0.55em;
+  vertical-align: middle;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  opacity: 0.8;
+}
+.cllx-zero-art { display: flex; justify-content: center; align-items: center; }
+.cllx-zero-art img { width: 100%; max-width: 280px; height: auto; border-radius: 50%; }
+@media (max-width: 700px) {
+  .cllx-zero-art img { max-width: 200px; margin-top: 16px; }
+}
