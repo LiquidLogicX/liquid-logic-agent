@@ -28,7 +28,7 @@ export function CllxZeroSection() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              cLLX Send
+              Liquid X-cLLX Send
             </a>
           </div>
         </div>
