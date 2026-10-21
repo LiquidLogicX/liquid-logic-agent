@@ -103,6 +103,6 @@ test("policy section says agent spending settles in USDC today", () => {
   assert.doesNotMatch(src, /never buys, sells or holds/);
 });
 
-test("Liquid Pay still says LLX never holds your keys", () => {
+test("Liquid X Pay still says LLX never holds your keys", () => {
   assert.match(read("LlxPaySection.tsx"), /never holds your keys/);
 });

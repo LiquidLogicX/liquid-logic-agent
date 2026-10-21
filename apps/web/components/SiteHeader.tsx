@@ -3,7 +3,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 
 const APP_PILLS = [
   { href: "https://xlock.liquidlogicx.com/escrow", label: "X-Escrow" },
-  { href: "/#llx-pay", label: "Liquid Pay" },
+  { href: "/#llx-pay", label: "Liquid X Pay" },
   { href: "https://xlock.liquidlogicx.com", label: "X-Lock" },
   { href: "https://zk.liquidlogicx.com", label: "Liquid X0" },
 ] as const;

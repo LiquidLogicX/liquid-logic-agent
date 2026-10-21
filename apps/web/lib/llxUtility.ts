@@ -32,8 +32,8 @@ export const LLX_UTILITY: LlxUtilityItem[] = [
   },
   {
     id: "llx-pay-early-access",
-    title: "Early access to Liquid Pay",
-    detail: "$LLX holders get first access to new Liquid Pay features.",
+    title: "Early access to Liquid X Pay",
+    detail: "$LLX holders get first access to new Liquid X Pay features.",
     status: "coming_soon",
   },
 ];

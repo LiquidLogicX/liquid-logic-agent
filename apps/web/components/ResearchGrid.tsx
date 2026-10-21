@@ -18,7 +18,7 @@ export function ResearchGrid() {
         <div className="stage">Live on Tempo</div>
         <h3>Settlement proofs on Tempo</h3>
         <p>
-          Liquid Pay runs on Tempo mainnet with on-chain settlement proofs and a
+          Liquid X Pay runs on Tempo mainnet with on-chain settlement proofs and a
           public verifier at proofs.liquidlogicx.com.
         </p>
       </article>
@@ -54,10 +54,10 @@ export function ResearchGrid() {
       </article>
       <article>
         <div className="stage">Live</div>
-        <h3>$LLX for X-Lock and Liquid Pay</h3>
+        <h3>$LLX for X-Lock and Liquid X Pay</h3>
         <p>
           Pay X-Lock fees in $LLX at a discount — live now. Early access to new
-          Liquid Pay features for holders is next.
+          Liquid X Pay features for holders is next.
         </p>
       </article>
       <article>

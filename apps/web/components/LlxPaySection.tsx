@@ -9,7 +9,7 @@ export function LlxPaySection() {
       <div className="wrap llxpay-grid">
         <div className="llxpay-head">
           <h2>
-            Liquid Pay <span className="badge">Early access</span>
+            Liquid X Pay <span className="badge">Early access</span>
           </h2>
           <p className="llxpay-sub">
             Company USDC payments on Arc. Multi-signer approvals, instant
