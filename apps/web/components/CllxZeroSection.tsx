@@ -6,7 +6,7 @@ export function CllxZeroSection() {
       <div className="wrap sec-head cllx-zero">
         <div>
           <h2>
-            cLLX-ZERO <span className="cllx-zero-badge">Beta</span>
+            Liquid Zero <span className="cllx-zero-badge">Beta</span>
           </h2>
           <p className="intro">
             Send LLX on Base without linking your wallet. Proofs are made in
@@ -19,7 +19,7 @@ export function CllxZeroSection() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              Open cLLX-ZERO
+              Open Liquid Zero
             </a>
           </div>
         </div>

@@ -2,7 +2,7 @@
  * About page copy and links.
  * Rules: no street address, entity number or phone number on this page.
  * No founder's personal name and no personal LinkedIn link (company info only).
- * LLX Pay is in development — never link or call it live.
+ * Liquid Pay is in development — never link or call it live.
  * The $LLX contract address is never hard-coded here: it comes from
  * LLX_CONTRACT in ./site (shared with the homepage token section).
  * Token section is plain info only — no price, market cap, chart or buy link.
@@ -37,7 +37,7 @@ export const ABOUT_PRODUCTS: readonly AboutProduct[] = [
     linkLabel: "Endpoint docs",
   },
   {
-    name: "LLX Pay",
+    name: "Liquid Pay",
     detail:
       "Business stablecoin payments with approvals and receipts. In development.",
   },

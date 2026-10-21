@@ -39,12 +39,12 @@ test("component renders both buttons and the copy line", () => {
   assert.match(src, /\{PROOFS_ARC_LABEL\}/);
 });
 
-test("LLX Pay section shows the settlement proof buttons", () => {
+test("Liquid Pay section shows the settlement proof buttons", () => {
   const src = read("components", "LlxPaySection.tsx");
   assert.match(src, /<SettlementProofs \/>/);
 });
 
-test("proof links never point at the LLX Pay production app", () => {
+test("proof links never point at the Liquid Pay production app", () => {
   const src = read("lib", "proofs.ts") + read("components", "SettlementProofs.tsx");
   assert.doesNotMatch(src.replace(/^\s*\*.*$/gm, ""), /pay\.liquidlogicx\.com/i);
   for (const url of [PROOFS_TEMPO_MAINNET_URL, PROOFS_VERIFIER_URL]) {
