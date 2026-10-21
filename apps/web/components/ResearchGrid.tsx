@@ -4,7 +4,7 @@ export function ResearchGrid() {
       <article>
         <div className="stage">Live on 11 chains</div>
         <h3>
-          <a href="https://xlock.liquidlogicx.com">X-Lock</a>
+          <a href="https://xlock.liquidlogicx.com">Liquid X Lock</a>
         </h3>
         <p>
           Token lock and vesting on Base, BNB Chain, Ethereum, Arbitrum,
@@ -54,9 +54,9 @@ export function ResearchGrid() {
       </article>
       <article>
         <div className="stage">Live</div>
-        <h3>$LLX for X-Lock and Liquid X Pay</h3>
+        <h3>$LLX for Liquid X Lock and Liquid X Pay</h3>
         <p>
-          Pay X-Lock fees in $LLX at a discount — live now. Early access to new
+          Pay Liquid X Lock fees in $LLX at a discount — live now. Early access to new
           Liquid X Pay features for holders is next.
         </p>
       </article>
