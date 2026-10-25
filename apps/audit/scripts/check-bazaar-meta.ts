@@ -16,11 +16,12 @@ import {
   ESCROW_STATUS_META,
   LEAK_CHECK_META,
   PROVE_META,
+  TOKEN_CHECK_META,
 } from "../lib/bazaar-meta";
 import { PROVE_DESCRIPTION } from "../lib/prove/discovery";
 import { PROVE_ROUTES } from "../lib/x402-server";
 
-const ALL = { prove: PROVE_META, audit: AUDIT_META, allowance: ALLOWANCE_META, lockStatus: LOCK_STATUS_META, escrowStatus: ESCROW_STATUS_META, leakCheck: LEAK_CHECK_META };
+const ALL = { prove: PROVE_META, audit: AUDIT_META, allowance: ALLOWANCE_META, lockStatus: LOCK_STATUS_META, escrowStatus: ESCROW_STATUS_META, leakCheck: LEAK_CHECK_META, tokenCheck: TOKEN_CHECK_META };
 
 for (const [route, meta] of Object.entries(ALL)) {
   test(`${route}: serviceName is valid x402 (<= 32 printable ASCII)`, () => {

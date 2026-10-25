@@ -65,3 +65,10 @@ export const LEAK_CHECK_META: BazaarMeta = {
   description:
     "Check an AI agent setup for data-leak risks before it sends anything, via Liquid Logic X: POST a redacted JSON of connections, instructions, tools and policy, get findings with evidence and fixes. Static review, never stored. $0.02 USDC on Base.",
 };
+
+export const TOKEN_CHECK_META: BazaarMeta = {
+  serviceName: "Base Token Safety/Rug Check",
+  tags: ["rug-check", "token-safety", "honeypot", "base", "trading"],
+  description:
+    "Check a Base token before your agent buys it, via Liquid Logic X: send an ERC-20 address, get risk (low/medium/high), score, flags and evidence: owner, upgradeable proxy, mint/blacklist/fee/pause powers in code, owner and burn %, DEX liquidity, pair age, 24h buys vs sells, X-Lock locks. $0.01 USDC on Base.",
+};

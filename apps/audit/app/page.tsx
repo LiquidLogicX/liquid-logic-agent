@@ -17,6 +17,9 @@ export default function Page() {
       <p>
         Lock check: <code>GET /api/lock-status?token=0x…</code> — <strong>$0.005 USDC</strong>. Is this token locked in X-Lock on any of 10 chains?
       </p>
+      <p>
+        Token safety check: <code>GET /api/token-check?token=0x…</code> — <strong>$0.01 USDC</strong>. Before your agent buys a Base token: risk, score, owner and admin powers, liquidity, buys vs sells, X-Lock locks.
+      </p>
       <TestCallButton />
       <p>
         Escrow check: <code>GET /api/escrow-status?chain=base&amp;id=1</code> — <strong>$0.005 USDC</strong>. What state is this X-Escrow in? Reads all ten X-Escrow mainnets.

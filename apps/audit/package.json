@@ -19,6 +19,7 @@
     "check-lock-status-live": "node --import tsx scripts/check-lock-status-live.ts",
     "check-escrow-status": "node --import tsx --test scripts/check-escrow-status.ts",
     "check-leak-check": "node --import tsx --test scripts/check-leak-check.ts",
+    "check-token-check": "node --import tsx --test scripts/check-token-check.ts",
     "check-escrow-status-live": "node --import tsx scripts/check-escrow-status-live.ts"
   },
   "dependencies": {
