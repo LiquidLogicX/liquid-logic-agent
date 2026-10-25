@@ -37,6 +37,10 @@ export const LOCK_STATUS_PRICE_LABEL = `$${LOCK_STATUS_PRICE_USDC}`;
 export const ESCROW_STATUS_PRICE_USDC = "0.005";
 export const ESCROW_STATUS_PRICE_LABEL = `$${ESCROW_STATUS_PRICE_USDC}`;
 
+/** /api/token-check: pre-trade safety check for a Base token. */
+export const TOKEN_CHECK_PRICE_USDC = "0.01";
+export const TOKEN_CHECK_PRICE_LABEL = `$${TOKEN_CHECK_PRICE_USDC}`;
+
 /** /api/leak-check: deterministic leak-risk review of a redacted agent setup. */
 export const LEAK_CHECK_PRICE_USDC = "0.02";
 export const LEAK_CHECK_PRICE_LABEL = `$${LEAK_CHECK_PRICE_USDC}`;

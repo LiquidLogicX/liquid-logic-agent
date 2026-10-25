@@ -5,6 +5,7 @@
  * - GET/POST /api/prove     $0.02 USDC on Base (settlement proof on Arc)
  * - GET/POST /api/lock-status $0.005 USDC on Base (X-Lock lock check, 11 chains)
  * - GET/POST /api/escrow-status $0.005 USDC on Base (X-Escrow state check)
+ * - GET/POST /api/token-check $0.01 USDC on Base (pre-trade Base token safety check)
  * - POST /api/leak-check $0.02 USDC on Base (agent data-leak review; POST only so bodies never sit in URLs/logs)
  */
 import {
@@ -22,6 +23,7 @@ import {
   ESCROW_STATUS_PRICE_LABEL,
   LEAK_CHECK_PRICE_LABEL,
   PROVE_PRICE_LABEL,
+  TOKEN_CHECK_PRICE_LABEL,
 } from "@liquid-logic/shared";
 import { AUDIT_OUTPUT_EXAMPLE } from "./audit-output-example";
 import { ALLOWANCE_OUTPUT_EXAMPLE } from "./allowance-output-example";
@@ -41,6 +43,7 @@ import {
   postEscrowStatusDiscovery,
 } from "./escrow-status/discovery";
 import { LEAK_CHECK_DESCRIPTION, postLeakCheckDiscovery } from "./leak-check/discovery";
+import { getTokenCheckDiscovery, postTokenCheckDiscovery, TOKEN_CHECK_DESCRIPTION } from "./token-check/discovery";
 import {
   ALLOWANCE_META,
   LEAK_CHECK_META,
@@ -49,6 +52,7 @@ import {
   AUDIT_META,
   BAZAAR_ICON_URL,
   PROVE_META,
+  TOKEN_CHECK_META,
   type BazaarMeta,
 } from "./bazaar-meta";
 
@@ -101,6 +105,22 @@ export const ESCROW_STATUS_ROUTES: Record<"GET /api/escrow-status" | "POST /api/
     networks: [NETWORK_BASE],
     description: ESCROW_STATUS_DESCRIPTION,
     extensions: { ...postEscrowStatusDiscovery },
+  },
+};
+
+/** /api/token-check routes (paid in USDC on Base; Base token pre-trade check; charge only on < 400). Exported for tests. */
+export const TOKEN_CHECK_ROUTES: Record<"GET /api/token-check" | "POST /api/token-check", CdpRouteConfig> = {
+  "GET /api/token-check": {
+    price: TOKEN_CHECK_PRICE_LABEL,
+    networks: [NETWORK_BASE],
+    description: TOKEN_CHECK_DESCRIPTION,
+    extensions: { ...getTokenCheckDiscovery },
+  },
+  "POST /api/token-check": {
+    price: TOKEN_CHECK_PRICE_LABEL,
+    networks: [NETWORK_BASE],
+    description: TOKEN_CHECK_DESCRIPTION,
+    extensions: { ...postTokenCheckDiscovery },
   },
 };
 
@@ -266,6 +286,8 @@ export function getAuditX402Server(): Promise<X402Server> {
         "POST /api/lock-status": withServiceMeta(LOCK_STATUS_ROUTES["POST /api/lock-status"], LOCK_STATUS_META),
         "GET /api/escrow-status": withServiceMeta(ESCROW_STATUS_ROUTES["GET /api/escrow-status"], ESCROW_STATUS_META),
         "POST /api/escrow-status": withServiceMeta(ESCROW_STATUS_ROUTES["POST /api/escrow-status"], ESCROW_STATUS_META),
+        "GET /api/token-check": withServiceMeta(TOKEN_CHECK_ROUTES["GET /api/token-check"], TOKEN_CHECK_META),
+        "POST /api/token-check": withServiceMeta(TOKEN_CHECK_ROUTES["POST /api/token-check"], TOKEN_CHECK_META),
         "POST /api/leak-check": withServiceMeta(LEAK_CHECK_ROUTES["POST /api/leak-check"], LEAK_CHECK_META),
         "GET /api/prove": withServiceMeta(PROVE_ROUTES["GET /api/prove"], PROVE_META),
         "POST /api/prove": withServiceMeta(PROVE_ROUTES["POST /api/prove"], PROVE_META),
