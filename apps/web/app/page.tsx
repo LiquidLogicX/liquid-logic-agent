@@ -7,6 +7,9 @@ import { PolicyTermsheet } from "@/components/PolicyTermsheet";
 import { ResearchGrid } from "@/components/ResearchGrid";
 import { XLockSection } from "@/components/XLockSection";
 import { CllxZeroSection } from "@/components/CllxZeroSection";
+import { HeroArt } from "@/components/HeroArt";
+import { HeroOrbs } from "@/components/HeroOrbs";
+import { HeroProducts } from "@/components/HeroProducts";
 import { AUDIT_URL } from "@/lib/site";
 import { loadLedgerLatestFromPublic } from "@/lib/loadLedgerLatest";
 
@@ -19,27 +22,29 @@ export default async function HomePage() {
 
   return (
     <>
-      <div className="hero">
+      <div className="hero hero-v2" id="products">
+        <HeroOrbs />
         <div className="wrap">
-          <div>
-            <h1>Programmable spend policy at scale.</h1>
-            <p className="lede">
-              Liquid Logic X lets businesses and agents set spend policy that is
-              enforced on-chain: approved USDC payments with Liquid X-Pay, token
-              locks with Liquid X-Lock, private balances with Liquid X-cLLX Send, and
-              private sends on Base with Liquid X-Zero (Beta). Every settled payment
-              can be checked on a block explorer.
-            </p>
-            <div className="actions">
-              <a className="btn primary" href="#ledger">
-                View the ledger
-              </a>
-              <a className="btn secondary" href="#endpoints">
-                Read endpoint docs
-              </a>
+          <div className="hero-copy">
+            <div className="hero-text">
+              <h1>Lock, pay and send privately. All on-chain.</h1>
+              <p className="lede">
+                Liquid Logic X builds payment tools for businesses, token teams and
+                AI agents. Lock tokens, approve company payments, send privately and
+                hold funds in escrow. Every step can be checked on a block explorer.
+              </p>
+              <div className="actions">
+                <a className="btn primary" href="https://xlock.liquidlogicx.com">
+                  Open X-Lock
+                </a>
+                <a className="btn secondary" href="#llx">
+                  The $LLX token
+                </a>
+              </div>
             </div>
+            <HeroArt />
           </div>
-          <PolicyTermsheet />
+          <HeroProducts />
         </div>
       </div>
 
@@ -48,6 +53,24 @@ export default async function HomePage() {
       <XLockSection />
 
       <CllxZeroSection />
+
+      <section className="block" id="agents">
+        <div className="wrap sec-head">
+          <div>
+            <h2>For AI agents</h2>
+            <p className="intro">
+              Spending limits for autonomous agents, published and enforced
+              on-chain. Paid tools for agents settle per call over x402.
+            </p>
+            <div className="actions" style={{ marginTop: 20 }}>
+              <a className="btn secondary" href="#endpoints">
+                Endpoint docs
+              </a>
+            </div>
+          </div>
+          <PolicyTermsheet />
+        </div>
+      </section>
 
       <section className="block" id="controls">
         <div className="wrap sec-head">

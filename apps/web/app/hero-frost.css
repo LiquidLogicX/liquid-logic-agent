@@ -1,0 +1,105 @@
+/* Frosted-card mockup match (Oct 26): deeper night backdrop, milky white frost on the product cards. Loaded after hero-products.css. */
+
+/* —— Match the frosted-card mockup: deeper night backdrop, milky white frost (dark theme) —— */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg-a: #04031a;
+    --bg-b: #0b0830;
+    --glow-1: rgba(110, 80, 255, 0.30);
+    --glow-2: rgba(70, 90, 255, 0.18);
+    --glow-3: rgba(150, 90, 255, 0.42);
+    --frost: rgba(205, 196, 255, 0.34);
+    --frost-solid: #6f66b8;
+    --frost-line: rgba(255, 255, 255, 0.78);
+    --frost-glow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 34px rgba(210, 200, 255, 0.32);
+    --frost-hi: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 0 40px rgba(255, 255, 255, 0.16);
+    --frost-tile: rgba(255, 255, 255, 0.2);
+    --frost-ink: #ffffff;
+    --frost-sub: rgba(255, 255, 255, 0.82);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg-a: #04031a;
+  --bg-b: #0b0830;
+  --glow-1: rgba(110, 80, 255, 0.30);
+  --glow-2: rgba(70, 90, 255, 0.18);
+  --glow-3: rgba(150, 90, 255, 0.42);
+  --frost: rgba(205, 196, 255, 0.34);
+  --frost-solid: #6f66b8;
+  --frost-line: rgba(255, 255, 255, 0.78);
+  --frost-glow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 34px rgba(210, 200, 255, 0.32);
+  --frost-hi: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 0 40px rgba(255, 255, 255, 0.16);
+  --frost-tile: rgba(255, 255, 255, 0.2);
+  --frost-ink: #ffffff;
+  --frost-sub: rgba(255, 255, 255, 0.82);
+}
+
+/* purple liquid pooling at the bottom of the screen, like the mockup floor */
+body::before {
+  background:
+    radial-gradient(38% 30% at 18% 22%, var(--glow-1), transparent 70%),
+    radial-gradient(34% 28% at 82% 12%, var(--glow-2), transparent 70%),
+    radial-gradient(70% 34% at 50% 100%, var(--glow-3), transparent 72%);
+}
+
+/* milky sheen across the top-left of each frosted card */
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .hp-card {
+    background:
+      linear-gradient(150deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.08) 45%, rgba(255, 255, 255, 0.16) 100%),
+      var(--frost);
+    -webkit-backdrop-filter: blur(34px) saturate(160%);
+    backdrop-filter: blur(34px) saturate(160%);
+  }
+}
+
+/* white text on the milky glass (dark theme only; light theme keeps dark ink) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .hp-text { color: var(--frost-ink); }
+  :root:not([data-theme="light"]) .hp-kicker,
+  :root:not([data-theme="light"]) .hp-detail { color: var(--frost-sub); }
+  :root:not([data-theme="light"]) .hp-tile,
+  :root:not([data-theme="light"]) .hp-link { color: #ffffff; }
+}
+
+:root[data-theme="dark"] .hp-text { color: var(--frost-ink); }
+:root[data-theme="dark"] .hp-kicker,
+:root[data-theme="dark"] .hp-detail { color: var(--frost-sub); }
+:root[data-theme="dark"] .hp-tile,
+:root[data-theme="dark"] .hp-link { color: #ffffff; }
+
+/* brighter rim and white-glass status pills on the milky cards (dark theme) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .hp-card { border-width: 1.5px; }
+  :root:not([data-theme="light"]) .hp-card:not(.hp-featured) .hp-status {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.45);
+  }
+}
+
+:root[data-theme="dark"] .hp-card { border-width: 1.5px; }
+:root[data-theme="dark"] .hp-card:not(.hp-featured) .hp-status {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+/* Even cards: same height and level for all four; X-Lock keeps only a brighter glow */
+.hero-products .hp-featured,
+.hero-products .hp-featured:hover {
+  transform: none;
+}
+
+.hero-products .hp-card:hover {
+  transform: translateY(-4px);
+}
+
+@media (max-width: 640px) {
+  .hero-products .hp-card:hover { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-products .hp-card:hover { transform: none; }
+}

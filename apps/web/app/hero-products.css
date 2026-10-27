@@ -1,0 +1,362 @@
+/* Product-first hero (Oct 2026): frosted-glass product cards, X-Lock featured, glass cube art.
+   Loaded after glass.css. */
+
+/* —— Hero layout —— */
+.hero-v2 .wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  align-items: stretch;
+}
+
+.hero-v2 .hero-copy {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 340px);
+  align-items: center;
+  gap: 24px;
+  overflow: hidden;
+}
+
+.hero-v2 h1 {
+  max-width: 16ch;
+}
+
+.hero-v2 .lede {
+  max-width: 54ch;
+}
+
+/* —— Glass cube art —— */
+.hero-art svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.ha-cube {
+  transform-origin: 160px 140px;
+  animation: ha-bob 7s ease-in-out infinite;
+}
+
+.ha-b { animation: ha-rise 6s ease-in-out infinite; }
+.ha-b2 { animation-delay: 1.2s; }
+.ha-b3 { animation-delay: 2.4s; }
+.ha-b4 { animation-delay: 3.1s; }
+.ha-b5 { animation-delay: 4s; }
+
+@keyframes ha-bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(-2deg); }
+}
+
+@keyframes ha-rise {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* —— Frosted glass tokens (milkier and brighter than the page glass) —— */
+:root {
+  --frost: rgba(255, 255, 255, 0.62);
+  --frost-solid: #f4f2ff;
+  --frost-line: rgba(255, 255, 255, 0.95);
+  --frost-glow: 0 18px 50px rgba(70, 50, 180, 0.18), 0 0 0 1px rgba(124, 92, 255, 0.08);
+  --frost-hi: inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 0 24px rgba(255, 255, 255, 0.35);
+  --frost-tile: rgba(255, 255, 255, 0.7);
+  --frost-ink: #1b1640;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --frost: rgba(226, 220, 255, 0.22);
+    --frost-solid: #332d78;
+    --frost-line: rgba(255, 255, 255, 0.42);
+    --frost-glow: 0 18px 50px rgba(0, 0, 0, 0.4), 0 0 40px rgba(150, 125, 255, 0.22);
+    --frost-hi: inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 0 30px rgba(255, 255, 255, 0.08);
+    --frost-tile: rgba(255, 255, 255, 0.12);
+    --frost-ink: #ffffff;
+  }
+}
+
+:root[data-theme="dark"] {
+  --frost: rgba(226, 220, 255, 0.22);
+  --frost-solid: #332d78;
+  --frost-line: rgba(255, 255, 255, 0.42);
+  --frost-glow: 0 18px 50px rgba(0, 0, 0, 0.4), 0 0 40px rgba(150, 125, 255, 0.22);
+  --frost-hi: inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 0 30px rgba(255, 255, 255, 0.08);
+  --frost-tile: rgba(255, 255, 255, 0.12);
+  --frost-ink: #ffffff;
+}
+
+/* —— Product cards —— */
+.hero-products {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  align-items: stretch;
+}
+
+.hp-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 22px 22px;
+  border-radius: 26px;
+  background: var(--frost-solid);
+  border: 1px solid var(--frost-line);
+  box-shadow: var(--frost-glow), var(--frost-hi);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .hp-card {
+    background:
+      linear-gradient(160deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.03) 60%),
+      var(--frost);
+    -webkit-backdrop-filter: blur(30px) saturate(150%);
+    backdrop-filter: blur(30px) saturate(150%);
+  }
+}
+
+.hp-card:hover {
+  transform: translateY(-4px);
+}
+
+.hp-featured {
+  transform: translateY(-10px);
+  border-color: rgba(255, 255, 255, 0.75);
+  box-shadow: var(--frost-glow), 0 0 60px rgba(139, 108, 255, 0.35), var(--frost-hi);
+}
+
+.hp-featured:hover {
+  transform: translateY(-14px);
+}
+
+.hp-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.hp-mark {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  filter: drop-shadow(0 4px 10px rgba(123, 92, 255, 0.45));
+}
+
+.hp-status {
+  font: 500 11.5px/1 var(--sans);
+  color: var(--ok);
+  background: var(--ok-soft);
+  border: 1px solid color-mix(in srgb, var(--ok) 30%, transparent);
+  padding: 5px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.hp-featured .hp-status {
+  color: #fff;
+  background: var(--accent-grad);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.hp-name {
+  font-size: 28px;
+  line-height: 1.08;
+  font-weight: 600;
+  color: var(--frost-ink);
+  margin: 0;
+}
+
+.hp-name span {
+  display: block;
+}
+
+.hp-kicker {
+  margin: 14px 0 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--frost-line);
+  font: 500 12px/1 var(--sans);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--slate);
+}
+
+.hp-text {
+  margin: 0 0 8px;
+  color: var(--ink);
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+
+.hp-detail {
+  margin: 0;
+  color: var(--slate);
+  font-size: 13px;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.hp-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.hp-tile {
+  width: 56px;
+  height: 56px;
+  flex: none;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  color: var(--violet);
+  background: var(--frost-tile);
+  border: 1px solid var(--frost-line);
+  box-shadow: var(--frost-hi);
+}
+
+.hp-tile svg {
+  width: 28px;
+  height: 28px;
+}
+
+.hp-link {
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  text-align: right;
+}
+
+.hp-link:hover {
+  text-decoration: underline;
+}
+
+/* the arrow is for the phone row layout only */
+.hp-arrow {
+  display: none;
+}
+
+/* —— Tablet: 2 × 2 —— */
+@media (max-width: 1080px) {
+  .hero-products { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hp-featured, .hp-featured:hover { transform: none; }
+}
+
+/* —— Phones: hero art on top, products as frosted rows (like an app list) —— */
+@media (max-width: 640px) {
+  .hero-v2 .hero-copy {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-art {
+    order: -1;
+    width: 62%;
+    max-width: 240px;
+    justify-self: center;
+    margin: -6px 0 -10px;
+  }
+
+  .hero-products {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .hp-card,
+  .hp-featured {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr) 20px;
+    grid-template-areas:
+      "tile name arrow"
+      "tile text arrow";
+    column-gap: 14px;
+    row-gap: 2px;
+    align-items: center;
+    padding: 16px;
+    border-radius: 22px;
+    transform: none;
+  }
+
+  .hp-card:hover,
+  .hp-featured:hover {
+    transform: none;
+  }
+
+  .hp-top,
+  .hp-kicker,
+  .hp-detail {
+    display: none;
+  }
+
+  .hp-foot {
+    display: contents;
+  }
+
+  .hp-tile {
+    grid-area: tile;
+    grid-row: 1 / span 2;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+  }
+
+  .hp-name {
+    grid-area: name;
+    font-size: 19px;
+  }
+
+  .hp-name span {
+    display: inline;
+  }
+
+  .hp-text {
+    grid-area: text;
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--slate);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .hp-arrow {
+    display: block;
+    grid-area: arrow;
+    grid-row: 1 / span 2;
+    font-size: 20px;
+    color: var(--frost-ink);
+  }
+
+  /* the whole row is the link */
+  .hp-link {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    font-size: 0;
+    color: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ha-cube,
+  .ha-b {
+    animation: none;
+  }
+  .hp-card {
+    transition: none;
+  }
+  .hp-card:hover {
+    transform: none;
+  }
+  .hp-featured:hover {
+    transform: translateY(-10px);
+  }
+}

@@ -17,10 +17,10 @@ export const TREASURER_WALLET =
 export const SITE_URL = "https://liquidlogicx.com";
 
 export const SITE_TITLE =
-  "Liquid Logic X — Spending controls for autonomous agents";
+  "Liquid Logic X — Lock, pay and send privately on-chain";
 
 export const SITE_DESCRIPTION =
-  "Capped, allowlisted USDC spending for AI agents on Base, with every payment published and verifiable on BaseScan.";
+  "On-chain payment tools for businesses, token teams and AI agents: token locks on 11 chains, approved USDC payments, private sends on Base and escrow. Every step verifiable on a block explorer.";
 
 export const AUDIT_URL =
   process.env.NEXT_PUBLIC_AUDIT_URL ?? "https://audit.liquidlogicx.com";
