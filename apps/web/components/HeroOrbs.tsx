@@ -28,9 +28,9 @@ const ICONS = {
 
 const ORBS = [
   { cls: "o1", icon: ICONS.lock, label: "X-Lock" },
-  { cls: "o2", icon: ICONS.usdc, label: "USDC" },
+  { cls: "o2", icon: ICONS.usdc, label: "X-Escrow" },
   { cls: "o3", icon: ICONS.card, label: "X-Pay" },
-  { cls: "o4", icon: ICONS.shield, label: "Policy Shield" },
+  { cls: "o4", icon: ICONS.shield, label: "X-Zero" },
 ];
 
 export function HeroOrbs() {
