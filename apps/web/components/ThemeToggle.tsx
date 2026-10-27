@@ -2,15 +2,11 @@
 
 import { useEffect, useState } from "react";
 
-type Theme = "light" | "dark" | "system";
+type Theme = "light" | "dark";
 
 function applyTheme(theme: Theme) {
   const root = document.documentElement;
-  if (theme === "system") {
-    root.removeAttribute("data-theme");
-  } else {
-    root.setAttribute("data-theme", theme);
-  }
+  root.setAttribute("data-theme", theme);
   try {
     localStorage.setItem("llx-theme", theme);
   } catch {
@@ -19,14 +15,13 @@ function applyTheme(theme: Theme) {
 }
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("system");
+  const [theme, setTheme] = useState<Theme>("dark");
 
   useEffect(() => {
     try {
       const stored = localStorage.getItem("llx-theme") as Theme | null;
-      if (stored === "light" || stored === "dark" || stored === "system") {
-        setTheme(stored);
-        applyTheme(stored);
+      if (stored === "light") {
+        setTheme("light");
       }
     } catch {
       /* ignore */
@@ -34,14 +29,12 @@ export function ThemeToggle() {
   }, []);
 
   function cycle() {
-    const next: Theme =
-      theme === "system" ? "light" : theme === "light" ? "dark" : "system";
+    const next: Theme = theme === "light" ? "dark" : "light";
     setTheme(next);
     applyTheme(next);
   }
 
-  const label =
-    theme === "light" ? "Light" : theme === "dark" ? "Dark" : "System";
+  const label = theme === "light" ? "Light" : "Dark";
 
   return (
     <button
