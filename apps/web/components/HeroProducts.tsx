@@ -1,22 +1,22 @@
-/** Hero product cards: what each Liquid Logic X product does, its status, and where to open it. */
+/** Hero product cards in frosted glass: what each product does, its status, and where to open it. X-Lock is featured. */
 const ICON = {
   lock: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <rect x="5" y="11" width="14" height="10" rx="2.5" />
       <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+      <path d="M12 15v2.5" />
     </svg>
   ),
   pay: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M22 2L11 13" />
-      <path d="M22 2l-7 20-4-9-9-4 20-7z" />
+      <rect x="3" y="5.5" width="18" height="13" rx="2.5" />
+      <path d="M3 10h18M7 15h4" />
     </svg>
   ),
   zero: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M12 3l7 3v5.5c0 4.4-3 8-7 9.5-4-1.5-7-5.1-7-9.5V6l7-3z" />
-      <circle cx="12" cy="11.5" r="2.2" />
-      <path d="M12 13.7V16" />
+      <path d="M9 12l2 2 4-4" />
     </svg>
   ),
   escrow: (
@@ -27,19 +27,26 @@ const ICON = {
   ),
 };
 
+/** The brand "X" mark, as on the product cards in the mockup. */
+function XMark() {
+  return (
+    <svg className="hp-mark" viewBox="0 0 32 32" aria-hidden="true">
+      <defs>
+        <linearGradient id="hp-x" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#b79bff" />
+          <stop offset="0.55" stopColor="#7b5cff" />
+          <stop offset="1" stopColor="#5b8cff" />
+        </linearGradient>
+      </defs>
+      <path d="M8 7l16 18M24 7L8 25" fill="none" stroke="url(#hp-x)" strokeWidth="6.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 const PRODUCTS = [
   {
-    name: "Liquid X-Lock",
-    status: "Live on 11 chains",
-    icon: ICON.lock,
-    text: "Lock or vest any token with a fixed unlock date. Every lock is public and checkable on the block explorer.",
-    detail: "10 USDC per lock, or pay in $LLX at a discount on Base. Vesting schedules, team and treasury locks, and permissionless release when the date arrives.",
-    href: "https://xlock.liquidlogicx.com",
-    cta: "Lock or vest a token",
-    featured: true,
-  },
-  {
-    name: "Liquid X-Pay",
+    name: ["Liquid", "X-Pay"],
+    kicker: "Payments",
     status: "Early access",
     icon: ICON.pay,
     text: "Company USDC payments with multi-signer approvals. Settles in under a second, with a receipt for every payment.",
@@ -48,7 +55,19 @@ const PRODUCTS = [
     cta: "See X-Pay",
   },
   {
-    name: "Liquid X-Zero",
+    name: ["Liquid", "X-Lock"],
+    kicker: "Secure lock",
+    status: "Live on 11 chains",
+    icon: ICON.lock,
+    text: "Lock or vest any token with a fixed unlock date. Every lock is public and checkable on the block explorer.",
+    detail: "10 USDC per lock, or $LLX at a discount on Base. Base, Ethereum, BNB Chain, Arbitrum, Optimism, Polygon, Avalanche, Arc, Tempo, Robinhood Chain and XRPL EVM.",
+    href: "https://xlock.liquidlogicx.com",
+    cta: "Lock a token",
+    featured: true,
+  },
+  {
+    name: ["Liquid", "X-Zero"],
+    kicker: "Privacy shield",
     status: "Beta on Base",
     icon: ICON.zero,
     text: "Private payments. Send to any wallet address without showing who paid whom or how much.",
@@ -57,7 +76,8 @@ const PRODUCTS = [
     cta: "Open X-Zero",
   },
   {
-    name: "X-Escrow",
+    name: ["Liquid", "X-Escrow"],
+    kicker: "Escrow",
     status: "Live",
     icon: ICON.escrow,
     text: "Hold a payment on-chain until the deal is done, with a deadline both sides can see.",
@@ -67,32 +87,33 @@ const PRODUCTS = [
   },
 ];
 
-const CHAINS = ["Base", "Ethereum", "BNB Chain", "Arbitrum", "Optimism", "Polygon", "Avalanche", "Arc", "Tempo", "Robinhood Chain", "XRPL EVM"];
-
 export function HeroProducts() {
   return (
     <ul className="hero-products" aria-label="Products">
-      {PRODUCTS.map((p) => (
-        <li key={p.name} className={"featured" in p && p.featured ? "hp-card hp-featured" : "hp-card"}>
-          <div className="hp-top">
-            <span className="hp-ic">{p.icon}</span>
-            <span className="hp-status">{p.status}</span>
-          </div>
-          <h2 className="hp-name">{p.name}</h2>
-          <p className="hp-text">{p.text}</p>
-          <p className="hp-detail">{p.detail}</p>
-          {"featured" in p && p.featured ? (
-            <ul className="hp-chains" aria-label="Chains">
-              {CHAINS.map((c) => (
-                <li key={c}>{c}</li>
-              ))}
-            </ul>
-          ) : null}
-          <a className={"featured" in p && p.featured ? "btn primary hp-cta" : "hp-link"} href={p.href}>
-            {p.cta} <span aria-hidden="true">→</span>
-          </a>
-        </li>
-      ))}
+      {PRODUCTS.map((p) => {
+        const featured = "featured" in p && p.featured;
+        return (
+          <li key={p.name.join(" ")} className={featured ? "hp-card hp-featured" : "hp-card"}>
+            <div className="hp-top">
+              <XMark />
+              <span className="hp-status">{featured ? "Featured · " : ""}{p.status}</span>
+            </div>
+            <h2 className="hp-name">
+              <span>{p.name[0]}</span> {p.name[1]}
+            </h2>
+            <p className="hp-kicker">{p.kicker}</p>
+            <p className="hp-text">{p.text}</p>
+            <p className="hp-detail">{p.detail}</p>
+            <div className="hp-foot">
+              <span className="hp-tile">{p.icon}</span>
+              <a className="hp-link" href={p.href}>
+                {p.cta} <span aria-hidden="true">→</span>
+              </a>
+            </div>
+            <span className="hp-arrow" aria-hidden="true">→</span>
+          </li>
+        );
+      })}
     </ul>
   );
 }
