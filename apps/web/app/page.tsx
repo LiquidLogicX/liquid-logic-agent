@@ -7,6 +7,7 @@ import { PolicyTermsheet } from "@/components/PolicyTermsheet";
 import { ResearchGrid } from "@/components/ResearchGrid";
 import { XLockSection } from "@/components/XLockSection";
 import { CllxZeroSection } from "@/components/CllxZeroSection";
+import { HeroOrbs } from "@/components/HeroOrbs";
 import { AUDIT_URL } from "@/lib/site";
 import { loadLedgerLatestFromPublic } from "@/lib/loadLedgerLatest";
 
@@ -20,8 +21,9 @@ export default async function HomePage() {
   return (
     <>
       <div className="hero">
+        <HeroOrbs />
         <div className="wrap">
-          <div>
+          <div className="hero-copy">
             <h1>Programmable spend policy at scale.</h1>
             <p className="lede">
               Liquid Logic X lets businesses and agents set spend policy that is
