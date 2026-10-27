@@ -85,3 +85,21 @@ body::before {
   background: rgba(255, 255, 255, 0.16);
   border-color: rgba(255, 255, 255, 0.45);
 }
+
+/* Even cards: same height and level for all four; X-Lock keeps only a brighter glow */
+.hero-products .hp-featured,
+.hero-products .hp-featured:hover {
+  transform: none;
+}
+
+.hero-products .hp-card:hover {
+  transform: translateY(-4px);
+}
+
+@media (max-width: 640px) {
+  .hero-products .hp-card:hover { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-products .hp-card:hover { transform: none; }
+}

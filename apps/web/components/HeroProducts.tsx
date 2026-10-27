@@ -60,7 +60,7 @@ const PRODUCTS = [
     status: "Live on 11 chains",
     icon: ICON.lock,
     text: "Lock or vest any token with a fixed unlock date. Every lock is public and checkable on the block explorer.",
-    detail: "10 USDC per lock, or $LLX at a discount on Base. Base, Ethereum, BNB Chain, Arbitrum, Optimism, Polygon, Avalanche, Arc, Tempo, Robinhood Chain and XRPL EVM.",
+    detail: "10 USDC per lock, or $LLX at a discount on Base. Live on Base, Ethereum, BNB Chain and 8 more chains.",
     href: "https://xlock.liquidlogicx.com",
     cta: "Lock a token",
     featured: true,
@@ -96,7 +96,7 @@ export function HeroProducts() {
           <li key={p.name.join(" ")} className={featured ? "hp-card hp-featured" : "hp-card"}>
             <div className="hp-top">
               <XMark />
-              <span className="hp-status">{featured ? "Featured · " : ""}{p.status}</span>
+              <span className="hp-status">{p.status}</span>
             </div>
             <h2 className="hp-name">
               <span>{p.name[0]}</span> {p.name[1]}
