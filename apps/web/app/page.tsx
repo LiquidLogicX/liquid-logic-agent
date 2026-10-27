@@ -7,6 +7,7 @@ import { PolicyTermsheet } from "@/components/PolicyTermsheet";
 import { ResearchGrid } from "@/components/ResearchGrid";
 import { XLockSection } from "@/components/XLockSection";
 import { CllxZeroSection } from "@/components/CllxZeroSection";
+import { HeroArt } from "@/components/HeroArt";
 import { HeroOrbs } from "@/components/HeroOrbs";
 import { HeroProducts } from "@/components/HeroProducts";
 import { AUDIT_URL } from "@/lib/site";
@@ -25,20 +26,23 @@ export default async function HomePage() {
         <HeroOrbs />
         <div className="wrap">
           <div className="hero-copy">
-            <h1>Lock, pay and send privately. All on-chain.</h1>
-            <p className="lede">
-              Liquid Logic X builds payment tools for businesses, token teams and
-              AI agents. Lock tokens, approve company payments, send privately and
-              hold funds in escrow. Every step can be checked on a block explorer.
-            </p>
-            <div className="actions">
-              <a className="btn primary" href="https://xlock.liquidlogicx.com">
-                Open X-Lock
-              </a>
-              <a className="btn secondary" href="#llx">
-                The $LLX token
-              </a>
+            <div className="hero-text">
+              <h1>Lock, pay and send privately. All on-chain.</h1>
+              <p className="lede">
+                Liquid Logic X builds payment tools for businesses, token teams and
+                AI agents. Lock tokens, approve company payments, send privately and
+                hold funds in escrow. Every step can be checked on a block explorer.
+              </p>
+              <div className="actions">
+                <a className="btn primary" href="https://xlock.liquidlogicx.com">
+                  Open X-Lock
+                </a>
+                <a className="btn secondary" href="#llx">
+                  The $LLX token
+                </a>
+              </div>
             </div>
+            <HeroArt />
           </div>
           <HeroProducts />
         </div>
