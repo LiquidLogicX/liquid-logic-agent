@@ -66,14 +66,14 @@ const PRODUCTS = [
     featured: true,
   },
   {
-    name: ["Liquid", "X-Zero"],
+    name: ["Liquid", "ZK-Zero"],
     kicker: "Privacy shield",
     status: "Beta on Base",
     icon: ICON.zero,
     text: "Private payments. Send to any wallet address without showing who paid whom or how much.",
     detail: "Every send is checked by a zero-knowledge proof made in your browser.",
     href: "https://zk.liquidlogicx.com",
-    cta: "Open X-Zero",
+    cta: "Open ZK-Zero",
   },
   {
     name: ["Liquid", "X-Escrow"],

@@ -7,6 +7,7 @@ import "./globals.css";
 import "./glass.css";
 import "./hero-products.css";
 import "./hero-frost.css";
+import "./xzero.css";
 
 export const viewport: Viewport = {
   themeColor: [
@@ -56,7 +57,7 @@ export const metadata: Metadata = {
   },
 };
 
-const themeBoot = `(function(){try{var t=localStorage.getItem("llx-theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t);}else{document.documentElement.removeAttribute("data-theme");}}catch(e){}})();`;
+const themeBoot = `(function(){var t="dark";try{if(localStorage.getItem("llx-theme")==="light"){t="light";}}catch(e){}document.documentElement.setAttribute("data-theme",t);})();`;
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
