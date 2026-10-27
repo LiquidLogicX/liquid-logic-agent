@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from "@/lib/site";
 import "./globals.css";
 import "./glass.css";
+import "./hero-products.css";
 
 export const viewport: Viewport = {
   themeColor: [
