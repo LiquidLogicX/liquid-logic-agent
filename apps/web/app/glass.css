@@ -1,0 +1,429 @@
+/* ==========================================================================
+   Liquid glass layer (Oct 2026 redesign).
+   Loaded after globals.css: re-tunes the colour tokens and turns the main
+   surfaces into frosted glass over a deep "liquid" backdrop. Dark is the
+   signature look; light keeps the same glass, frosted white on lavender.
+   Every blur has a solid fallback, and motion stops for reduced-motion users.
+   ========================================================================== */
+
+:root {
+  --bg-a: #eceafc;
+  --bg-b: #f6f5ff;
+  --glow-1: rgba(124, 92, 255, 0.28);
+  --glow-2: rgba(72, 132, 255, 0.18);
+  --glow-3: rgba(186, 120, 255, 0.2);
+  --glass: rgba(255, 255, 255, 0.58);
+  --glass-strong: rgba(255, 255, 255, 0.76);
+  --glass-solid: #fbfaff; /* fallback when backdrop-filter is unsupported */
+  --glass-line: rgba(255, 255, 255, 0.85);
+  --glass-edge: rgba(78, 63, 179, 0.16);
+  --pill-line: rgba(78, 63, 179, 0.22);
+  --glass-shadow: 0 10px 34px rgba(46, 34, 120, 0.12);
+  --glass-hi: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --accent-grad: linear-gradient(135deg, #8b6cff 0%, #5b8cff 100%);
+  --paper: #f1effc;
+  --rule: rgba(78, 63, 179, 0.14);
+  --rule-strong: rgba(78, 63, 179, 0.26);
+  --violet: #5a45d6;
+  --display: "Inter Tight", "Public Sans", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg-a: #07061a;
+    --bg-b: #120f3a;
+    --glow-1: rgba(124, 92, 255, 0.38);
+    --glow-2: rgba(64, 110, 255, 0.26);
+    --glow-3: rgba(196, 112, 255, 0.22);
+    --glass: rgba(255, 255, 255, 0.07);
+    --glass-strong: rgba(255, 255, 255, 0.11);
+    --glass-solid: #1a1745;
+    --glass-line: rgba(255, 255, 255, 0.18);
+    --glass-edge: rgba(255, 255, 255, 0.1);
+    --pill-line: rgba(255, 255, 255, 0.2);
+    --glass-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    --glass-hi: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    --paper: #07061a;
+    --sheet: #15123a;
+    --ink: #f1f0ff;
+    --slate: #b9b6dc;
+    --rule: rgba(255, 255, 255, 0.11);
+    --rule-strong: rgba(255, 255, 255, 0.2);
+    --violet: #b9a8ff;
+    --violet-soft: rgba(139, 108, 255, 0.18);
+    --ok: #7fe0b0;
+    --ok-soft: rgba(80, 200, 140, 0.14);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg-a: #07061a;
+  --bg-b: #120f3a;
+  --glow-1: rgba(124, 92, 255, 0.38);
+  --glow-2: rgba(64, 110, 255, 0.26);
+  --glow-3: rgba(196, 112, 255, 0.22);
+  --glass: rgba(255, 255, 255, 0.07);
+  --glass-strong: rgba(255, 255, 255, 0.11);
+  --glass-solid: #1a1745;
+  --glass-line: rgba(255, 255, 255, 0.18);
+  --glass-edge: rgba(255, 255, 255, 0.1);
+  --pill-line: rgba(255, 255, 255, 0.2);
+  --glass-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+  --glass-hi: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  --paper: #07061a;
+  --sheet: #15123a;
+  --ink: #f1f0ff;
+  --slate: #b9b6dc;
+  --rule: rgba(255, 255, 255, 0.11);
+  --rule-strong: rgba(255, 255, 255, 0.2);
+  --violet: #b9a8ff;
+  --violet-soft: rgba(139, 108, 255, 0.18);
+  --ok: #7fe0b0;
+  --ok-soft: rgba(80, 200, 140, 0.14);
+}
+
+/* —— Backdrop: deep liquid gradient with slow drifting glows —— */
+body {
+  background: linear-gradient(160deg, var(--bg-a) 0%, var(--bg-b) 55%, var(--bg-a) 100%) fixed;
+  position: relative;
+  isolation: isolate;
+}
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: -20%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+body::before {
+  background:
+    radial-gradient(38% 30% at 18% 22%, var(--glow-1), transparent 70%),
+    radial-gradient(34% 28% at 82% 12%, var(--glow-2), transparent 70%),
+    radial-gradient(40% 32% at 70% 78%, var(--glow-3), transparent 70%);
+  filter: blur(10px);
+  animation: llx-drift 26s ease-in-out infinite alternate;
+}
+
+/* soft "liquid" ripples */
+body::after {
+  background:
+    repeating-radial-gradient(ellipse 120% 60% at 30% 110%, transparent 0 38px, rgba(160, 140, 255, 0.05) 40px 41px, transparent 43px 80px);
+  opacity: 0.7;
+  animation: llx-drift 40s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes llx-drift {
+  0% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  100% { transform: translate3d(3%, -2%, 0) rotate(4deg); }
+}
+
+/* —— Glass surfaces —— */
+header.top,
+.termsheet,
+.hero-copy,
+.controls > div,
+.tablewrap,
+.utility li,
+.research article,
+.docs-card,
+.llxpay-grid,
+.summary,
+ol.log li,
+.token-grid > *,
+.stats-band,
+.nav-more-menu {
+  background: var(--glass-solid);
+  border: 1px solid var(--glass-line);
+  box-shadow: var(--glass-shadow), var(--glass-hi);
+}
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  header.top,
+  .termsheet,
+  .hero-copy,
+  .controls > div,
+  .tablewrap,
+  .utility li,
+  .research article,
+  .docs-card,
+  .llxpay-grid,
+  .summary,
+  ol.log li,
+  .token-grid > *,
+  .stats-band,
+  .nav-more-menu {
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    backdrop-filter: blur(16px) saturate(140%);
+  }
+
+  header.top,
+  .termsheet,
+  .hero-copy,
+  .nav-more-menu {
+    background: var(--glass-strong);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    backdrop-filter: blur(24px) saturate(160%);
+  }
+}
+
+/* —— Header: floating glass bar —— */
+header.top {
+  position: sticky;
+  top: 12px;
+  z-index: 50;
+  margin: 12px auto 0;
+  width: calc(100% - 24px);
+  max-width: 1160px;
+  border-radius: 999px;
+}
+
+header.top .top-inner {
+  min-height: 60px;
+  padding: 0 18px 0 12px;
+}
+
+.top-trailing a.nav-pill,
+nav.primary a.nav-pill {
+  border-radius: 999px;
+  border: 1px solid var(--pill-line);
+  background: var(--glass);
+  box-shadow: var(--glass-hi);
+}
+
+.theme-toggle {
+  border-radius: 999px;
+  border: 1px solid var(--pill-line);
+  background: var(--glass);
+  color: var(--ink);
+  padding: 6px 12px;
+}
+
+.nav-more-menu {
+  border-radius: 16px;
+}
+
+/* —— Type —— */
+h1,
+h2,
+h3 {
+  font-family: var(--display);
+  letter-spacing: -0.02em;
+}
+
+h1 {
+  font-size: clamp(38px, 5.2vw, 64px);
+  line-height: 1.02;
+  font-weight: 700;
+  background: linear-gradient(180deg, var(--ink) 30%, color-mix(in srgb, var(--ink) 70%, var(--violet)) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* —— Hero —— */
+.hero {
+  position: relative;
+  border-bottom: 0;
+  padding: 72px 0 64px;
+}
+
+.hero .wrap {
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-copy {
+  border-radius: 28px;
+  padding: 40px 36px 36px;
+}
+
+.hero-copy .lede {
+  margin-bottom: 28px;
+}
+
+/* floating glass chips around the hero (decorative) */
+.hero-orbs {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.orb {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font: 500 13px/1 var(--sans);
+  color: var(--slate);
+  animation: llx-float 6s ease-in-out infinite;
+}
+
+.orb span.ic {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--violet);
+  background: var(--glass-solid);
+  border: 1px solid var(--glass-line);
+  box-shadow: var(--glass-shadow), var(--glass-hi);
+}
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .orb span.ic {
+    background: var(--glass-strong);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    backdrop-filter: blur(16px) saturate(150%);
+  }
+}
+
+.orb svg {
+  width: 26px;
+  height: 26px;
+}
+
+.orb.o1 { top: 18px; left: 1%; }
+.orb.o2 { bottom: 18px; left: 3%; animation-delay: 1.5s; }
+.orb.o3 { top: 6px; right: 2%; animation-delay: 3s; }
+.orb.o4 { bottom: 4px; right: 5%; animation-delay: 4.5s; }
+
+@keyframes llx-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(2deg); }
+}
+
+@media (max-width: 1240px) {
+  .orb.o1, .orb.o2 { display: none; }
+}
+
+@media (max-width: 900px) {
+  .hero-orbs { display: none; }
+  .hero-copy { padding: 28px 22px 24px; border-radius: 22px; }
+  /* on phones the header wraps to several rows, so it scrolls away instead of sticking */
+  header.top { position: relative; top: 0; border-radius: 22px; margin-top: 8px; width: calc(100% - 16px); }
+}
+
+/* —— Term sheet + cards —— */
+.termsheet {
+  border-radius: 24px;
+  border-top: 1px solid var(--glass-line);
+  position: relative;
+  overflow: hidden;
+}
+
+.termsheet::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: var(--accent-grad);
+}
+
+.controls > div,
+.utility li,
+.research article,
+.docs-card,
+ol.log li,
+.token-grid > * {
+  border-radius: 18px;
+}
+
+.controls {
+  gap: 14px;
+}
+
+.controls > div {
+  padding: 18px 20px;
+  border-top: 1px solid var(--glass-line);
+}
+
+.summary {
+  padding: 16px 20px;
+  gap: 28px 40px;
+}
+
+.summary strong {
+  font-family: var(--display);
+  letter-spacing: -0.01em;
+}
+
+.tablewrap,
+.summary,
+.stats-band {
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.llxpay-grid {
+  border-radius: 28px;
+  padding-top: 32px;
+  padding-bottom: 32px;
+}
+
+table,
+th,
+td {
+  background: transparent;
+}
+
+/* sections float on the backdrop instead of ruled bands */
+section.block {
+  border-bottom: 0;
+}
+
+footer.site-foot {
+  background: transparent;
+  border-top: 1px solid var(--rule);
+}
+
+/* —— Buttons: glass pills —— */
+.btn {
+  border-radius: 999px;
+  padding: 13px 22px;
+  border: 1px solid var(--glass-line);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.btn.primary {
+  background: var(--accent-grad);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 8px 24px rgba(108, 84, 255, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.btn.secondary {
+  border-color: var(--pill-line);
+  background: var(--glass);
+  box-shadow: var(--glass-hi);
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn.primary:hover {
+  box-shadow: 0 12px 30px rgba(108, 84, 255, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+/* —— Reduced motion —— */
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  body::after,
+  .orb {
+    animation: none;
+  }
+  .btn {
+    transition: none;
+  }
+  .btn:hover {
+    transform: none;
+  }
+}
