@@ -26,6 +26,10 @@ export function ThemeToggle() {
     } catch {
       /* ignore */
     }
+    // In case the boot script was skipped (some in-app browsers), set the theme here too.
+    if (document.documentElement.getAttribute("data-theme") !== "light") {
+      document.documentElement.setAttribute("data-theme", "dark");
+    }
   }, []);
 
   function cycle() {

@@ -2,12 +2,12 @@
    ZK-Zero look, site-wide (Oct 26 2026).
    Matches zk.liquidlogicx.com: flat charcoal page, every tab, button and card
    in white-sheen frost with a light rim, lavender accent. Loaded last.
-   Dark is the default theme; the toggle still switches to light.
+   Dark is the default: these rules apply unless Light is chosen, so they work even if the boot script is skipped.
    No backdrop blur: frost comes from sheen + rim + inner glow, which is fast
    in wallet browsers and looks the same everywhere.
    ========================================================================== */
 
-:root[data-theme="dark"] {
+:root:not([data-theme="light"]) {
   --xz-bg: #0b0d12;
   --xz-card: #151924;
   --xz-fg: #e8ecf3;
@@ -47,26 +47,29 @@
   --frost-tile: rgba(255, 255, 255, 0.08);
   --frost-ink: var(--xz-fg);
   --frost-sub: var(--xz-mut);
+  --ok: #7fe0b0;
+  --ok-soft: rgba(80, 200, 140, 0.14);
+  --warn: #e0b060;
 }
 
 /* —— Page: flat charcoal, no drifting glows —— */
-:root[data-theme="dark"] body {
+:root:not([data-theme="light"]) body {
   background: var(--xz-bg);
   color: var(--xz-fg);
 }
 
-:root[data-theme="dark"] body::before,
-:root[data-theme="dark"] body::after {
+:root:not([data-theme="light"]) body::before,
+:root:not([data-theme="light"]) body::after {
   display: none;
 }
 
-:root[data-theme="dark"] h1 {
+:root:not([data-theme="light"]) h1 {
   background: none;
   color: var(--xz-fg);
 }
 
 /* —— Big panels: header, hero, every section box down to the footer —— */
-:root[data-theme="dark"] :is(
+:root:not([data-theme="light"]) :is(
   header.top,
   .hero-copy,
   .termsheet,
@@ -95,23 +98,23 @@
   backdrop-filter: none;
 }
 
-:root[data-theme="dark"] :is(.cllx-zero, #xlock .sec-head) {
+:root:not([data-theme="light"]) :is(.cllx-zero, #xlock .sec-head) {
   border-radius: 24px;
   padding-top: 28px;
   padding-bottom: 28px;
 }
 
-:root[data-theme="dark"] .termsheet::before {
+:root:not([data-theme="light"]) .termsheet::before {
   background: var(--xz-acc);
   opacity: 0.6;
 }
 
-:root[data-theme="dark"] th {
+:root:not([data-theme="light"]) th {
   background: rgba(255, 255, 255, 0.04);
 }
 
 /* —— Tabs, pills and tiles: the ZK-Zero frost —— */
-:root[data-theme="dark"] :is(
+:root:not([data-theme="light"]) :is(
   .top-trailing a.nav-pill,
   nav.primary a.nav-pill,
   .nav-more-btn,
@@ -134,62 +137,62 @@
   backdrop-filter: none;
 }
 
-:root[data-theme="dark"] .top-trailing a.nav-pill,
-:root[data-theme="dark"] nav.primary a.nav-pill {
+:root:not([data-theme="light"]) .top-trailing a.nav-pill,
+:root:not([data-theme="light"]) nav.primary a.nav-pill {
   color: var(--xz-acc);
 }
 
 /* product cards: same frost as the ZK-Zero action tiles, white text */
-:root[data-theme="dark"] .hp-card,
-:root[data-theme="dark"] .hp-card.hp-featured {
+:root:not([data-theme="light"]) .hp-card,
+:root:not([data-theme="light"]) .hp-card.hp-featured {
   border-width: 1px;
   box-shadow: var(--xz-glow);
 }
 
-:root[data-theme="dark"] .hp-card .hp-text,
-:root[data-theme="dark"] .hp-card .hp-link,
-:root[data-theme="dark"] .hp-card .hp-name {
+:root:not([data-theme="light"]) .hp-card .hp-text,
+:root:not([data-theme="light"]) .hp-card .hp-link,
+:root:not([data-theme="light"]) .hp-card .hp-name {
   color: var(--xz-fg);
 }
 
-:root[data-theme="dark"] .hp-card .hp-kicker,
-:root[data-theme="dark"] .hp-card .hp-detail {
+:root:not([data-theme="light"]) .hp-card .hp-kicker,
+:root:not([data-theme="light"]) .hp-card .hp-detail {
   color: var(--xz-mut);
 }
 
-:root[data-theme="dark"] .hp-card .hp-tile {
+:root:not([data-theme="light"]) .hp-card .hp-tile {
   color: var(--xz-acc);
   border-radius: 50%;
 }
 
-:root[data-theme="dark"] .hp-card .hp-status,
-:root[data-theme="dark"] .hp-card:not(.hp-featured) .hp-status {
+:root:not([data-theme="light"]) .hp-card .hp-status,
+:root:not([data-theme="light"]) .hp-card:not(.hp-featured) .hp-status {
   color: var(--xz-acc);
   background: rgba(168, 156, 240, 0.1);
   border: 1px solid rgba(168, 156, 240, 0.45);
 }
 
 /* X-Lock stays featured with a brighter rim and a soft lavender glow; same frost as the rest */
-:root[data-theme="dark"] .hero-products .hp-card.hp-featured {
+:root:not([data-theme="light"]) .hero-products .hp-card.hp-featured {
   border-color: rgba(255, 255, 255, 0.45);
   box-shadow: var(--xz-glow), 0 0 28px rgba(168, 156, 240, 0.22);
 }
 
 /* —— Primary buttons: lavender with the white sheen —— */
-:root[data-theme="dark"] .btn.primary,
-:root[data-theme="dark"] .llxpay-form button[type="submit"] {
+:root:not([data-theme="light"]) .btn.primary,
+:root:not([data-theme="light"]) .llxpay-form button[type="submit"] {
   background: var(--xz-on), var(--xz-acc);
   color: #120d2b;
   border: 1px solid rgba(255, 255, 255, 0.7);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75), 0 6px 20px rgba(168, 156, 240, 0.28);
 }
 
-:root[data-theme="dark"] .btn.primary:hover {
+:root:not([data-theme="light"]) .btn.primary:hover {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75), 0 8px 26px rgba(168, 156, 240, 0.4);
 }
 
 /* —— Inputs, like ZK-Zero —— */
-:root[data-theme="dark"] :is(input, textarea, select) {
+:root:not([data-theme="light"]) :is(input, textarea, select) {
   background: #0f1219;
   border: 1px solid #2a3145;
   color: var(--xz-fg);
@@ -197,33 +200,34 @@
 }
 
 /* —— Footer —— */
-:root[data-theme="dark"] footer.site-foot {
+:root:not([data-theme="light"]) footer.site-foot {
   background: transparent;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* press feedback on tabs, as in the app */
-:root[data-theme="dark"] :is(.nav-pill, .btn, .theme-toggle):active {
+:root:not([data-theme="light"]) :is(.nav-pill, .btn, .theme-toggle):active {
   transform: scale(0.97);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root[data-theme="dark"] :is(.nav-pill, .btn, .theme-toggle):active {
+  :root:not([data-theme="light"]) :is(.nav-pill, .btn, .theme-toggle):active {
     transform: none;
   }
 }
 
 /* list cards need room inside and a gap between them */
-:root[data-theme="dark"] :is(.utility li, .research article, ol.log li) {
+:root:not([data-theme="light"]) :is(.utility li, .research article, ol.log li) {
   padding: 16px 18px;
   margin-bottom: 10px;
 }
 
-:root[data-theme="dark"] .research {
+:root:not([data-theme="light"]) .research {
   gap: 12px;
   border-top: 0;
 }
 
-:root[data-theme="dark"] .research article {
+:root:not([data-theme="light"]) .research article {
   margin-bottom: 0;
 }
+
