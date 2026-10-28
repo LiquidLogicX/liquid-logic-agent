@@ -27,7 +27,7 @@ export function SiteHeader() {
           <a className="brand" href="/">
             <img
               className="mark"
-              src="/llx-glass.svg"
+              src="/llx-mark.svg"
               width={40}
               height={40}
               alt="Liquid Logic X"
