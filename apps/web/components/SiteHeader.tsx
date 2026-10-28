@@ -8,7 +8,7 @@ const APP_PILLS = [
   { href: "https://zk.liquidlogicx.com", label: "Liquid ZK-Zero" },
 ] as const;
 
-const NAV = [{ href: "/#llx", label: "$LLX" }] as const;
+const NAV = [{ href: "/#tokenomics", label: "$LLX" }] as const;
 
 const MORE = [
   { href: "/#controls", label: "Controls" },

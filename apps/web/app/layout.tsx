@@ -8,6 +8,7 @@ import "./glass.css";
 import "./hero-products.css";
 import "./hero-frost.css";
 import "./xzero.css";
+import "./tokenomics.css";
 
 export const viewport: Viewport = {
   themeColor: [
