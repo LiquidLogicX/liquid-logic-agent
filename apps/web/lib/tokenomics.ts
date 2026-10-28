@@ -26,14 +26,14 @@ export const LLX_V2_ALLOCATIONS: readonly Allocation[] = [
     id: "treasury",
     label: "Treasury",
     amount: 11_250_000,
-    release: "Locked in X-Lock. Release starts after 6 months, linear over 36 months.",
+    release: "To be locked in PinkLock before the presale. Release starts after 6 months, linear over 36 months.",
     color: "#a89cf0",
   },
   {
     id: "partnerships",
     label: "Partnerships",
     amount: 5_000_000,
-    release: "Locked in X-Lock until January 13, 2027.",
+    release: "To be locked in PinkLock before the presale, until January 13, 2027.",
     color: "#7b6ce0",
   },
   {
@@ -54,14 +54,14 @@ export const LLX_V2_ALLOCATIONS: readonly Allocation[] = [
     id: "liquidity",
     label: "DEX liquidity",
     amount: 1_500_000,
-    release: "Paired at listing. LP position locked in X-Lock.",
+    release: "Paired at listing. LP tokens locked in PinkLock when the presale finalizes.",
     color: "#5fd1c4",
   },
   {
     id: "team",
     label: "Team",
     amount: 1_250_000,
-    release: "Locked for 12 months, then linear over 24 months.",
+    release: "To be locked in PinkLock before the presale: 12 months, then linear over 24 months.",
     color: "#e0b060",
   },
   {
@@ -110,7 +110,7 @@ export const LLX_V2_ROADMAP: readonly RoadmapPhase[] = [
       { text: "Cross-chain transfers tested live on every route, both directions", done: true },
       { text: "KYC and PinkSale presale on BNB Chain" },
       { text: "Migration for original $LLX holders" },
-      { text: "DEX listing with liquidity locked in X-Lock" },
+      { text: "DEX listing with liquidity locked in PinkLock" },
     ],
   },
   {
@@ -154,7 +154,7 @@ export const LLX_V2_WHY = {
     points: [
       "Owned by Liquid Logic X: the contract and supply are held by our 2-of-3 multi-sig vault, not a launchpad.",
       "Multichain from day one: one token at the same address on Base, Arc, Robinhood Chain, BNB Chain and Tempo, moving over LayerZero.",
-      "Fixed 25M supply, with treasury, partnership and team tokens locked in X-Lock.",
+      "Fixed 25M supply. Treasury, partnership and team tokens will be locked in PinkLock, an independent third-party locker, before the presale.",
       "Built for our products: Liquid ZK-Zero private payments, Liquid X-Pay and Liquid X-Lock fees.",
     ],
   },
