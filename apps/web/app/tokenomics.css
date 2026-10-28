@@ -309,3 +309,48 @@ header.top .mark {
   border-radius: 0;
   clip-path: ellipse(42.6% 46.2% at 50.1% 49.9%);
 }
+
+/* —— Endpoints table on phones: stack each row so nothing is cut off —— */
+@media (max-width: 640px) {
+  #endpoints .tablewrap table,
+  #endpoints .tablewrap tbody,
+  #endpoints .tablewrap tr,
+  #endpoints .tablewrap td {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+  #endpoints .tablewrap td:not(.mono) {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  #endpoints .tablewrap thead {
+    display: none;
+  }
+  #endpoints .tablewrap tr {
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  #endpoints .tablewrap tr:last-child {
+    border-bottom: 0;
+  }
+  #endpoints .tablewrap td {
+    padding: 0;
+    border: 0;
+    text-align: left;
+  }
+  #endpoints .tablewrap td.mono {
+    white-space: nowrap;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  #endpoints .tablewrap td.num {
+    margin-top: 8px;
+    color: var(--violet, #a89cf0);
+  }
+  #endpoints .tablewrap td.num::before {
+    content: "Fee: ";
+    color: var(--slate, #8b93a7);
+  }
+}
