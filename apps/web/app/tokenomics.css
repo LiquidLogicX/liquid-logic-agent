@@ -294,3 +294,18 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* —— Header on phones: give the logo room so it doesn't touch the bar's edge —— */
+@media (max-width: 860px) {
+  header.top .top-inner {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+}
+
+/* Header logo: cut the glass icon exactly at the outer edge of its steel ring,
+   so no purple background shows outside the ring. */
+header.top .mark {
+  border-radius: 0;
+  clip-path: ellipse(42.6% 46.2% at 50.1% 49.9%);
+}
