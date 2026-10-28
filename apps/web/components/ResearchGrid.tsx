@@ -60,16 +60,6 @@ export function ResearchGrid() {
           Liquid X-Pay features for holders is next.
         </p>
       </article>
-      <article>
-        <div className="stage">Phase 3</div>
-        <h3>LLX Privacy Network</h3>
-        <p>
-          Our own L2 built for private finance. Proof of funds, confidential
-          balances and settlement proofs run natively, powered by fully
-          homomorphic encryption (FHE). Businesses prove what they hold without
-          ever showing it.
-        </p>
-      </article>
     </div>
   );
 }
