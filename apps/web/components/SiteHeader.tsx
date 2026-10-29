@@ -11,11 +11,15 @@ const APP_PILLS = [
 const NAV = [{ href: "/#tokenomics", label: "$LLX" }] as const;
 
 const MORE = [
-  { href: "/#controls", label: "Controls" },
-  { href: "/ledger", label: "Ledger" },
+  { href: "/whitepaper", label: "Whitepaper" },
+  { href: "/#tokenomics", label: "Tokenomics" },
+  { href: "/#team", label: "Team" },
+  { href: "/agents", label: "For AI agents" },
   { href: "/docs", label: "Endpoint docs" },
-  { href: "/plans", label: "Roadmap" },
-  { href: "/#changelog", label: "Changelog" },
+  { href: "/ledger", label: "Ledger" },
+  { href: "/plans", label: "Product roadmap" },
+  { href: "/changelog", label: "Changelog" },
+  { href: "/addresses", label: "Official addresses" },
   { href: "/about", label: "About" },
 ];
 
