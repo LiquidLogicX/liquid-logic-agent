@@ -45,8 +45,8 @@ test("ids are unique and the donut covers 360 degrees", () => {
   assert.match(allocationGradient(), /360\.00deg\)$/);
 });
 
-test("five chains, three roadmap phases, founder listed", () => {
-  assert.deepEqual([...LLX_V2_CHAINS], ["Base", "Arc", "Robinhood Chain", "BNB Chain", "Tempo"]);
+test("six chains, three roadmap phases, founder listed", () => {
+  assert.deepEqual([...LLX_V2_CHAINS], ["Base", "Arc", "Robinhood Chain", "BNB Chain", "Tempo", "Hyperliquid"]);
   assert.equal(LLX_V2_ROADMAP.length, 3);
   assert.equal(LLX_TEAM[0].name, "Miles Francisco");
 });
