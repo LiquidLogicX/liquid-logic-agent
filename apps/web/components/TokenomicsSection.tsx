@@ -24,6 +24,11 @@ export function TokenomicsSection() {
             {fmt(LLX_V2_TOTAL_SUPPLY)}, minted once and held by a 2-of-3
             multi-sig vault. Cross-chain transfers run on LayerZero.
           </p>
+          <div className="actions" style={{ marginTop: 20 }}>
+            <a className="btn secondary" href="/whitepaper">
+              Read the whitepaper
+            </a>
+          </div>
         </div>
         <div className="tkn">
           <div className="tkn-chart" aria-hidden="true">
