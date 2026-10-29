@@ -1,41 +1,27 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import { CopyButton } from "@/components/CopyButton";
-import { llxLaunchStatus } from "@/lib/launch";
 import {
   LLX_BASESCAN,
   LLX_CONTRACT,
+  LLX_V1_SNAPSHOT_BLOCK,
+  LLX_V1_SNAPSHOT_TIME,
   LLX_VIRTUALS,
 } from "@/lib/site";
 
+/** Original $LLX (V1): a short card. V1 is being replaced by $LLX V2. */
 export function LlxSection() {
-  const [status, setStatus] = useState(() => llxLaunchStatus());
-
-  useEffect(() => {
-    setStatus(llxLaunchStatus());
-    const id = window.setInterval(() => {
-      setStatus(llxLaunchStatus());
-    }, 30_000);
-    return () => window.clearInterval(id);
-  }, []);
-
   return (
     <div className="token-grid">
       <dl className="terms token-terms">
-        <dt>Launch</dt>
-        <dd>{status}</dd>
+        <dt>Status</dt>
+        <dd>Being replaced by $LLX V2</dd>
         <dt>Platform</dt>
         <dd>Virtuals, Base</dd>
-        <dt>Total supply</dt>
-        <dd>1,000,000,000</dd>
-        <dt>Liquidity pool</dt>
-        <dd>100% of supply</dd>
-        <dt>Team allocation</dt>
-        <dd>None at launch. Team holdings were bought on the open market.</dd>
-        <dt>Liquidity lock</dt>
-        <dd>10 years after graduation</dd>
-        <dt>Contract</dt>
+        <dt>Snapshot</dt>
+        <dd>
+          Taken at Base block {LLX_V1_SNAPSHOT_BLOCK} ({LLX_V1_SNAPSHOT_TIME}).
+          V1 bought after this block does not qualify for migration.
+        </dd>
+        <dt>V1 contract</dt>
         <dd>
           <div className="ca" style={{ justifyContent: "flex-end" }}>
             <a
@@ -49,14 +35,8 @@ export function LlxSection() {
             <CopyButton value={LLX_CONTRACT} />
           </div>
           <p className="ca-note">
-            This is the only official $LLX contract. Check the address before
-            buying.
+            This is the original V1 contract, not the $LLX V2 token.
           </p>
-        </dd>
-        <dt>Utility</dt>
-        <dd>
-          $LLX utility: pays Liquid X-Lock fees at a discount. Token:{" "}
-          <span className="mono">{LLX_CONTRACT}</span> on Base.
         </dd>
         <dt>Links</dt>
         <dd>

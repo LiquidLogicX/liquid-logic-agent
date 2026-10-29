@@ -1,11 +1,14 @@
 /**
- * Official $LLX contract — do not invent addresses.
- * Single source of truth: the homepage token section (LlxSection) and the
- * /about page both read this value. It changes when $LLX graduates on
- * Virtuals — update it here only.
+ * Original $LLX (V1) contract on Virtuals (Base) — do not invent addresses.
+ * Single source of truth: the homepage V1 card (LlxSection), /about and
+ * /addresses all read this value. V1 is being replaced by $LLX V2.
  */
 export const LLX_CONTRACT =
   "0xB9Dd507a5b352783b25e14c9b6E77D9f0067380f";
+
+/** V1 holder snapshot for the V2 migration (crew, Oct 28 2026). */
+export const LLX_V1_SNAPSHOT_BLOCK = "53,205,869";
+export const LLX_V1_SNAPSHOT_TIME = "October 28, 2026, 8:24 AM PT";
 
 export const LLX_BASESCAN = `https://basescan.org/token/${LLX_CONTRACT}`;
 

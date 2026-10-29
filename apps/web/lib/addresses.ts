@@ -22,9 +22,9 @@ export const XLOCK_V2 = "0x54b3019acBBf9aeFDc545d5CeA75e10322eA9D44" as const;
 
 export const OFFICIAL_ADDRESSES: OfficialAddress[] = [
   {
-    name: "$LLX token",
+    name: "$LLX V1 token (original)",
     address: LLX_CONTRACT as `0x${string}`,
-    purpose: "Token contract (launched on Virtuals).",
+    purpose: "Original token contract, launched on Virtuals. Being replaced by $LLX V2.",
     explorer: { label: "Basescan", href: basescan(LLX_CONTRACT) },
   },
   {
@@ -55,7 +55,7 @@ export const OFFICIAL_ADDRESSES: OfficialAddress[] = [
   {
     name: "Partnerships",
     address: "0x33e3c3f9c92f2045e1d3928599737e47a9d0dd8b",
-    purpose: "Partnerships allocation. 200M LLX locked in Liquid X-Lock #1 until Jan 13, 2027.",
+    purpose: "V1 partnerships allocation. 200M $LLX V1 locked in Liquid X-Lock #1 until Jan 13, 2027.",
     explorer: { label: "Basescan", href: basescan("0x33e3c3f9c92f2045e1d3928599737e47a9d0dd8b") },
     related: { label: "Liquid X-Lock #1", href: "https://xlock.liquidlogicx.com/lock/1" },
   },
