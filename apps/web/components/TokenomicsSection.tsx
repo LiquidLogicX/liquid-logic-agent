@@ -28,6 +28,14 @@ export function TokenomicsSection() {
             <a className="btn secondary" href="/whitepaper">
               Read the whitepaper
             </a>
+            <a
+              className="btn secondary"
+              href={CONTACT_TELEGRAM}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Join our Telegram
+            </a>
           </div>
         </div>
         <div className="tkn">
