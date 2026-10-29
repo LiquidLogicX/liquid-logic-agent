@@ -354,3 +354,7 @@ header.top .mark {
     color: var(--slate, #8b93a7);
   }
 }
+
+.tkn-channels h3 {
+  margin-bottom: 8px;
+}

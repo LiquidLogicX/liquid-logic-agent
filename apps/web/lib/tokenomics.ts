@@ -162,9 +162,9 @@ export const LLX_V2_WHY = {
   holders: {
     title: "What it means for V1 holders",
     paragraphs: [
-      "Holders of the original $LLX at the snapshot can migrate to $LLX V2. 319,700 $LLX V2 is reserved for this.",
+      "The snapshot was taken at Base block 53,205,869 on October 28, 2026 (8:24 AM PT). Holders of the original $LLX at that block can migrate to $LLX V2, and 319,700 $LLX V2 is reserved for this. V1 bought after the snapshot does not qualify.",
       "The swap is not 1:1, because V2 has a much smaller supply. The ratio is set from V1's average market price over the 7 days before the snapshot.",
-      "The snapshot date, swap ratio and claim steps will be announced on liquidlogicx.com, @LiquidLogicX on X and our official Telegram before the presale. Ignore any other swap links.",
+      "The swap ratio and claim steps will be announced on liquidlogicx.com, @LiquidLogicX on X and our official Telegram. Ignore any other swap links.",
     ],
   },
 } as const;

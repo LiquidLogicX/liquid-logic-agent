@@ -8,6 +8,7 @@ import {
   allocationGradient,
   allocationPercent,
 } from "@/lib/tokenomics";
+import { CONTACT_EMAIL, CONTACT_TELEGRAM, CONTACT_X } from "@/lib/about";
 
 const fmt = (n: number) => n.toLocaleString("en-US");
 
@@ -123,6 +124,20 @@ export function TeamSection() {
               <p>{m.bio}</p>
             </article>
           ))}
+          <article className="tkn-channels">
+            <h3>Official channels</h3>
+            <p>
+              <a href={CONTACT_X} rel="noopener noreferrer" target="_blank">
+                X @LiquidLogicX
+              </a>
+              {" · "}
+              <a href={CONTACT_TELEGRAM} rel="noopener noreferrer" target="_blank">
+                Telegram
+              </a>
+              {" · "}
+              <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+            </p>
+          </article>
         </div>
       </div>
     </section>
