@@ -11,6 +11,7 @@ export const LLX_V2_CHAINS = [
   "Robinhood Chain",
   "BNB Chain",
   "Tempo",
+  "Hyperliquid",
 ] as const;
 
 export type Allocation = {
@@ -106,7 +107,7 @@ export const LLX_V2_ROADMAP: readonly RoadmapPhase[] = [
   {
     period: "Q4 2026",
     items: [
-      { text: "$LLX V2 live on Base, Arc, Robinhood Chain, BNB Chain and Tempo", done: true },
+      { text: "$LLX V2 live on Base, Arc, Robinhood Chain, BNB Chain, Tempo and Hyperliquid", done: true },
       { text: "Cross-chain transfers tested live on every route, both directions", done: true },
       { text: "KYC and PinkSale presale on BNB Chain" },
       { text: "Migration for original $LLX holders" },
@@ -153,7 +154,7 @@ export const LLX_V2_WHY = {
     title: "Why a different kind of token",
     points: [
       "Owned by Liquid Logic X: the contract and supply are held by our 2-of-3 multi-sig vault, not a launchpad.",
-      "Multichain from day one: one token at the same address on Base, Arc, Robinhood Chain, BNB Chain and Tempo, moving over LayerZero.",
+      "Multichain from day one: one token at the same address on Base, Arc, Robinhood Chain, BNB Chain, Tempo and Hyperliquid, moving over LayerZero.",
       "Fixed 25M supply. Treasury, partnership and team tokens will be locked in PinkLock, an independent third-party locker, before the presale.",
       "Built for our products: Liquid ZK-Zero private payments, Liquid X-Pay and Liquid X-Lock fees.",
     ],
