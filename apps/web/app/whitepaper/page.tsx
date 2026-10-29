@@ -112,8 +112,8 @@ export default function WhitepaperPage() {
           Total supply: {fmt(LLX_V2_TOTAL_SUPPLY)} $LLX, fixed. No further
           minting.
         </p>
-        <div className="tkn wp-tkn">
-          <table className="tkn-table">
+        <div className="wp-tkn">
+          <table className="tkn-table" style={{ minWidth: 0 }}>
             <caption className="sr-only">$LLX V2 allocation</caption>
             <colgroup>
               <col />
