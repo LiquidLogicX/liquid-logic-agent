@@ -101,11 +101,11 @@ test("about page has no street address, entity number or phone", () => {
 });
 
 test("official $LLX token section copy", () => {
-  assert.equal(TOKEN_HEADING, "Official $LLX token");
-  assert.equal(TOKEN_LABEL, "$LLX on Virtuals (Base)");
+  assert.equal(TOKEN_HEADING, "Original $LLX (V1) token");
+  assert.equal(TOKEN_LABEL, "$LLX V1 on Virtuals (Base)");
   assert.equal(
     TOKEN_NOTE,
-    "This is the only official $LLX contract. Any other address is not ours.",
+    "This is the original V1 contract. It is being replaced by $LLX V2, and holders at the snapshot (Base block 53,205,869) can migrate. Any other V1 address is not ours.",
   );
   assert.equal(LLX_VIRTUALS, "https://app.virtuals.io/virtuals/141523");
   assert.equal(LLX_CONTRACT, "0xB9Dd507a5b352783b25e14c9b6E77D9f0067380f");

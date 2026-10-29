@@ -51,9 +51,9 @@ export const CONTACT_X = "https://x.com/LiquidLogicX";
 
 export const CONTACT_TELEGRAM = "https://t.me/LiquidLogicXofficial";
 
-export const TOKEN_HEADING = "Official $LLX token";
+export const TOKEN_HEADING = "Original $LLX (V1) token";
 
-export const TOKEN_LABEL = "$LLX on Virtuals (Base)";
+export const TOKEN_LABEL = "$LLX V1 on Virtuals (Base)";
 
 export const TOKEN_NOTE =
-  "This is the only official $LLX contract. Any other address is not ours.";
+  "This is the original V1 contract. It is being replaced by $LLX V2, and holders at the snapshot (Base block 53,205,869) can migrate. Any other V1 address is not ours.";

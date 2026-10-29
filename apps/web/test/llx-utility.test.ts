@@ -41,15 +41,18 @@ test("utility copy never promises price, returns, yield, buybacks or profit", ()
   for (const re of BANNED) assert.doesNotMatch(allCopy, re);
 });
 
-test("token section has the official-contract line and no Please read box", () => {
+test("V1 card marks the original contract as replaced and shows the snapshot", () => {
   const src = readFileSync(
     join(__dirname, "..", "components", "LlxSection.tsx"),
     "utf8",
   );
   assert.match(
     src.replace(/\s+/g, " "),
-    /This is the only official \$LLX contract\. Check the address before buying\./,
+    /This is the original V1 contract, not the \$LLX V2 token\./,
   );
+  assert.match(src, /LLX_V1_SNAPSHOT_BLOCK/);
+  assert.doesNotMatch(src, /only official/);
+  assert.doesNotMatch(src, /before buying/);
   assert.doesNotMatch(src, /Please read/);
   assert.doesNotMatch(src, /never buys, sells or holds/);
 });
@@ -83,17 +86,15 @@ test("footer drops the old token disclaimer paragraph", () => {
   assert.doesNotMatch(src, /Roadmap describes intent/);
 });
 
-test("token table says team holdings were bought on the open market", () => {
-  assert.match(
-    read("LlxSection.tsx"),
-    /None at launch\. Team holdings were bought on the open market\./,
-  );
+test("team section links the official X and Telegram", () => {
+  const src = read("TokenomicsSection.tsx");
+  assert.match(src, /CONTACT_X/);
+  assert.match(src, /CONTACT_TELEGRAM/);
 });
 
-test("FHE roadmap card names fully homomorphic encryption once", () => {
+test("roadmap has no L2 / privacy network card", () => {
   const src = read("ResearchGrid.tsx");
-  assert.match(src, /powered by fully\s+homomorphic encryption \(FHE\)\./);
-  assert.doesNotMatch(src, /Private proof\s+of funds, powered by/);
+  assert.doesNotMatch(src, /Privacy Network/);
   assert.doesNotMatch(src, /No other payments network/);
 });
 
