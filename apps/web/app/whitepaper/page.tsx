@@ -81,7 +81,7 @@ export default function WhitepaperPage() {
             address.
           </li>
           <li>
-            <strong>Ownership:</strong> on every chain the token and its
+            <strong>Ownership:</strong> on each of the six chains the token and its
             LayerZero settings are owned by the LLX V2 Vault, a 2-of-3 Safe
             multi-sig. No single key can change anything.
           </li>

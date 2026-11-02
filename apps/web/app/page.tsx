@@ -8,6 +8,7 @@ import {
   TokenomicsSection,
   WhyV2Section,
 } from "@/components/TokenomicsSection";
+import { BridgeSection } from "@/components/BridgeSection";
 import { CllxZeroSection } from "@/components/CllxZeroSection";
 import { HeroArt } from "@/components/HeroArt";
 import { HeroOrbs } from "@/components/HeroOrbs";
@@ -51,6 +52,8 @@ export default function HomePage() {
       <WhyV2Section />
 
       <TokenomicsSection />
+
+      <BridgeSection />
 
       <TokenRoadmapSection />
 

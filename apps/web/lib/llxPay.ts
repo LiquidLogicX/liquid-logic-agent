@@ -7,6 +7,14 @@
 export const LLX_PAY_DEMO_URL = "https://llx-pay.vercel.app";
 
 /**
+ * The "Request access" form needs a store (UPSTASH_REDIS_REST_* / KV_REST_API_*) and
+ * RESEND_API_KEY + ACCESS_REQUEST_FROM on the Vercel project. None of those are set on
+ * liquid-logic-agent-web (checked Nov 1 2026), so every submission fails. Until they are,
+ * the button shows "Coming soon". Flip to true once the env is configured.
+ */
+export const LLX_PAY_REQUEST_ACCESS_LIVE = false;
+
+/**
  * First LLX Pay payment on Arc mainnet: 1 USDC from the company Safe
  * 0xF5C7063266Bb395F153996cd6F824F8eF07e2A02 (Safe nonce 0, origin "LLX Pay")
  * to 0x167e47DA09A4e02ff5064BC75F348C5Ee87f01ED, block 23470867,

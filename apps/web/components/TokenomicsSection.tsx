@@ -88,7 +88,7 @@ export function TokenRoadmapSection() {
       <div className="wrap sec-head">
         <div>
           <h2>$LLX roadmap</h2>
-          <p className="intro">From launch to private payments on every chain.</p>
+          <p className="intro">From launch to private payments on all six chains.</p>
         </div>
         <ol className="tkn-roadmap">
           {LLX_V2_ROADMAP.map((phase) => (
