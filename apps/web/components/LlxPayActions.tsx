@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useState, type FormEvent } from "react";
-import { LLX_PAY_DEMO_URL } from "@/lib/llxPay";
+import { LLX_PAY_DEMO_URL, LLX_PAY_REQUEST_ACCESS_LIVE } from "@/lib/llxPay";
+import { CONTACT_EMAIL } from "@/lib/about";
 
 type State =
   | { kind: "idle" }
@@ -50,15 +51,26 @@ export function LlxPayActions() {
   return (
     <div className="llxpay-cta">
       <div className="llxpay-buttons">
-        <button
-          type="button"
-          className="btn primary"
-          aria-expanded={open}
-          aria-controls="llxpay-request"
-          onClick={openForm}
-        >
-          Request access
-        </button>
+        {LLX_PAY_REQUEST_ACCESS_LIVE ? (
+          <button
+            type="button"
+            className="btn primary"
+            aria-expanded={open}
+            aria-controls="llxpay-request"
+            onClick={openForm}
+          >
+            Request access
+          </button>
+        ) : (
+          <div className="llxpay-demo">
+            <button type="button" className="btn primary is-soon soon-btn" disabled>
+              Request access: coming soon
+            </button>
+            <small>
+              or email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+            </small>
+          </div>
+        )}
         <div className="llxpay-demo">
           <a
             className="btn secondary"
