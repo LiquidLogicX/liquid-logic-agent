@@ -125,3 +125,4 @@
 .bridge-pick { display: flex; align-items: center; gap: 8px; }
 .bridge-pick select { flex: 1; min-width: 0; }
 .bridge-pick-logo { width: 22px; height: 22px; border-radius: 50%; flex: none; }
+.bridge-card label > span.bridge-pick { display: flex; flex-direction: row; align-items: center; gap: 8px; font-size: inherit; text-transform: none; letter-spacing: normal; opacity: 1; margin: 0; }
