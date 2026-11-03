@@ -94,3 +94,32 @@
 }
 /* site-wide "Coming soon" stand-in for features that aren't live */
 .btn.soon-btn { cursor: not-allowed; }
+
+/* ---- /bridge landing ---- */
+.bridge-landing .bl-hero { padding: 72px 0 32px; text-align: center; }
+.bl-hero h1 { font-size: clamp(2rem, 6vw, 3.4rem); line-height: 1.08; margin: 12px 0; }
+.bl-lede { max-width: 620px; margin: 0 auto; opacity: .8; font-size: 1.08rem; }
+.bl-badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: .78rem; font-weight: 600; letter-spacing: .04em; border: 1px solid currentColor; opacity: .75; }
+.bl-cta { margin-top: 28px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.bl-btn { font-size: 1.1rem; padding: 14px 32px; border-radius: 14px; min-width: 240px; }
+.bl-wallets { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.bl-hint { font-size: .9rem; opacity: .7; margin: 0; }
+.bl-connected { font-family: ui-monospace, monospace; font-size: .9rem; opacity: .85; }
+.bl-err { color: #e5484d; font-size: .9rem; }
+.bl-chains { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; padding: 16px 0 8px; }
+.bl-chain { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: .85rem; text-align: center; }
+.bl-chain-logo { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; color: #fff; background: #555; }
+.bl-c-base { background: #0052ff; } .bl-c-arc { background: #111827; } .bl-c-robinhood { background: #00c805; color: #000; }
+.bl-c-bsc { background: #f0b90b; color: #000; } .bl-c-hyperevm { background: #50d2c1; color: #000; } .bl-c-tempo { background: #6d28d9; }
+.bl-steps { padding: 32px 0 8px; }
+.bl-steps ol { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.bl-steps li { display: flex; gap: 12px; padding: 16px; border-radius: 14px; border: 1px solid rgba(127,127,127,.25); }
+.bl-steps li p { margin: 4px 0 0; font-size: .9rem; opacity: .75; }
+.bl-step-n { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; border: 1px solid currentColor; }
+.bl-notes { margin: 16px 0 0; padding-left: 18px; font-size: .92rem; opacity: .85; }
+@media (max-width: 760px) {
+  .bridge-landing .bl-hero { padding: 44px 0 20px; }
+  .bl-chains { grid-template-columns: repeat(3, 1fr); }
+  .bl-steps ol { grid-template-columns: 1fr; }
+  .bl-btn { width: 100%; }
+}

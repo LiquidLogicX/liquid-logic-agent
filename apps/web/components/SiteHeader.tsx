@@ -13,7 +13,7 @@ const NAV = [{ href: "/#tokenomics", label: "$LLX" }] as const;
 const MORE = [
   { href: "/whitepaper", label: "Whitepaper" },
   { href: "/#tokenomics", label: "Tokenomics" },
-  { href: "/#bridge", label: "Bridge $LLX" },
+  { href: "/bridge", label: "Liquid X Bridge" },
   { href: "/#team", label: "Team" },
   { href: "/agents", label: "For AI agents" },
   { href: "/docs", label: "Endpoint docs" },
