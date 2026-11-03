@@ -62,7 +62,7 @@ export function BridgeHero() {
       <div className="wrap">
         <span className="bl-badge">Beta</span>
         <h1>Liquid X Bridge</h1>
-        <p className="bl-lede">Bridge $LLX across six chains. 
+        <p className="bl-lede">Liquid X Bridge moves $LLX across six chains. 
           Move $LLX V2 between Hyperliquid, Base, BNB Chain, Arc, Robinhood Chain and Tempo with
           LayerZero. Same amount, same address, on the other side.
         </p>

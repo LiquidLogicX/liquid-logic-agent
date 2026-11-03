@@ -4,7 +4,7 @@ import { BridgeSection } from "@/components/BridgeSection";
 import { BRIDGE_CHAINS } from "@/lib/bridge";
 
 const DESCRIPTION =
-  "Bridge $LLX V2 between six chains with LayerZero. Connect MetaMask or OKX Wallet. Beta.";
+  "Liquid X Bridge: move $LLX V2 between six chains with LayerZero. Connect MetaMask or OKX Wallet. Beta.";
 
 export const metadata: Metadata = {
   title: "Liquid X Bridge",
@@ -13,7 +13,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Liquid X Bridge — Liquid Logic X",
     description: DESCRIPTION,
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Liquid Logic X" }],
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Liquid X Bridge" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Liquid X Bridge — Liquid Logic X",
+    description: DESCRIPTION,
+    images: ["/og.png"],
   },
 };
 
