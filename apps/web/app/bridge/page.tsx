@@ -32,7 +32,8 @@ export default function BridgePage() {
       <section className="wrap bl-chains" aria-label="Supported chains">
         {BRIDGE_CHAINS.map((c) => (
           <div className="bl-chain" key={c.id}>
-            <span className={`bl-chain-logo bl-c-${c.id}`} aria-hidden>{c.name.charAt(0)}</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="bl-chain-logo" src={`/chains/${c.id}.png`} alt={`${c.name} logo`} width={44} height={44} />
             <span>{c.name}</span>
           </div>
         ))}

@@ -361,7 +361,7 @@ export function BridgeSection() {
     <section className="block" id="bridge">
       <div className="wrap sec-head">
         <div>
-          <h2>Bridge $LLX</h2>
+          <h2>Liquid X Bridge</h2>
           <p className="intro">
             Move $LLX V2 between its six chains with LayerZero. You receive the same amount at the
             same address on the other chain. You pay only the LayerZero fee, in the From chain&apos;s
@@ -378,6 +378,8 @@ export function BridgeSection() {
           <div className="bridge-row">
             <label>
               <span>From</span>
+              <span className="bridge-pick">
+              <img className="bridge-pick-logo" src={`/chains/${from.id}.png`} alt="" width={22} height={22} />
               <select value={fromId} onChange={(e) => setFromId(e.target.value)} disabled={busy}>
                 {BRIDGE_CHAINS.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -386,6 +388,7 @@ export function BridgeSection() {
                   </option>
                 ))}
               </select>
+              </span>
             </label>
             <button
               type="button"
@@ -401,6 +404,8 @@ export function BridgeSection() {
             </button>
             <label>
               <span>To</span>
+              <span className="bridge-pick">
+              <img className="bridge-pick-logo" src={`/chains/${to.id}.png`} alt="" width={22} height={22} />
               <select value={toId} onChange={(e) => setToId(e.target.value)} disabled={busy}>
                 {BRIDGE_CHAINS.filter((c) => c.id !== fromId).map((c) => (
                   <option key={c.id} value={c.id}>
@@ -408,6 +413,7 @@ export function BridgeSection() {
                   </option>
                 ))}
               </select>
+              </span>
             </label>
           </div>
 
