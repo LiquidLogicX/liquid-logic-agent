@@ -1,5 +1,6 @@
 import { LlxPaySection } from "@/components/LlxPaySection";
 import { LlxSection } from "@/components/LlxSection";
+import { LlxV2Section } from "@/components/LlxV2Section";
 import { LlxUtility } from "@/components/LlxUtility";
 import { XLockSection } from "@/components/XLockSection";
 import {
@@ -58,6 +59,19 @@ export default function HomePage() {
       <TokenRoadmapSection />
 
       <TeamSection />
+
+      <section className="block" id="llx-v2">
+        <div className="wrap sec-head">
+          <div>
+            <h2>$LLX V2</h2>
+            <p className="intro">
+              The Liquid Logic X token. One address on six chains, moved between
+              them with LayerZero.
+            </p>
+          </div>
+          <LlxV2Section />
+        </div>
+      </section>
 
       <section className="block" id="llx">
         <div className="wrap sec-head">

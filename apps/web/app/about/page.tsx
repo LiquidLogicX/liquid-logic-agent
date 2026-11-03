@@ -8,10 +8,14 @@ import {
   CONTACT_TELEGRAM,
   CONTACT_X,
   TOKEN_HEADING,
+  TOKEN_V2_HEADING,
+  TOKEN_V2_LABEL,
+  TOKEN_V2_NOTE,
   TOKEN_LABEL,
   TOKEN_NOTE,
 } from "@/lib/about";
 import { LLX_CONTRACT, LLX_VIRTUALS } from "@/lib/site";
+import { LLX_V2_CONTRACT, LLX_V2_EXPLORERS } from "@/lib/site";
 
 const DESCRIPTION =
   "Liquid Logic X builds payment infrastructure for businesses and AI agents, with a public, verifiable proof for every stablecoin payment.";
@@ -88,6 +92,26 @@ export default function AboutPage() {
             </a>
           </li>
         </ul>
+      </section>
+
+      <section className="docs-card" aria-labelledby="about-token-v2">
+        <h2 id="about-token-v2">{TOKEN_V2_HEADING}</h2>
+        <p>{TOKEN_V2_LABEL}:</p>
+        <p>
+          <code className="about-ca">{LLX_V2_CONTRACT}</code>
+        </p>
+        <p>
+          Explorers:{" "}
+          {LLX_V2_EXPLORERS.map((e, i) => (
+            <span key={e.label}>
+              {i > 0 ? " · " : ""}
+              <a href={e.href} rel="noopener noreferrer">
+                {e.label}
+              </a>
+            </span>
+          ))}
+        </p>
+        <p className="ca-note">{TOKEN_V2_NOTE}</p>
       </section>
 
       <section className="docs-card" aria-labelledby="about-token">

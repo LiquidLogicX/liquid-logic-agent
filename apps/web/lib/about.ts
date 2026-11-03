@@ -51,6 +51,13 @@ export const CONTACT_X = "https://x.com/LiquidLogicX";
 
 export const CONTACT_TELEGRAM = "https://t.me/LiquidLogicXofficial";
 
+export const TOKEN_V2_HEADING = "$LLX V2 token";
+
+export const TOKEN_V2_LABEL = "$LLX V2 (LayerZero OFT), same address on HyperEVM, BNB Chain, Base, Arc, Robinhood Chain and Tempo";
+
+export const TOKEN_V2_NOTE =
+  "This is the current $LLX token. Any other $LLX V2 address is not ours.";
+
 export const TOKEN_HEADING = "Original $LLX (V1) token";
 
 export const TOKEN_LABEL = "$LLX V1 on Virtuals (Base)";

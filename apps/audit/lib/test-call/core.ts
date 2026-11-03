@@ -1,5 +1,5 @@
 /** Pure helpers for the "Run test call" button (no browser APIs; unit-tested). */
-export const DEFAULT_TEST_TOKEN = "0xB9Dd507a5b352783b25e14c9b6E77D9f0067380f"; // LLX
+export const DEFAULT_TEST_TOKEN = "0x72885fBFA330d1a8fA95880A85b73d699943053B"; // $LLX V2 (same address on all six chains)
 export const BASE_CHAIN_ID = 8453;
 export const BASE_CHAIN_HEX = "0x2105";
 const ADDR = /^0x[0-9a-fA-F]{40}$/;
