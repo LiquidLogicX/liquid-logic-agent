@@ -1,4 +1,5 @@
-import { LLX_CONTRACT } from "./site";
+import { LLX_V2_VAULT } from "./bridge";
+import { LLX_CONTRACT, LLX_V2_CONTRACT, LLX_V2_EXPLORERS } from "./site";
 
 /** Official Liquid Logic X addresses. Static list, verified on-chain before publishing. */
 export type OfficialAddress = {
@@ -21,6 +22,20 @@ const basescan = (a: string) => `https://basescan.org/address/${a}`;
 export const XLOCK_V2 = "0x54b3019acBBf9aeFDc545d5CeA75e10322eA9D44" as const;
 
 export const OFFICIAL_ADDRESSES: OfficialAddress[] = [
+  {
+    name: "$LLX V2 token",
+    address: LLX_V2_CONTRACT as `0x${string}`,
+    purpose:
+      "The current $LLX token (LayerZero OFT). Same address on HyperEVM, BNB Chain, Base, Arc, Robinhood Chain and Tempo.",
+    explorer: LLX_V2_EXPLORERS[0],
+    chains: [...LLX_V2_EXPLORERS],
+  },
+  {
+    name: "LLX V2 Vault (2-of-3 Safe)",
+    address: LLX_V2_VAULT as `0x${string}`,
+    purpose: "Owns $LLX V2 and its LayerZero settings on all six chains, and owns every $LLX V2 PinkLock lock.",
+    explorer: { label: "BscScan", href: `https://bscscan.com/address/${LLX_V2_VAULT}` },
+  },
   {
     name: "$LLX V1 token (original)",
     address: LLX_CONTRACT as `0x${string}`,
