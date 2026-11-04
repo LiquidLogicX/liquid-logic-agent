@@ -22,8 +22,21 @@ export const DEFAULT_RECORDER_URL = "https://arc-settlement-recorder.onrender.co
 export const DEFAULT_BASE_RPC_URL = "https://mainnet.base.org";
 export const VERIFIER_BASE_URL = "https://proofs.liquidlogicx.com";
 
-/** Recorder refuses to write under 12 Base confirmations; check first so we fail before any write. */
-export const MIN_BASE_CONFIRMATIONS = 12;
+/**
+ * Chain-time age required before /api/prove will record a Base payment.
+ * `block.timestamp` stays in seconds, so this does not shrink when Base
+ * Denim cuts block time from 2s to 200ms (mainnet 2026-11-05 18:00 UTC).
+ * Same threshold as arc-settlement-recorder (`BASE_MIN_SETTLEMENT_SECONDS`).
+ */
+export const MIN_BASE_SETTLEMENT_SECONDS = 60;
+/**
+ * Extra confirmation floor on top of the time / L1-safe rule.
+ * At the post-Denim 200ms cadence, 300 blocks is 60 seconds. It is not a
+ * substitute for {@link MIN_BASE_SETTLEMENT_SECONDS}: a payment still has to
+ * be 60s old or at/behind the `safe` head. 12 blocks is ~2.4s after Denim
+ * and is not a wait.
+ */
+export const MIN_BASE_CONFIRMATIONS = 300;
 /** 0.05 native USDC (18-dec) — same default as the recorder's MIN_RECORDER_GAS_WEI. */
 export const DEFAULT_RECORDER_MIN_GAS_WEI = 50_000_000_000_000_000n;
 

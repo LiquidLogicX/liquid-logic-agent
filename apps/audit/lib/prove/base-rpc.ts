@@ -12,10 +12,19 @@ export type RpcReceipt = {
   logs: RpcLog[];
 };
 
+export type RpcHead = { number: bigint; timestamp: bigint };
+
 export type BaseReader = {
   getReceipt(txHash: string): Promise<RpcReceipt | null>;
   getBlockNumber(): Promise<bigint>;
   getBlockTimestamp(blockNumberHex: string): Promise<bigint>;
+  /** Latest head, including its timestamp (one `eth_getBlockByNumber`). */
+  getHead(): Promise<RpcHead>;
+  /**
+   * L1-safe head (`safe` tag). Null when the tag is missing or the call fails.
+   * Null never counts as settled.
+   */
+  getSafeHead(): Promise<bigint | null>;
 };
 
 export class BaseRpcError extends Error {}
@@ -50,6 +59,23 @@ export function createBaseReader(rpcUrl: string, fetchImpl: typeof fetch = fetch
       const block = await call<{ timestamp: string } | null>("eth_getBlockByNumber", [bn, false]);
       if (!block) throw new BaseRpcError(`Base block ${bn} not found`);
       return BigInt(block.timestamp);
+    },
+    getHead: async () => {
+      const block = await call<{ number?: string; timestamp?: string } | null>("eth_getBlockByNumber", [
+        "latest",
+        false,
+      ]);
+      if (!block?.number || block.timestamp == null) throw new BaseRpcError("Base chain head unavailable");
+      return { number: BigInt(block.number), timestamp: BigInt(block.timestamp) };
+    },
+    getSafeHead: async () => {
+      try {
+        const block = await call<{ number?: string } | null>("eth_getBlockByNumber", ["safe", false]);
+        if (!block?.number) return null;
+        return BigInt(block.number);
+      } catch {
+        return null;
+      }
     },
   };
 }
