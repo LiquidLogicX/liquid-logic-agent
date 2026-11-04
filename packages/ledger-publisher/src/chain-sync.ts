@@ -8,18 +8,35 @@
  * pre-launch treasurer→payTo payments. The published ledger therefore showed 1
  * payment while payTo had 9 USDC Transfers on Base.
  *
- * This reads every Base USDC Transfer *to* payTo via JSON-RPC eth_getLogs
- * (public mainnet.base.org caps eth_getLogs at 500 blocks as of 2026-10-05;
- *  paid RPCs may allow more) and appends any tx hash that is not already in
- * the ledger. Existing rows are never modified. Only blocks with
- * ≥ CONFIRMATIONS are scanned; a cursor in data/chain-sync.json keeps runs short.
- * If the RPC returns "limited to a N range", the scanner auto-shrinks the chunk.
+ * This reads Base USDC Transfers *to* payTo via JSON-RPC eth_getLogs and
+ * appends any tx hash that is not already in the ledger. Existing rows are
+ * never modified. Only blocks with ≥ CONFIRMATIONS are scanned.
+ *
+ * Each run writes data/chain-sync.json (`lastScannedBlock`) and scans at most
+ * DEFAULT_MAX_BLOCKS_PER_RUN blocks, in chunks no larger than the RPC
+ * eth_getLogs cap (500 on public mainnet.base.org). If the node returns
+ * "limited to a N range", the scanner auto-shrinks. The next run resumes at
+ * lastScannedBlock + 1.
+ *
+ * publish-ledger checks out main, and main is protected, so the checkpoint
+ * usually lives on automation/ledger-publish until that PR merges. A newer
+ * checkpoint passed via LEDGER_CHAIN_SYNC_RESUME_* wins over the file on
+ * main, and that branch's ledger rows are merged in first so those blocks
+ * are not scanned again and unmerged payments are not dropped.
+ *
+ * Base Denim (~2026-11-05) produces blocks about 10× faster (~200ms,
+ * ~108_000 per 6-hour run). The per-run cap stays above that inflow so a
+ * backlog shrinks, and far below the ~1.26M-block rescan from the stale
+ * cursor on main (52257940).
  *
  * Usage (repo root): npm run chain-sync-ledger
  * Env: BASE_RPC_URL, LEDGER_PAY_TO_EVM, LEDGER_JSONL_PATH, LEDGER_CHAIN_SYNC_CURSOR,
- *      LEDGER_CHAIN_SYNC_CHUNK (default 500), LEDGER_CHAIN_SYNC_START_BLOCK
- *      (default DEFAULT_START_BLOCK = full payTo history, which includes the
- *      pre-launch Sep 13–14 treasurer self-tests the genesis reset had dropped)
+ *      LEDGER_CHAIN_SYNC_CHUNK (default 500), LEDGER_CHAIN_SYNC_MAX_BLOCKS
+ *      (default DEFAULT_MAX_BLOCKS_PER_RUN), LEDGER_CHAIN_SYNC_RPC_LIMIT
+ *      (paid endpoints that allow a wider eth_getLogs), LEDGER_CHAIN_SYNC_START_BLOCK
+ *      (default DEFAULT_START_BLOCK = full payTo history, including the
+ *      pre-launch Sep 13–14 treasurer self-tests the genesis reset dropped),
+ *      LEDGER_CHAIN_SYNC_RESUME_CURSOR, LEDGER_CHAIN_SYNC_RESUME_LEDGER
  */
 import "dotenv/config";
 import fs from "node:fs";
@@ -46,8 +63,17 @@ export const DEFAULT_PAY_TO = "0x147991A1c25e78f6D9225d2dBA61eD93A6158c7b";
 /** Just before payTo's first USDC receipt (block 51266731, 2026-09-13). */
 export const DEFAULT_START_BLOCK = 51_266_000n;
 export const CONFIRMATIONS = 12n;
-/** Default eth_getLogs window. mainnet.base.org enforces 500; override via LEDGER_CHAIN_SYNC_CHUNK. */
-export const DEFAULT_CHUNK = 500n;
+/** Public mainnet.base.org eth_getLogs range cap (500 as of 2026-10-05). */
+export const RPC_GETLOGS_RANGE_LIMIT = 500n;
+/** Default eth_getLogs window. Override via LEDGER_CHAIN_SYNC_CHUNK. Clamped to the RPC cap. */
+export const DEFAULT_CHUNK = RPC_GETLOGS_RANGE_LIMIT;
+/**
+ * Blocks scanned per publish-ledger run.
+ * 6h at 2s blocks ≈ 10_800; Denim at ~200ms ≈ 108_000. 250_000 stays ahead of
+ * that inflow (500 eth_getLogs calls at the public cap) and bounds a cold
+ * start that would otherwise walk ~1.26M blocks back to the cursor on main.
+ */
+export const DEFAULT_MAX_BLOCKS_PER_RUN = 250_000n;
 export const TRANSFER_TOPIC =
   "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 export const AUDIT_ORIGIN = "https://audit.liquidlogicx.com";
@@ -228,9 +254,207 @@ export async function fetchTransfersTo(opts: {
   return out;
 }
 
-// ------------------------------------------------------------------ main
+// ------------------------------------------------------------------ scan window
 
 type Cursor = { payTo: string; lastScannedBlock: string };
+
+/** eth_getLogs span to request. Never larger than the RPC range cap. */
+export function chunkSize(requested: bigint, rpcRangeLimit: bigint = RPC_GETLOGS_RANGE_LIMIT): bigint {
+  const limit = rpcRangeLimit > 0n ? rpcRangeLimit : RPC_GETLOGS_RANGE_LIMIT;
+  if (requested <= 0n || requested > limit) return limit;
+  return requested;
+}
+
+/**
+ * Inclusive window for this run. null when every confirmed block is already
+ * behind the resume point. `caughtUp` is false when the cap, not the chain
+ * tip, ended the window — the checkpoint must still advance.
+ */
+export function planScanWindow(opts: {
+  fromBlock: bigint;
+  confirmedTip: bigint;
+  maxBlocks: bigint;
+}): { fromBlock: bigint; toBlock: bigint; caughtUp: boolean } | null {
+  if (opts.maxBlocks <= 0n) throw new Error("maxBlocks must be positive");
+  if (opts.confirmedTip < opts.fromBlock) return null;
+  const cappedEnd = opts.fromBlock + opts.maxBlocks - 1n;
+  const toBlock = cappedEnd < opts.confirmedTip ? cappedEnd : opts.confirmedTip;
+  return { fromBlock: opts.fromBlock, toBlock, caughtUp: toBlock === opts.confirmedTip };
+}
+
+export function formatCursor(payTo: string, lastScannedBlock: bigint): string {
+  return JSON.stringify({ payTo, lastScannedBlock: lastScannedBlock.toString() } satisfies Cursor, null, 2) + "\n";
+}
+
+/** Checkpoint block for this payTo, or null when the file is missing, malformed, or for another address. */
+export function parseCursorRaw(raw: string | null | undefined, payTo: string): bigint | null {
+  if (!raw?.trim()) return null;
+  let parsed: Partial<Cursor>;
+  try {
+    parsed = JSON.parse(raw) as Partial<Cursor>;
+  } catch {
+    return null;
+  }
+  if (parsed.payTo?.toLowerCase() !== payTo.toLowerCase()) return null;
+  if (typeof parsed.lastScannedBlock !== "string" || !/^\d+$/.test(parsed.lastScannedBlock)) return null;
+  return BigInt(parsed.lastScannedBlock);
+}
+
+export type ResumeBundle = {
+  cursorRaw: string | null;
+  ledgerRaw: string | null;
+};
+
+/**
+ * Resume at one past the newest checkpoint. A resume bundle is adopted only
+ * when its cursor is strictly ahead and it carries a non-empty ledger, and
+ * those rows are union-merged so unmerged payments survive the next commit
+ * (which is cut from main, not from the automation branch).
+ */
+export function selectResumeState(opts: {
+  payTo: string;
+  startBlock: bigint;
+  localCursorRaw: string | null;
+  localLedgerRaw: string;
+  resumes?: ResumeBundle[];
+}): { fromBlock: bigint; events: LedgerEvent[]; checkpointBlock: bigint | null } {
+  const localEvents = parseLedgerJsonl(opts.localLedgerRaw);
+  let bestBlock = parseCursorRaw(opts.localCursorRaw, opts.payTo);
+  let bestEvents: LedgerEvent[] | null = null;
+
+  for (const resume of opts.resumes ?? []) {
+    if (resume.ledgerRaw == null || resume.ledgerRaw.trim() === "") continue;
+    const block = parseCursorRaw(resume.cursorRaw, opts.payTo);
+    if (block === null) continue;
+    if (bestBlock !== null && block <= bestBlock) continue;
+    bestBlock = block;
+    bestEvents = parseLedgerJsonl(resume.ledgerRaw);
+  }
+
+  const events = bestEvents ? mergeLedgerEvents(localEvents, bestEvents) : localEvents;
+  const fromBlock =
+    bestBlock === null ? opts.startBlock : bestBlock + 1n > opts.startBlock ? bestBlock + 1n : opts.startBlock;
+  return { fromBlock, events, checkpointBlock: bestBlock };
+}
+
+export type ChainSyncAdded = {
+  txHash: string;
+  amountUsdc: string;
+  endpoint: string;
+  from: string;
+};
+
+export type ChainSyncRunResult =
+  | {
+      ok: true;
+      skipped: true;
+      reason: "no new confirmed blocks";
+      payTo: string;
+      resumedFromBlock: string | null;
+    }
+  | {
+      ok: true;
+      payTo: string;
+      resumedFromBlock: string | null;
+      scanned: { fromBlock: string; toBlock: string };
+      blocksScanned: string;
+      caughtUp: boolean;
+      maxBlocks: string;
+      chunk: string;
+      transfersSeen: number;
+      added: ChainSyncAdded[];
+    };
+
+/**
+ * One publish-ledger scan: resume from the newest checkpoint, walk a bounded
+ * window in RPC-sized chunks, write the ledger (if it changed) before the
+ * checkpoint so a failed cursor write retries the same window instead of
+ * skipping payments.
+ */
+export async function runChainSync(opts: {
+  rpc: Rpc;
+  payTo: string;
+  startBlock: bigint;
+  chunk: bigint;
+  maxBlocks: bigint;
+  confirmations: bigint;
+  rpcRangeLimit?: bigint;
+  localCursorRaw: string | null;
+  localLedgerRaw: string;
+  resumes?: ResumeBundle[];
+  writeCursor: (body: string) => void;
+  writeLedger: (body: string) => void;
+}): Promise<ChainSyncRunResult> {
+  const resume = selectResumeState(opts);
+  const head = BigInt(await opts.rpc<string>("eth_blockNumber", []));
+  const confirmedTip = head - opts.confirmations;
+  const maxBlocks = opts.maxBlocks > 0n ? opts.maxBlocks : DEFAULT_MAX_BLOCKS_PER_RUN;
+  const window = planScanWindow({
+    fromBlock: resume.fromBlock,
+    confirmedTip,
+    maxBlocks,
+  });
+  const resumedFromBlock = resume.checkpointBlock?.toString() ?? null;
+
+  const writeLedgerIfChanged = (events: LedgerEvent[]) => {
+    const next = serializeLedgerJsonl(events);
+    const prev = serializeLedgerJsonl(parseLedgerJsonl(opts.localLedgerRaw));
+    if (next !== prev) opts.writeLedger(next);
+  };
+
+  if (!window) {
+    writeLedgerIfChanged(resume.events);
+    // Nothing new to scan, but the adopted checkpoint may live only on the
+    // automation branch. Write it onto this checkout so the commit records
+    // it; otherwise the next run opens main's stale cursor and rescans.
+    const localBlock = parseCursorRaw(opts.localCursorRaw, opts.payTo);
+    if (resume.checkpointBlock !== null && (localBlock === null || resume.checkpointBlock > localBlock)) {
+      opts.writeCursor(formatCursor(opts.payTo, resume.checkpointBlock));
+    }
+    return {
+      ok: true,
+      skipped: true,
+      reason: "no new confirmed blocks",
+      payTo: opts.payTo,
+      resumedFromBlock,
+    };
+  }
+
+  const chunk = chunkSize(opts.chunk, opts.rpcRangeLimit ?? RPC_GETLOGS_RANGE_LIMIT);
+  const transfers = await fetchTransfersTo({
+    rpc: opts.rpc,
+    payTo: opts.payTo,
+    fromBlock: window.fromBlock,
+    toBlock: window.toBlock,
+    chunk,
+  });
+  const { events, added } = reconcile(resume.events, transfers, opts.payTo);
+  // Ledger first, checkpoint second. Reconcile is idempotent, so a run that
+  // dies before the cursor write scans this window again. The reverse order
+  // would skip the window and drop the payments.
+  writeLedgerIfChanged(events);
+  opts.writeCursor(formatCursor(opts.payTo, window.toBlock));
+
+  return {
+    ok: true,
+    payTo: opts.payTo,
+    resumedFromBlock,
+    scanned: { fromBlock: window.fromBlock.toString(), toBlock: window.toBlock.toString() },
+    blocksScanned: (window.toBlock - window.fromBlock + 1n).toString(),
+    caughtUp: window.caughtUp,
+    maxBlocks: maxBlocks.toString(),
+    chunk: chunk.toString(),
+    transfersSeen: transfers.length,
+    added: added.map((a) => ({
+      txHash: a.txHash ?? "",
+      amountUsdc: a.amountUsdc,
+      endpoint: a.endpoint,
+      from: a.walletAddress ?? "",
+    })),
+  };
+}
+
+// ------------------------------------------------------------------ main
 
 function repoRoot(): string {
   let dir = process.cwd();
@@ -241,6 +465,27 @@ function repoRoot(): string {
   return path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 }
 
+function envBigint(name: string, fallback: bigint): bigint {
+  const raw = process.env[name]?.trim();
+  if (!raw) return fallback;
+  if (!/^\d+$/.test(raw)) throw new Error(`${name} must be a non-negative integer`);
+  return BigInt(raw);
+}
+
+function readMaybe(filePath: string | undefined): string | null {
+  if (!filePath?.trim()) return null;
+  const abs = path.resolve(filePath.trim());
+  if (!fs.existsSync(abs)) return null;
+  return fs.readFileSync(abs, "utf8");
+}
+
+function writeTextAtomic(filePath: string, body: string): void {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  const tmp = `${filePath}.${process.pid}.tmp`;
+  fs.writeFileSync(tmp, body);
+  fs.renameSync(tmp, filePath);
+}
+
 async function main(): Promise<void> {
   const root = repoRoot();
   const jsonlPath = path.resolve(process.env.LEDGER_JSONL_PATH ?? path.join(root, "data/ledger.jsonl"));
@@ -248,48 +493,28 @@ async function main(): Promise<void> {
   const payTo = (process.env.LEDGER_PAY_TO_EVM ?? process.env.AUDIT_PAY_TO_EVM ?? DEFAULT_PAY_TO).replace(/\s+/g, "");
   if (!/^0x[a-fA-F0-9]{40}$/.test(payTo)) throw new Error("LEDGER_PAY_TO_EVM must be a 0x address");
   const rpcUrl = process.env.BASE_RPC_URL?.trim() || "https://mainnet.base.org";
-  const chunk = BigInt(process.env.LEDGER_CHAIN_SYNC_CHUNK ?? DEFAULT_CHUNK.toString());
   const rpc = jsonRpc(rpcUrl);
 
-  const startBlock = BigInt(process.env.LEDGER_CHAIN_SYNC_START_BLOCK?.trim() || DEFAULT_START_BLOCK);
-  let fromBlock = startBlock;
-  if (fs.existsSync(cursorPath)) {
-    const c = JSON.parse(fs.readFileSync(cursorPath, "utf8")) as Cursor;
-    if (c.payTo?.toLowerCase() === payTo.toLowerCase()) {
-      const next = BigInt(c.lastScannedBlock) + 1n;
-      if (next > fromBlock) fromBlock = next;
-    }
-  }
-  const head = BigInt(await rpc<string>("eth_blockNumber", []));
-  const toBlock = head - CONFIRMATIONS;
-  if (toBlock < fromBlock) {
-    console.log(JSON.stringify({ ok: true, skipped: true, reason: "no new confirmed blocks" }));
-    return;
-  }
-
-  const transfers = await fetchTransfersTo({ rpc, payTo, fromBlock, toBlock, chunk });
-  const raw = fs.existsSync(jsonlPath) ? fs.readFileSync(jsonlPath, "utf8") : "";
-  const existing = parseLedgerJsonl(raw);
-  const { events, added } = reconcile(existing, transfers, payTo);
-  if (added.length) fs.writeFileSync(jsonlPath, serializeLedgerJsonl(events), "utf8");
-  fs.writeFileSync(
-    cursorPath,
-    JSON.stringify({ payTo, lastScannedBlock: toBlock.toString() } satisfies Cursor, null, 2) + "\n",
-    "utf8",
-  );
-  console.log(
-    JSON.stringify(
+  const result = await runChainSync({
+    rpc,
+    payTo,
+    startBlock: envBigint("LEDGER_CHAIN_SYNC_START_BLOCK", DEFAULT_START_BLOCK),
+    chunk: envBigint("LEDGER_CHAIN_SYNC_CHUNK", DEFAULT_CHUNK),
+    maxBlocks: envBigint("LEDGER_CHAIN_SYNC_MAX_BLOCKS", DEFAULT_MAX_BLOCKS_PER_RUN),
+    confirmations: CONFIRMATIONS,
+    rpcRangeLimit: envBigint("LEDGER_CHAIN_SYNC_RPC_LIMIT", RPC_GETLOGS_RANGE_LIMIT),
+    localCursorRaw: readMaybe(cursorPath),
+    localLedgerRaw: readMaybe(jsonlPath) ?? "",
+    resumes: [
       {
-        ok: true,
-        payTo,
-        scanned: { fromBlock: fromBlock.toString(), toBlock: toBlock.toString() },
-        transfersSeen: transfers.length,
-        added: added.map((a) => ({ txHash: a.txHash, amountUsdc: a.amountUsdc, endpoint: a.endpoint, from: a.walletAddress })),
+        cursorRaw: readMaybe(process.env.LEDGER_CHAIN_SYNC_RESUME_CURSOR),
+        ledgerRaw: readMaybe(process.env.LEDGER_CHAIN_SYNC_RESUME_LEDGER),
       },
-      null,
-      2,
-    ),
-  );
+    ],
+    writeCursor: (body) => writeTextAtomic(cursorPath, body),
+    writeLedger: (body) => writeTextAtomic(jsonlPath, body),
+  });
+  console.log(JSON.stringify(result, null, 2));
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {

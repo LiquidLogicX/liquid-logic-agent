@@ -36,13 +36,17 @@ Do **not** resume normal union sync with a dirty disk.
 ## Chain-sync: payments received by payTo (x402 revenue)
 
 `npm run chain-sync-ledger` (also the first step of the Publish ledger workflow)
-reads every Base USDC `Transfer` to the x402 payTo
+reads Base USDC `Transfer`s to the x402 payTo
 `0x147991A1c25e78f6D9225d2dBA61eD93A6158c7b` over JSON-RPC and appends a
 `payment` row for any tx hash not already in this file (existing rows are never
 edited). Rows carry `walletAddress` = payer, `payTo`, and an endpoint inferred
 from the price (`0.03` → `/api/audit`, legacy `0.05`, `0.001` → `/api/allowance`, `0.02` →
-`/api/prove`). `data/chain-sync.json` is the scan cursor (only committed with a
-real ledger change).
+`/api/prove`). `data/chain-sync.json` is the scan checkpoint
+(`lastScannedBlock`). Each publish-ledger run scans at most 250000 blocks
+(500-block `eth_getLogs` chunks, the public Base cap) and the checkpoint is
+committed even when no new payment landed, so the next run resumes. Until that
+commit is on main, the workflow also reads a newer checkpoint on
+`automation/ledger-publish`.
 
 Why: before this, only LLX's own outgoing payments reached this file (treasurer
 disk sync + `paid-*-call` scripts). Payments other agents made to our endpoints
@@ -52,6 +56,7 @@ were never recorded, and the genesis reset dropped the Sep 13–14 self-tests, s
 The treasurer daily cap only counts rows whose `walletAddress` is the treasurer
 (or is missing), so other agents' payments never eat into it.
 
-Env: `BASE_RPC_URL` (default `https://mainnet.base.org`, 2,000-block getLogs cap),
-`LEDGER_CHAIN_SYNC_CHUNK`, `LEDGER_CHAIN_SYNC_START_BLOCK` (set to the launch
-block to leave pre-launch history out), `LEDGER_PAY_TO_EVM`.
+Env: `BASE_RPC_URL` (default `https://mainnet.base.org`, 500-block getLogs cap),
+`LEDGER_CHAIN_SYNC_CHUNK`, `LEDGER_CHAIN_SYNC_MAX_BLOCKS` (default 250000 per
+run — above Denim's ~108000 blocks per 6 hours), `LEDGER_CHAIN_SYNC_START_BLOCK`
+(set to the launch block to leave pre-launch history out), `LEDGER_PAY_TO_EVM`.
