@@ -27,14 +27,38 @@ jobs:
           cache: npm
       - run: npm install
       - run: npm run build -w @liquid-logic/shared && npm run build -w @liquid-logic/ledger-publisher
-      # Append every Base USDC Transfer to the x402 payTo (audit/allowance/prove
-      # payments from ANY payer) that is missing from data/ledger.jsonl.
+      # main is protected, so the previous run's checkpoint is on
+      # automation/ledger-publish, not on the main checkout. Restore it (and
+      # the ledger rows that go with it) or the next run rescans from the
+      # stale cursor — ~1.26M blocks as of 2026-11-04, and more after Denim.
+      - name: Restore chain-sync checkpoint
+        run: |
+          mkdir -p "$RUNNER_TEMP/ledger-resume"
+          if git fetch --depth=1 origin automation/ledger-publish; then
+            if git cat-file -e FETCH_HEAD:data/chain-sync.json && git cat-file -e FETCH_HEAD:data/ledger.jsonl; then
+              git show FETCH_HEAD:data/chain-sync.json > "$RUNNER_TEMP/ledger-resume/chain-sync.json"
+              git show FETCH_HEAD:data/ledger.jsonl > "$RUNNER_TEMP/ledger-resume/ledger.jsonl"
+              echo "Restored checkpoint from automation/ledger-publish"
+              node -e 'const j=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")); console.log("resume lastScannedBlock", j.lastScannedBlock);' "$RUNNER_TEMP/ledger-resume/chain-sync.json"
+            else
+              echo "automation/ledger-publish has no checkpoint yet."
+            fi
+          else
+            echo "automation/ledger-publish unavailable; using data/chain-sync.json on this checkout."
+          fi
+      # Append Base USDC Transfers to the x402 payTo that are missing from
+      # data/ledger.jsonl. One run scans at most LEDGER_CHAIN_SYNC_MAX_BLOCKS
+      # (250000, above Denim's ~108000 blocks / 6h) in ≤500-block eth_getLogs
+      # chunks, then writes data/chain-sync.json at the last block it finished.
       - name: Reconcile payTo receipts from Base
         env:
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
           LEDGER_JSONL_PATH: data/ledger.jsonl
           # mainnet.base.org (fallback when BASE_RPC_URL unset) caps eth_getLogs at 500.
           LEDGER_CHAIN_SYNC_CHUNK: "500"
+          LEDGER_CHAIN_SYNC_MAX_BLOCKS: "250000"
+          LEDGER_CHAIN_SYNC_RESUME_CURSOR: ${{ runner.temp }}/ledger-resume/chain-sync.json
+          LEDGER_CHAIN_SYNC_RESUME_LEDGER: ${{ runner.temp }}/ledger-resume/ledger.jsonl
         run: npm run chain-sync-ledger
       - name: Publish public ledger + social drafts
         env:
@@ -60,11 +84,20 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/ledger.jsonl data/chain-sync.json public/ledger apps/web/public/ledger apps/audit/public/ledger drafts/social
+          # generatedAt / today churn is not a publish. A checkpoint advance is:
+          # without it the next checkout of main rescans the same blocks. Commit
+          # the cursor on its own when the ledger itself did not change.
           if git diff --staged --quiet -I '"generatedAt"' -I '"today"' -- . ':(exclude)data/chain-sync.json'; then
-            echo "No material ledger change (timestamps / cursor only) — nothing to publish."
-            exit 0
+            git reset -q
+            git add -- data/chain-sync.json
+            if git diff --staged --quiet; then
+              echo "No material ledger change and checkpoint unchanged — nothing to publish."
+              exit 0
+            fi
+            git commit -m "chore(ledger): advance chain-sync checkpoint"
+          else
+            git commit -m "chore(ledger): publish public ledger and social drafts"
           fi
-          git commit -m "chore(ledger): publish public ledger and social drafts"
           if git push origin HEAD:main; then
             exit 0
           fi

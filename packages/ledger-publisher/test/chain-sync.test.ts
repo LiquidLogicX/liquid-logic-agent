@@ -21,10 +21,18 @@ import {
 } from "@liquid-logic/shared";
 import {
   type ChainTransfer,
+  chunkSize,
+  DEFAULT_MAX_BLOCKS_PER_RUN,
   DEFAULT_PAY_TO,
   endpointForAmount,
   fetchTransfersTo,
+  formatCursor,
+  parseCursorRaw,
+  planScanWindow,
   reconcile,
+  RPC_GETLOGS_RANGE_LIMIT,
+  runChainSync,
+  selectResumeState,
 } from "../src/chain-sync.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -196,6 +204,358 @@ describe("fetchTransfersTo (Base JSON-RPC)", () => {
       const span = BigInt(c.params[0].toBlock) - BigInt(c.params[0].fromBlock) + 1n;
       assert.ok(span <= 500n);
     }
+  });
+});
+
+const hexBlock = (n: bigint) => "0x" + n.toString(16);
+
+/** Fake Base RPC. Every eth_getLogs span must stay inside the public cap. */
+function fakeRpc(head: bigint, logs: Array<Record<string, unknown>> = []) {
+  const calls: Array<{ method: string; params: unknown[] }> = [];
+  const rpc = async <T>(method: string, params: unknown[]): Promise<T> => {
+    calls.push({ method, params });
+    if (method === "eth_blockNumber") return hexBlock(head) as T;
+    if (method === "eth_getLogs") {
+      const filter = params[0] as { fromBlock: string; toBlock: string };
+      const from = BigInt(filter.fromBlock);
+      const to = BigInt(filter.toBlock);
+      assert.ok(to - from + 1n <= RPC_GETLOGS_RANGE_LIMIT, `eth_getLogs span ${to - from + 1n} exceeds RPC cap`);
+      return logs.filter((l) => {
+        const bn = BigInt(l.blockNumber as string);
+        return bn >= from && bn <= to;
+      }) as T;
+    }
+    if (method === "eth_getBlockByNumber") return { timestamp: "0x65000000" } as T;
+    throw new Error(method);
+  };
+  return { rpc: rpc as Parameters<typeof runChainSync>[0]["rpc"], calls };
+}
+
+function payToLog(block: bigint, txHash: string) {
+  return {
+    transactionHash: txHash,
+    blockNumber: hexBlock(block),
+    logIndex: "0x1",
+    topics: [
+      "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+      "0x" + "ab".repeat(32),
+      "0x" + DEFAULT_PAY_TO.slice(2).toLowerCase().padStart(64, "0"),
+    ],
+    data: "0x3e8",
+  };
+}
+
+const paymentLine = (txHash: string, timestamp: string) =>
+  JSON.stringify({
+    type: "payment",
+    timestamp,
+    endpoint: "https://audit.liquidlogicx.com/api/allowance",
+    amountUsdc: "0.001",
+    asset: "USDC",
+    network: "eip155:8453",
+    txHash,
+    walletAddress: "0x" + "ab".repeat(20),
+    payTo: DEFAULT_PAY_TO,
+    reason: "x402 payment received by payTo (Base chain-sync)",
+  });
+
+describe("bounded checkpointed scan", () => {
+  const staleCursor = 52_257_940n;
+  const backlog = 1_260_000n;
+
+  it("keeps the per-run cap above Denim's 10× block rate and under a full rescan", () => {
+    const sixHoursSeconds = 6n * 60n * 60n;
+    const denimBlockTimeMs = 200n;
+    const denimBlocksPerRun = (sixHoursSeconds * 1000n) / denimBlockTimeMs;
+    assert.equal(denimBlocksPerRun, 108_000n);
+    assert.ok(DEFAULT_MAX_BLOCKS_PER_RUN > denimBlocksPerRun);
+    assert.ok(DEFAULT_MAX_BLOCKS_PER_RUN < backlog);
+    assert.equal(DEFAULT_MAX_BLOCKS_PER_RUN / RPC_GETLOGS_RANGE_LIMIT, 500n);
+    assert.equal(RPC_GETLOGS_RANGE_LIMIT, 500n);
+  });
+
+  it("plans a capped window across the 1.26M-block gap and a short one at the tip", () => {
+    const fromBlock = staleCursor + 1n;
+    const tip = fromBlock + backlog - 1n;
+    const capped = planScanWindow({ fromBlock, confirmedTip: tip, maxBlocks: DEFAULT_MAX_BLOCKS_PER_RUN });
+    assert.ok(capped);
+    assert.equal(capped.toBlock - capped.fromBlock + 1n, DEFAULT_MAX_BLOCKS_PER_RUN);
+    assert.equal(capped.caughtUp, false);
+    assert.ok(capped.toBlock < tip);
+
+    const nearTip = planScanWindow({
+      fromBlock: tip - 100n,
+      confirmedTip: tip,
+      maxBlocks: DEFAULT_MAX_BLOCKS_PER_RUN,
+    });
+    assert.equal(nearTip?.toBlock, tip);
+    assert.equal(nearTip?.caughtUp, true);
+    assert.equal(planScanWindow({ fromBlock: tip + 1n, confirmedTip: tip, maxBlocks: 10n }), null);
+    assert.throws(() => planScanWindow({ fromBlock: 1n, confirmedTip: 2n, maxBlocks: 0n }));
+  });
+
+  it("clamps eth_getLogs chunks to the RPC range cap", () => {
+    assert.equal(chunkSize(5_000n), 500n);
+    assert.equal(chunkSize(100n), 100n);
+    assert.equal(chunkSize(0n), 500n);
+    assert.equal(chunkSize(2_000n, 2_000n), 2_000n);
+  });
+
+  it("scans at most the cap, in ≤500-block chunks, and checkpoints the last block of the window", async () => {
+    const fromBlock = staleCursor + 1n;
+    const head = fromBlock + backlog + 12n;
+    const { rpc, calls } = fakeRpc(head);
+    let cursor = "";
+    const result = await runChainSync({
+      rpc,
+      payTo: DEFAULT_PAY_TO,
+      startBlock: fromBlock,
+      chunk: 5_000n, // oversized on purpose; the run must clamp
+      maxBlocks: DEFAULT_MAX_BLOCKS_PER_RUN,
+      confirmations: 12n,
+      localCursorRaw: null,
+      localLedgerRaw: "",
+      writeCursor: (body) => {
+        cursor = body;
+      },
+      writeLedger: () => {
+        throw new Error("ledger should not change when the window has no transfers");
+      },
+    });
+    assert.equal("skipped" in result, false);
+    if (!("scanned" in result)) throw new Error("expected a scan");
+    assert.equal(result.blocksScanned, DEFAULT_MAX_BLOCKS_PER_RUN.toString());
+    assert.equal(result.caughtUp, false);
+    assert.equal(result.chunk, "500");
+    assert.equal(result.scanned.fromBlock, fromBlock.toString());
+    const logCalls = calls.filter((c) => c.method === "eth_getLogs");
+    assert.equal(logCalls.length, 500);
+    assert.equal(parseCursorRaw(cursor, DEFAULT_PAY_TO), BigInt(result.scanned.toBlock));
+    const last = logCalls[logCalls.length - 1]!.params[0] as { toBlock: string };
+    assert.equal(BigInt(last.toBlock), BigInt(result.scanned.toBlock));
+  });
+
+  it("resumes from the checkpoint and does not rescan the previous window", async () => {
+    const startBlock = 1_000n;
+    const head = startBlock + 1_000_000n;
+    let cursorRaw: string | null = null;
+    const base = {
+      payTo: DEFAULT_PAY_TO,
+      startBlock,
+      chunk: 500n,
+      maxBlocks: 1_000n,
+      confirmations: 12n,
+      localLedgerRaw: "",
+      writeLedger: () => {
+        throw new Error("no transfers");
+      },
+    };
+    const firstRpc = fakeRpc(head);
+    const first = await runChainSync({
+      ...base,
+      rpc: firstRpc.rpc,
+      localCursorRaw: null,
+      writeCursor: (body) => {
+        cursorRaw = body;
+      },
+    });
+    if (!("scanned" in first)) throw new Error("expected a scan");
+    assert.equal(first.scanned.fromBlock, "1000");
+    assert.equal(first.scanned.toBlock, "1999");
+    assert.equal(firstRpc.calls.filter((c) => c.method === "eth_getLogs").length, 2);
+
+    const secondRpc = fakeRpc(head);
+    const second = await runChainSync({
+      ...base,
+      rpc: secondRpc.rpc,
+      localCursorRaw: cursorRaw,
+      writeCursor: (body) => {
+        cursorRaw = body;
+      },
+    });
+    if (!("scanned" in second)) throw new Error("expected a scan");
+    assert.equal(second.resumedFromBlock, "1999");
+    assert.equal(second.scanned.fromBlock, "2000");
+    assert.equal(second.scanned.toBlock, "2999");
+    for (const call of secondRpc.calls.filter((c) => c.method === "eth_getLogs")) {
+      const filter = call.params[0] as { fromBlock: string };
+      assert.ok(BigInt(filter.fromBlock) >= 2_000n);
+    }
+    assert.equal(parseCursorRaw(cursorRaw, DEFAULT_PAY_TO), 2_999n);
+  });
+
+  it("adopts a newer automation-branch checkpoint and keeps its unmerged payments", async () => {
+    const localCursor = formatCursor(DEFAULT_PAY_TO, staleCursor);
+    const resumeAt = 53_492_212n;
+    const localTx = "0x" + "11".repeat(32);
+    const resumedTx = "0x" + "22".repeat(32);
+    const localLedger = paymentLine(localTx, "2026-10-06T00:00:00.000Z") + "\n";
+    const resumeLedger =
+      localLedger + paymentLine(resumedTx, "2026-10-20T00:00:00.000Z") + "\n";
+    const head = resumeAt + 1_000n + 12n;
+    const { rpc, calls } = fakeRpc(head);
+    let ledger = "";
+    const result = await runChainSync({
+      rpc,
+      payTo: DEFAULT_PAY_TO,
+      startBlock: 51_266_000n,
+      chunk: 500n,
+      maxBlocks: DEFAULT_MAX_BLOCKS_PER_RUN,
+      confirmations: 12n,
+      localCursorRaw: localCursor,
+      localLedgerRaw: localLedger,
+      resumes: [{ cursorRaw: formatCursor(DEFAULT_PAY_TO, resumeAt), ledgerRaw: resumeLedger }],
+      writeCursor: () => {},
+      writeLedger: (body) => {
+        ledger = body;
+      },
+    });
+    if (!("scanned" in result)) throw new Error("expected a scan");
+    assert.equal(result.resumedFromBlock, resumeAt.toString());
+    assert.equal(result.scanned.fromBlock, (resumeAt + 1n).toString());
+    assert.equal(result.blocksScanned, "1000");
+    assert.equal(result.caughtUp, true);
+    const logCalls = calls.filter((c) => c.method === "eth_getLogs");
+    assert.equal(logCalls.length, 2);
+    for (const call of logCalls) {
+      const filter = call.params[0] as { fromBlock: string };
+      assert.ok(BigInt(filter.fromBlock) > resumeAt);
+    }
+    assert.match(ledger, new RegExp(localTx));
+    assert.match(ledger, new RegExp(resumedTx));
+  });
+
+  it("ignores a resume bundle that is empty, stale, malformed, or for another payTo", () => {
+    const localLedger = paymentLine("0x" + "11".repeat(32), "2026-10-06T00:00:00.000Z") + "\n";
+    const localCursor = formatCursor(DEFAULT_PAY_TO, 1_000n);
+    const state = selectResumeState({
+      payTo: DEFAULT_PAY_TO,
+      startBlock: 100n,
+      localCursorRaw: localCursor,
+      localLedgerRaw: localLedger,
+      resumes: [
+        { cursorRaw: formatCursor(DEFAULT_PAY_TO, 9_000n), ledgerRaw: "" },
+        { cursorRaw: formatCursor(DEFAULT_PAY_TO, 9_000n), ledgerRaw: null },
+        { cursorRaw: "{", ledgerRaw: localLedger },
+        { cursorRaw: formatCursor("0x" + "cd".repeat(20), 9_000n), ledgerRaw: localLedger },
+        { cursorRaw: formatCursor(DEFAULT_PAY_TO, 500n), ledgerRaw: paymentLine("0x" + "33".repeat(32), "2026-10-01T00:00:00.000Z") + "\n" },
+      ],
+    });
+    assert.equal(state.fromBlock, 1_001n);
+    assert.equal(state.checkpointBlock, 1_000n);
+    assert.equal(state.events.length, 1);
+  });
+
+  it("does not advance the checkpoint when the RPC scan fails", async () => {
+    let writes = 0;
+    const rpc = async <T>(method: string): Promise<T> => {
+      if (method === "eth_blockNumber") return hexBlock(50_000n) as T;
+      throw new Error("eth_getLogs failed: timeout");
+    };
+    await assert.rejects(() =>
+      runChainSync({
+        rpc: rpc as Parameters<typeof runChainSync>[0]["rpc"],
+        payTo: DEFAULT_PAY_TO,
+        startBlock: 1_000n,
+        chunk: 500n,
+        maxBlocks: 1_000n,
+        confirmations: 12n,
+        localCursorRaw: formatCursor(DEFAULT_PAY_TO, 999n),
+        localLedgerRaw: "",
+        writeCursor: () => {
+          writes++;
+        },
+        writeLedger: () => {
+          writes++;
+        },
+      }),
+    );
+    assert.equal(writes, 0);
+  });
+
+  it("writes the ledger before the checkpoint so a failed cursor write retries the window", async () => {
+    const tx = "0x" + "44".repeat(32);
+    const block = 1_500n;
+    const { rpc } = fakeRpc(10_000n, [payToLog(block, tx)]);
+    let cursorWrites = 0;
+    await assert.rejects(
+      () =>
+        runChainSync({
+          rpc,
+          payTo: DEFAULT_PAY_TO,
+          startBlock: 1_000n,
+          chunk: 500n,
+          maxBlocks: 1_000n,
+          confirmations: 12n,
+          localCursorRaw: null,
+          localLedgerRaw: "",
+          writeLedger: () => {
+            throw new Error("disk full");
+          },
+          writeCursor: () => {
+            cursorWrites++;
+          },
+        }),
+      /disk full/,
+    );
+    assert.equal(cursorWrites, 0);
+  });
+
+  it("records a newer restored checkpoint even when the tip has not moved past it", async () => {
+    const localTx = "0x" + "11".repeat(32);
+    const resumedTx = "0x" + "55".repeat(32);
+    const localLedger = paymentLine(localTx, "2026-10-06T00:00:00.000Z") + "\n";
+    const resumeLedger = localLedger + paymentLine(resumedTx, "2026-10-20T00:00:00.000Z") + "\n";
+    const resumeAt = 5_000n;
+    const { rpc, calls } = fakeRpc(resumeAt + 12n);
+    let cursor = "";
+    let ledger = "";
+    const result = await runChainSync({
+      rpc,
+      payTo: DEFAULT_PAY_TO,
+      startBlock: 100n,
+      chunk: 500n,
+      maxBlocks: 1_000n,
+      confirmations: 12n,
+      localCursorRaw: formatCursor(DEFAULT_PAY_TO, 1_000n),
+      localLedgerRaw: localLedger,
+      resumes: [{ cursorRaw: formatCursor(DEFAULT_PAY_TO, resumeAt), ledgerRaw: resumeLedger }],
+      writeCursor: (body) => {
+        cursor = body;
+      },
+      writeLedger: (body) => {
+        ledger = body;
+      },
+    });
+    assert.equal(result.skipped, true);
+    assert.equal(parseCursorRaw(cursor, DEFAULT_PAY_TO), resumeAt);
+    assert.match(ledger, new RegExp(localTx));
+    assert.match(ledger, new RegExp(resumedTx));
+    assert.equal(calls.filter((c) => c.method === "eth_getLogs").length, 0);
+  });
+
+  it("skips when the checkpoint is already at the confirmed tip and does not rewrite the cursor", async () => {
+    const { rpc, calls } = fakeRpc(1_010n);
+    let cursorWrites = 0;
+    const result = await runChainSync({
+      rpc,
+      payTo: DEFAULT_PAY_TO,
+      startBlock: 1n,
+      chunk: 500n,
+      maxBlocks: 1_000n,
+      confirmations: 12n,
+      localCursorRaw: formatCursor(DEFAULT_PAY_TO, 1_000n),
+      localLedgerRaw: "",
+      writeCursor: () => {
+        cursorWrites++;
+      },
+      writeLedger: () => {
+        throw new Error("ledger unchanged");
+      },
+    });
+    assert.equal(result.skipped, true);
+    assert.equal(cursorWrites, 0);
+    assert.equal(calls.filter((c) => c.method === "eth_getLogs").length, 0);
   });
 });
 
