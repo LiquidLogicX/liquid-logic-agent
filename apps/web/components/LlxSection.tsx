@@ -1,4 +1,3 @@
-import { CopyButton } from "@/components/CopyButton";
 import {
   LLX_BASESCAN,
   LLX_CONTRACT,
@@ -7,7 +6,10 @@ import {
   LLX_VIRTUALS,
 } from "@/lib/site";
 
-/** Original $LLX (V1): a short card. V1 is being replaced by $LLX V2. */
+/**
+ * Original $LLX (V1): a short card. V1 is being replaced by $LLX V2.
+ * The V1 address is plain text only: no Copy button, no link (audit Nov 4, Website-M).
+ */
 export function LlxSection() {
   return (
     <div className="token-grid">
@@ -21,18 +23,10 @@ export function LlxSection() {
           Taken at Base block {LLX_V1_SNAPSHOT_BLOCK} ({LLX_V1_SNAPSHOT_TIME}).
           V1 bought after this block does not qualify for migration.
         </dd>
-        <dt>V1 contract</dt>
+        <dt>V1 (retired, do not buy)</dt>
         <dd>
           <div className="ca" style={{ justifyContent: "flex-end" }}>
-            <a
-              className="mono"
-              href={LLX_BASESCAN}
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              {LLX_CONTRACT}
-            </a>
-            <CopyButton value={LLX_CONTRACT} />
+            <span className="mono">{LLX_CONTRACT}</span>
           </div>
           <p className="ca-note">
             This is the original V1 contract, not the $LLX V2 token.
