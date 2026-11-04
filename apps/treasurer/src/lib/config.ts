@@ -10,6 +10,7 @@ import {
 import path from "node:path";
 import {
   DEFAULT_HOLD_TTL_SECONDS,
+  loadApprovingTtlSeconds,
   loadHoldAboveUsdc,
   loadHoldTtlSeconds,
 } from "./hold.js";
@@ -33,6 +34,17 @@ export interface TreasurerConfig {
   holdAboveUsdc: string | null;
   /** Mandatory TTL for unanswered holds (default 3600). Auto-deny → ledger type `expired`. */
   holdTtlSeconds: number;
+  /**
+   * How long a hold may stay in `approving` before recovery (default 900).
+   * Longer than a live settle. HOLD_APPROVING_TTL_SECONDS.
+   */
+  approvingTtlSeconds: number;
+  /**
+   * When set (TREASURER_PAY_TO), the 402 payTo must equal this address.
+   * Unset: pin whatever unanimous payTo the 402 names, and require the
+   * signed header to pay that address.
+   */
+  expectedPayTo: string | null;
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): TreasurerConfig {
@@ -56,6 +68,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): TreasurerConfi
   const isDev = environment === "development";
   const holdAboveUsdc = loadHoldAboveUsdc(env);
   const holdTtlSeconds = loadHoldTtlSeconds(env);
+  const approvingTtlSeconds = loadApprovingTtlSeconds(env);
+  const expectedPayTo = loadExpectedPayTo(env);
 
   return {
     environment,
@@ -73,5 +87,16 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): TreasurerConfi
       Number.isFinite(holdTtlSeconds) && holdTtlSeconds >= 1
         ? holdTtlSeconds
         : DEFAULT_HOLD_TTL_SECONDS,
+    approvingTtlSeconds,
+    expectedPayTo,
   };
+}
+
+function loadExpectedPayTo(env: NodeJS.ProcessEnv): string | null {
+  const raw = (env.TREASURER_PAY_TO ?? "").trim();
+  if (!raw) return null;
+  if (!/^0x[a-fA-F0-9]{40}$/.test(raw)) {
+    throw new Error("TREASURER_PAY_TO must be a 0x address (42 chars) when set");
+  }
+  return raw;
 }

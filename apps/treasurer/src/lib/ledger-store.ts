@@ -11,7 +11,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 export class LedgerStore {
-  constructor(private readonly filePath: string) {
+  constructor(readonly filePath: string) {
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
     if (!fs.existsSync(filePath)) {
       fs.writeFileSync(filePath, "", "utf8");
@@ -69,6 +69,8 @@ export class LedgerStore {
     tokenSymbol?: string;
     /** Tempo rail only: payee address. */
     payTo?: string;
+    /** Base rail: reservation this payment settles. */
+    reservationId?: string;
   }): boolean {
     const txHash = opts.txHash?.trim();
     if (!txHash || !/^0x[a-fA-F0-9]{64}$/.test(txHash)) {
@@ -92,6 +94,7 @@ export class LedgerStore {
       approvedBy: opts.approvedBy,
       tokenSymbol: opts.tokenSymbol,
       payTo: opts.payTo,
+      reservationId: opts.reservationId,
     });
     return true;
   }

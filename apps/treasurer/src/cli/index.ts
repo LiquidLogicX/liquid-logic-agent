@@ -172,7 +172,8 @@ async function main(): Promise<void> {
       console.log(
         JSON.stringify(
           {
-            ok: result.status >= 200 && result.status < 300,
+            ok: result.status >= 200 && result.status < 300 && !result.needsReview,
+            needsReview: result.needsReview === true,
             status: result.status,
             walletAddress: result.walletAddress,
             txHash: result.txHash,
@@ -183,7 +184,7 @@ async function main(): Promise<void> {
           2,
         ),
       );
-      if (result.status >= 400) process.exit(2);
+      if (result.needsReview || result.status >= 400) process.exit(2);
       await maybeSyncLedger(config.ledgerPath);
       break;
     }

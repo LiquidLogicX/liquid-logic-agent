@@ -22,7 +22,13 @@ export type LedgerEventType =
   | "denied"
   | "expired"
   | "frozen"
-  | "unfrozen";
+  | "unfrozen"
+  // Base-rail payment serialization (treasurer client.ts)
+  | "approving"
+  | "approve_failed"
+  | "needs_review"
+  | "reserved"
+  | "reservation_released";
 
 /**
  * CAIP-2 networks a ledger spend row can carry. Tempo (4217 / 42431) rows are
@@ -75,6 +81,8 @@ export interface PaymentEvent extends LedgerEventBase {
   /** Present when payment followed an operator-approved hold. */
   holdId?: string;
   approvedBy?: string;
+  /** Base rail: closes the matching `reserved` row. */
+  reservationId?: string;
   /** Tempo rail: TIP-20 symbol actually sent (e.g. "USDC.e"); asset stays "USDC". */
   tokenSymbol?: string;
 }
@@ -131,6 +139,58 @@ export interface UnfrozenEvent extends LedgerEventBase {
   type: "unfrozen";
 }
 
+/** Base rail: an operator won the pending→approving transition for a hold. */
+export interface ApprovingEvent extends LedgerEventBase {
+  type: "approving";
+  holdId: string;
+  approvedBy?: string;
+}
+
+/**
+ * Base rail: approval attempt finished without a payment and the spend was
+ * not submitted. Hold returns to pending and can be retried.
+ */
+export interface ApproveFailedEvent extends LedgerEventBase {
+  type: "approve_failed";
+  holdId: string;
+  error?: string;
+}
+
+/**
+ * Base rail: a settle may have moved funds but we cannot prove it
+ * (non-2xx, missing txHash, duplicate txHash, or a crash after signing).
+ * Terminal for the payer. The matching reservation stays open so the cap
+ * still counts it and the hold is not payable again.
+ */
+export interface NeedsReviewEvent extends LedgerEventBase {
+  type: "needs_review";
+  holdId?: string;
+  reservationId?: string;
+  error?: string;
+}
+
+/**
+ * Base rail: spend reserved against the daily cap before an x402 payment is signed.
+ * Counts toward today's spend until a payment row (same reservationId) or a
+ * reservation_released row closes it. A crash mid-payment therefore fails safe.
+ */
+export interface ReservedEvent extends LedgerEventBase {
+  type: "reserved";
+  reservationId: string;
+  endpoint: string;
+  amountUsdc: string;
+  network?: LedgerNetwork;
+  holdId?: string;
+  /** Payee pinned from the 402 before the payment was signed. */
+  payTo?: string;
+}
+
+export interface ReservationReleasedEvent extends LedgerEventBase {
+  type: "reservation_released";
+  reservationId: string;
+  error?: string;
+}
+
 export type LedgerEvent =
   | AllowanceSetEvent
   | TopUpEvent
@@ -143,7 +203,12 @@ export type LedgerEvent =
   | DeniedEvent
   | ExpiredEvent
   | FrozenEvent
-  | UnfrozenEvent;
+  | UnfrozenEvent
+  | ApprovingEvent
+  | ApproveFailedEvent
+  | NeedsReviewEvent
+  | ReservedEvent
+  | ReservationReleasedEvent;
 
 /**
  * True for spend that counts toward payment totals / daily cap.

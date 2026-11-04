@@ -318,6 +318,49 @@ describe("Tempo policy (cap, allowlist, hold, daily cap)", () => {
     assert.equal(r.remainingAtomic, 1_000_000n);
   });
 
+  it("counts open Base reservations toward the Tempo daily cap", () => {
+    const baseReserved = {
+      type: "reserved" as const,
+      reservationId: "r-base",
+      timestamp: "2026-10-12T12:00:00Z",
+      endpoint: "https://audit.liquidlogicx.com/api/audit",
+      amountUsdc: "24.00",
+      network: "eip155:8453" as const,
+      payTo: "0x147991A1c25e78f6D9225d2dBA61eD93A6158c7b",
+    };
+    const open = evaluateTempoPayment({ cfg, events: [baseReserved], payee: PAYEE, amountUsdc: "1.01", now });
+    assert.equal(open.decision, "refuse");
+    assert.equal((open as { code: string }).code, "OVER_DAILY_CAP");
+    assert.equal(open.spentTodayAtomic, 24_000_000n);
+    // Exactly the remaining 1.00 still fits (24 + 1 = 25).
+    assert.equal(
+      evaluateTempoPayment({ cfg, events: [baseReserved], payee: PAYEE, amountUsdc: "1.00", now }).decision,
+      "allow",
+    );
+    // A settled Base payment is not a reservation and stays off the Tempo cap.
+    const settledBase = pay("20.00", { network: "eip155:8453", walletAddress: TREASURER_WALLET_ADDRESS });
+    assert.equal(
+      evaluateTempoPayment({ cfg, events: [settledBase], payee: PAYEE, amountUsdc: "1.00", now }).decision,
+      "allow",
+    );
+    // Released, closed by a payment row, yesterday, or a Tempo-network reservation: not counted.
+    const released = {
+      type: "reservation_released" as const,
+      reservationId: "r-base",
+      timestamp: "2026-10-12T12:05:00Z",
+    };
+    assert.equal(
+      evaluateTempoPayment({ cfg, events: [baseReserved, released], payee: PAYEE, amountUsdc: "1.01", now }).decision,
+      "allow",
+    );
+    const tempoReserved = { ...baseReserved, reservationId: "r-tempo", network: "eip155:4217" as const };
+    assert.equal(
+      evaluateTempoPayment({ cfg, events: [tempoReserved], payee: PAYEE, amountUsdc: "1.01", now }).decision,
+      "allow",
+    );
+    assert.equal(tempoSpentTodayAtomic([baseReserved], cfg, now), 0n, "helper itself stays Tempo rows only");
+  });
+
   it("refuses everything while the operator freeze is on", () => {
     const events: LedgerEvent[] = [{ type: "frozen", timestamp: "2026-10-12T09:00:00Z" } as LedgerEvent];
     const r = evaluateTempoPayment({ cfg, events, payee: PAYEE, amountUsdc: "1", now });

@@ -5,7 +5,8 @@
  *   freeze      → refuse (operator freeze halts every outbound payment, both rails)
  *   allowlist   → payee must be on TREASURER_TEMPO_ALLOWLIST (addresses, fail closed)
  *   max/payment → refuse above TREASURER_TEMPO_MAX_PER_PAYMENT_USDC
- *   daily cap   → refuse when today's (UTC) Tempo spend + amount > TREASURER_TEMPO_DAILY_CAP_USDC
+ *   daily cap   → refuse when today's (UTC) Tempo spend + open Base reservations
+ *                 + amount > TREASURER_TEMPO_DAILY_CAP_USDC
  *   hold        → amounts at/above TREASURER_TEMPO_HOLD_ABOVE_USDC are held for approval
  *                 (same "at/above" rule as Base HOLD_ABOVE_USDC)
  *
@@ -14,6 +15,7 @@
 import type { LedgerEvent } from "@liquid-logic/shared";
 import { isFrozenFromLedger, isPaymentEvent } from "@liquid-logic/shared";
 import type { Address } from "viem";
+import { openBaseReservedTodayAtomic } from "../base-pay.js";
 import { formatUsd6, parseUsd6 } from "./amount.js";
 import type { TempoRailConfig } from "./config.js";
 
@@ -79,7 +81,11 @@ export function evaluateTempoPayment(opts: {
 }): TempoPolicyDecision {
   const { cfg, events } = opts;
   const now = opts.now ?? new Date();
-  const spentTodayAtomic = tempoSpentTodayAtomic(events, cfg, now);
+  // Tempo spend plus Base reservations that are still open. A Base payment
+  // in flight has not landed as a Tempo row, but the USDC is already committed.
+  // Settled Base payments stay on the Base cap only (separate wallet).
+  const spentTodayAtomic =
+    tempoSpentTodayAtomic(events, cfg, now) + openBaseReservedTodayAtomic(events, now);
   const remainingAtomic =
     spentTodayAtomic >= cfg.dailyCapAtomic ? 0n : cfg.dailyCapAtomic - spentTodayAtomic;
   const sym = cfg.tokenSymbol;
@@ -122,7 +128,7 @@ export function evaluateTempoPayment(opts: {
       ...base,
       decision: "refuse",
       code: "OVER_DAILY_CAP",
-      reason: `Daily cap: ${formatUsd6(spentTodayAtomic)} of ${formatUsd6(cfg.dailyCapAtomic)} ${sym} spent today (UTC); ${formatUsd6(amount)} more would exceed it`,
+      reason: `Daily cap: ${formatUsd6(spentTodayAtomic)} of ${formatUsd6(cfg.dailyCapAtomic)} ${sym} committed today (UTC, including open Base reservations); ${formatUsd6(amount)} more would exceed it`,
     };
   }
 
