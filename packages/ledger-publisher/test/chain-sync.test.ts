@@ -21,10 +21,16 @@ import {
 } from "@liquid-logic/shared";
 import {
   type ChainTransfer,
+  CONFIRMATIONS,
   DEFAULT_PAY_TO,
+  TRANSFER_TOPIC,
+  confirmedScanTip,
   endpointForAmount,
   fetchTransfersTo,
+  persistScanChunk,
   reconcile,
+  resumeFromBlock,
+  scanTransfers,
 } from "../src/chain-sync.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -198,6 +204,171 @@ describe("fetchTransfersTo (Base JSON-RPC)", () => {
     }
   });
 });
+
+describe("scan cursor (Denim: 10x blocks, getLogs still capped)", () => {
+  it("keeps the scan 300 blocks behind the head", () => {
+    assert.equal(CONFIRMATIONS, 300n);
+    assert.equal(confirmedScanTip(52_000_000n), 52_000_000n - 300n);
+  });
+
+  it("one run catches up across every chunk and the cursor ends on the last one", async () => {
+    const from = 10_000n;
+    const to = from + 1_500n - 1n; // 1500 blocks, three chunks of 500
+    const ends: bigint[] = [];
+    const late = to - 10n;
+    const got = await scanTransfers({
+      rpc: rpcWithLogs({ [late.toString()]: late }, 500n),
+      payTo: DEFAULT_PAY_TO,
+      fromBlock: from,
+      toBlock: to,
+      chunk: 500n,
+      onChunk: (c) => ends.push(c.lastScannedBlock),
+    });
+    assert.deepEqual(ends, [from + 499n, from + 999n, to]);
+    assert.equal(got.lastScannedBlock, to);
+    assert.equal(got.transfers.length, 1);
+    assert.equal(got.transfers[0]!.blockNumber, late);
+  });
+
+  it("does not advance the cursor past a chunk eth_getLogs did not return", async () => {
+    const from = 2_000n;
+    const to = from + 300n - 1n;
+    const writes: Array<{ path: string; body: string }> = [];
+    const seen: ChainTransfer[] = [];
+    const missed = from + 250n;
+    let calls = 0;
+    await assert.rejects(() =>
+      scanTransfers({
+        rpc: (async (method: string, params: any[]) => {
+          if (method === "eth_getBlockByNumber") return { timestamp: "0x1" };
+          if (method !== "eth_getLogs") throw new Error(method);
+          calls += 1;
+          const span = BigInt(params[0].toBlock) - BigInt(params[0].fromBlock) + 1n;
+          assert.ok(span <= 100n);
+          if (calls === 3) throw new Error("rpc timeout");
+          const bn = missed;
+          if (bn < BigInt(params[0].fromBlock) || bn > BigInt(params[0].toBlock)) return [];
+          return [logRow(bn)];
+        }) as any,
+        payTo: DEFAULT_PAY_TO,
+        fromBlock: from,
+        toBlock: to,
+        chunk: 100n,
+        onChunk: (c) => {
+          persistScanChunk({
+            jsonlPath: "ledger.jsonl",
+            cursorPath: "chain-sync.json",
+            payTo: DEFAULT_PAY_TO,
+            existing: [],
+            seen,
+            chunkTransfers: c.transfers,
+            lastScannedBlock: c.lastScannedBlock,
+            writeFile: (path, body) => writes.push({ path, body }),
+          });
+        },
+      }),
+    );
+    const cursors = writes.filter((w) => w.path === "chain-sync.json");
+    assert.equal(cursors.length, 2, "two full chunks persisted, the failed third did not");
+    const saved = JSON.parse(cursors[1]!.body) as { lastScannedBlock: string };
+    assert.equal(saved.lastScannedBlock, (from + 199n).toString());
+    assert.equal(seen.some((t) => t.blockNumber === missed), false);
+    const resume = resumeFromBlock(saved, DEFAULT_PAY_TO, from);
+    assert.equal(resume, from + 200n);
+    const rest = await scanTransfers({
+      rpc: rpcWithLogs({ [missed.toString()]: missed }, 100n),
+      payTo: DEFAULT_PAY_TO,
+      fromBlock: resume,
+      toBlock: to,
+      chunk: 100n,
+    });
+    assert.equal(rest.lastScannedBlock, to);
+    assert.equal(rest.transfers.length, 1);
+    assert.equal(rest.transfers[0]!.blockNumber, missed);
+  });
+
+  it("writes new ledger rows before the cursor moves", () => {
+    const order: string[] = [];
+    const t: ChainTransfer = {
+      txHash: "0x" + "cd".repeat(32),
+      blockNumber: 1n,
+      logIndex: 0,
+      from: "0x" + "ab".repeat(20),
+      to: DEFAULT_PAY_TO,
+      value: 1000n,
+      timestamp: 1_700_000_000,
+    };
+    persistScanChunk({
+      jsonlPath: "ledger.jsonl",
+      cursorPath: "chain-sync.json",
+      payTo: DEFAULT_PAY_TO,
+      existing: mainLedger,
+      seen: [],
+      chunkTransfers: [t],
+      lastScannedBlock: t.blockNumber,
+      writeFile: (path) => order.push(path),
+    });
+    assert.deepEqual(order, ["ledger.jsonl", "chain-sync.json"]);
+  });
+
+  it("still advances the cursor when a full chunk has no new payments", () => {
+    const order: string[] = [];
+    const bodies: string[] = [];
+    const already = reconcile(mainLedger, transfers, DEFAULT_PAY_TO).events;
+    persistScanChunk({
+      jsonlPath: "ledger.jsonl",
+      cursorPath: "chain-sync.json",
+      payTo: DEFAULT_PAY_TO,
+      existing: already,
+      seen: [],
+      chunkTransfers: transfers,
+      lastScannedBlock: 42n,
+      writeFile: (path, body) => {
+        order.push(path);
+        bodies.push(body);
+      },
+    });
+    assert.deepEqual(order, ["chain-sync.json"]);
+    assert.equal(JSON.parse(bodies[0]!).lastScannedBlock, "42");
+  });
+
+  it("resumeFromBlock ignores a cursor for a different payTo", () => {
+    assert.equal(
+      resumeFromBlock({ payTo: "0x" + "11".repeat(20), lastScannedBlock: "99" }, DEFAULT_PAY_TO, 50n),
+      50n,
+    );
+    assert.equal(resumeFromBlock({ payTo: DEFAULT_PAY_TO, lastScannedBlock: "99" }, DEFAULT_PAY_TO, 50n), 100n);
+  });
+});
+
+function logRow(block: bigint) {
+  return {
+    transactionHash: "0x" + block.toString(16).padStart(64, "0"),
+    blockNumber: "0x" + block.toString(16),
+    logIndex: "0x0",
+    topics: [
+      TRANSFER_TOPIC,
+      "0x" + "ab".repeat(32),
+      "0x" + DEFAULT_PAY_TO.slice(2).toLowerCase().padStart(64, "0"),
+    ],
+    data: "0x3e8",
+  };
+}
+
+/** getLogs that returns `logRow(block)` when the block falls in the requested span. */
+function rpcWithLogs(blocks: Record<string, bigint>, cap: bigint) {
+  return (async <T>(method: string, params: any[]): Promise<T> => {
+    if (method === "eth_getBlockByNumber") return { timestamp: "0x65" } as T;
+    if (method !== "eth_getLogs") throw new Error(method);
+    const { fromBlock, toBlock } = params[0];
+    const span = BigInt(toBlock) - BigInt(fromBlock) + 1n;
+    assert.ok(span <= cap);
+    const rows = Object.values(blocks)
+      .filter((bn) => bn >= BigInt(fromBlock) && bn <= BigInt(toBlock))
+      .map((bn) => logRow(bn));
+    return rows as T;
+  }) as any;
+}
 
 describe("treasurer daily cap ignores other agents' payments to payTo", () => {
   it("sumSpentTodayAtomic(…, treasurer) skips inbound rows from other payers", () => {

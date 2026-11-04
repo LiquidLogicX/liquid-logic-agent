@@ -29,11 +29,17 @@ jobs:
       - run: npm run build -w @liquid-logic/shared && npm run build -w @liquid-logic/ledger-publisher
       # Append every Base USDC Transfer to the x402 payTo (audit/allowance/prove
       # payments from ANY payer) that is missing from data/ledger.jsonl.
+      # continue-on-error so a mid-span RPC failure still commits the cursor
+      # at the last fully scanned chunk. The commit step turns the job red.
       - name: Reconcile payTo receipts from Base
+        id: chainsync
+        continue-on-error: true
         env:
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
           LEDGER_JSONL_PATH: data/ledger.jsonl
           # mainnet.base.org (fallback when BASE_RPC_URL unset) caps eth_getLogs at 500.
+          # The scanner walks many of these chunks per run; 500 is the RPC cap,
+          # not the distance the cursor is allowed to jump.
           LEDGER_CHAIN_SYNC_CHUNK: "500"
         run: npm run chain-sync-ledger
       - name: Publish public ledger + social drafts
@@ -60,25 +66,47 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/ledger.jsonl data/chain-sync.json public/ledger apps/web/public/ledger apps/audit/public/ledger drafts/social
-          if git diff --staged --quiet -I '"generatedAt"' -I '"today"' -- . ':(exclude)data/chain-sync.json'; then
-            echo "No material ledger change (timestamps / cursor only) — nothing to publish."
-            exit 0
+          # Timestamp-only republish is still noise. The scan cursor is not:
+          # Denim emits 10x the blocks, and dropping a cursor-only update makes
+          # the next run rescan an ever-growing span from the last payment.
+          ledger_dirty=0
+          cursor_dirty=0
+          if ! git diff --staged --quiet -I '"generatedAt"' -I '"today"' -- . ':(exclude)data/chain-sync.json'; then
+            ledger_dirty=1
           fi
-          git commit -m "chore(ledger): publish public ledger and social drafts"
-          if git push origin HEAD:main; then
-            exit 0
+          if ! git diff --staged --quiet -- data/chain-sync.json; then
+            cursor_dirty=1
           fi
-          echo "::warning::Direct push to protected main rejected — opening/refreshing an automation PR."
-          BR=automation/ledger-publish
-          git push --force origin HEAD:refs/heads/$BR
-          if [ "$(gh pr list --head "$BR" --base main --state open --json number --jq 'length')" != "0" ]; then
-            echo "Automation PR already open — branch $BR refreshed."
-            exit 0
+          commit_and_push() {
+            git commit -m "$1"
+            if git push origin HEAD:main; then
+              return 0
+            fi
+            echo "::warning::Direct push to protected main rejected — opening/refreshing an automation PR."
+            BR=automation/ledger-publish
+            git push --force origin HEAD:refs/heads/$BR
+            if [ "$(gh pr list --head "$BR" --base main --state open --json number --jq 'length')" != "0" ]; then
+              echo "Automation PR already open — branch $BR refreshed."
+              return 0
+            fi
+            if ! gh pr create --base main --head "$BR" \
+                --title "chore(ledger): publish ledger (automated)" \
+                --body "Automated by the Publish ledger workflow: payTo receipts reconciled from Base and/or the scan cursor advanced to the last fully scanned block. main is protected, so this needs a human merge."; then
+              # Repo setting "Allow GitHub Actions to create and approve pull requests" is off.
+              echo "::error::Ledger changes pushed to branch $BR but this workflow may not open PRs. Open it by hand: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/compare/main...$BR"
+              return 1
+            fi
+          }
+          if [ "$ledger_dirty" = 1 ]; then
+            commit_and_push "chore(ledger): publish public ledger and social drafts"
+          elif [ "$cursor_dirty" = 1 ]; then
+            git restore --staged .
+            git add data/chain-sync.json
+            commit_and_push "chore(ledger): advance Base scan cursor"
+          else
+            echo "No material ledger change and the scan cursor did not move."
           fi
-          if ! gh pr create --base main --head "$BR" \
-              --title "chore(ledger): publish ledger (automated)" \
-              --body "Automated by the Publish ledger workflow: new payTo receipts reconciled from Base and republished public/ledger. main is protected, so this needs a human merge."; then
-            # Repo setting "Allow GitHub Actions to create and approve pull requests" is off.
-            echo "::error::Ledger changes pushed to branch $BR but this workflow may not open PRs. Open it by hand: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/compare/main...$BR"
+          if [ "${{ steps.chainsync.outcome }}" != "success" ]; then
+            echo "::error::Base log scan stopped before the confirmed tip. Any committed cursor is the last fully scanned block, not the head."
             exit 1
           fi
