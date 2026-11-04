@@ -2,6 +2,7 @@
  * Long-running treasurer process for Render (web service).
  * - Operator HTTP (public HTTPS): freeze/unfreeze + hold approve/deny/list
  * - Periodic hold TTL expiry (mandatory auto-deny → ledger type `expired`)
+ *   and recovery of holds stuck in `approving` (needs_review if a reservation is open)
  * - Periodic ledger sync → GitHub
  * Payments via CLI / one-off jobs / hold approve; pay() honors freeze + hold threshold.
  */
@@ -43,7 +44,12 @@ function runHoldExpirySweep(label: string): void {
   try {
     const config = loadConfig();
     const ledger = new LedgerStore(config.ledgerPath);
-    const expired = expireStaleHolds(ledger, config.holdTtlSeconds);
+    const expired = expireStaleHolds(
+      ledger,
+      config.holdTtlSeconds,
+      new Date(),
+      config.approvingTtlSeconds,
+    );
     if (expired.length) {
       console.log(
         `[treasurer] hold TTL sweep (${label}): expired ${expired.length} →`,

@@ -26,6 +26,7 @@ export type LedgerEventType =
   // Base-rail payment serialization (treasurer client.ts)
   | "approving"
   | "approve_failed"
+  | "needs_review"
   | "reserved"
   | "reservation_released";
 
@@ -145,10 +146,26 @@ export interface ApprovingEvent extends LedgerEventBase {
   approvedBy?: string;
 }
 
-/** Base rail: approval attempt finished without a payment; hold returns to pending. */
+/**
+ * Base rail: approval attempt finished without a payment and the spend was
+ * not submitted. Hold returns to pending and can be retried.
+ */
 export interface ApproveFailedEvent extends LedgerEventBase {
   type: "approve_failed";
   holdId: string;
+  error?: string;
+}
+
+/**
+ * Base rail: a settle may have moved funds but we cannot prove it
+ * (non-2xx, missing txHash, duplicate txHash, or a crash after signing).
+ * Terminal for the payer. The matching reservation stays open so the cap
+ * still counts it and the hold is not payable again.
+ */
+export interface NeedsReviewEvent extends LedgerEventBase {
+  type: "needs_review";
+  holdId?: string;
+  reservationId?: string;
   error?: string;
 }
 
@@ -164,6 +181,8 @@ export interface ReservedEvent extends LedgerEventBase {
   amountUsdc: string;
   network?: LedgerNetwork;
   holdId?: string;
+  /** Payee pinned from the 402 before the payment was signed. */
+  payTo?: string;
 }
 
 export interface ReservationReleasedEvent extends LedgerEventBase {
@@ -187,6 +206,7 @@ export type LedgerEvent =
   | UnfrozenEvent
   | ApprovingEvent
   | ApproveFailedEvent
+  | NeedsReviewEvent
   | ReservedEvent
   | ReservationReleasedEvent;
 

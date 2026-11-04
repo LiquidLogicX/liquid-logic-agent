@@ -11,7 +11,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 export class LedgerStore {
-  constructor(private readonly filePath: string) {
+  constructor(readonly filePath: string) {
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
     if (!fs.existsSync(filePath)) {
       fs.writeFileSync(filePath, "", "utf8");

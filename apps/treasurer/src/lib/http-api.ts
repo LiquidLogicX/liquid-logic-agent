@@ -24,6 +24,7 @@ import {
   expireStaleHolds,
   findHeldEvent,
   getHoldResolution,
+  listNeedsReviewHolds,
   listPendingHolds,
   recordDenied,
 } from "./hold.js";
@@ -106,7 +107,7 @@ export function startOperatorHttpServer(opts: {
 
     try {
       if (method === "GET" && (path === "/healthz" || path === "/health")) {
-        expireStaleHolds(ledger, config.holdTtlSeconds);
+        expireStaleHolds(ledger, config.holdTtlSeconds, new Date(), config.approvingTtlSeconds);
         sendJson(res, 200, {
           ok: true,
           service: "liquid-logic-treasurer",
@@ -128,7 +129,7 @@ export function startOperatorHttpServer(opts: {
         }
         await readBody(req);
 
-        expireStaleHolds(ledger, config.holdTtlSeconds);
+        expireStaleHolds(ledger, config.holdTtlSeconds, new Date(), config.approvingTtlSeconds);
         const { holdId, action } = holdAction;
         const resolution = getHoldResolution(ledger.readAll(), holdId);
 
@@ -221,7 +222,8 @@ export function startOperatorHttpServer(opts: {
           const settled =
             result.status >= 200 &&
             result.status < 300 &&
-            Boolean(result.txHash);
+            Boolean(result.txHash) &&
+            !result.needsReview;
           console.log(
             "[treasurer] hold approved → payment",
             holdId,
@@ -233,8 +235,9 @@ export function startOperatorHttpServer(opts: {
           if (!settled) {
             sendJson(res, 502, {
               ok: false,
-              error:
-                "Approve ran but settlement incomplete (need 2xx + txHash). Check CDP spend + endpoint ?wallet=.",
+              error: result.needsReview
+                ? "Settlement is unclear. The hold is needs_review and the reservation is kept so it cannot be paid twice."
+                : "Approve ran but settlement incomplete (need 2xx + txHash). Check CDP spend + endpoint ?wallet=.",
               holdId,
               status: result.status,
               txHash: result.txHash,
@@ -258,7 +261,9 @@ export function startOperatorHttpServer(opts: {
             ? 423
             : message.startsWith("GUARDRAIL:")
               ? 400
-              : message.startsWith("HOLD_NOT_PENDING:") || message.startsWith("HOLD_ALREADY_")
+              : message.startsWith("HOLD_NOT_PENDING:") ||
+                  message.startsWith("HOLD_ALREADY_") ||
+                  message.startsWith("HOLD_NEEDS_REVIEW:")
                 ? 409
                 : message.startsWith("HOLD_NOT_FOUND:")
                   ? 404
@@ -334,15 +339,22 @@ export function startOperatorHttpServer(opts: {
           sendJson(res, auth.status, { ok: false, error: auth.error });
           return;
         }
-        const expired = expireStaleHolds(ledger, config.holdTtlSeconds);
+        const expired = expireStaleHolds(
+          ledger,
+          config.holdTtlSeconds,
+          new Date(),
+          config.approvingTtlSeconds,
+        );
         if (expired.length) void maybeSyncLedger(config.ledgerPath);
         const holds = listPendingHolds(ledger, config.holdTtlSeconds);
         sendJson(res, 200, {
           ok: true,
           holdAboveUsdc: config.holdAboveUsdc,
           holdTtlSeconds: config.holdTtlSeconds,
+          approvingTtlSeconds: config.approvingTtlSeconds,
           expiredJustNow: expired,
           holds,
+          needsReview: listNeedsReviewHolds(ledger.readAll()),
         });
         return;
       }

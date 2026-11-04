@@ -10,9 +10,11 @@ import {
 } from "@liquid-logic/shared";
 import {
   committedTodayAtomic,
+  paymentHeaderValue,
   quoteGuardedFetch,
   release,
   reserve,
+  signedPaymentMismatch,
   withBasePaymentLock,
   type PriceQuote,
 } from "./base-pay.js";
@@ -20,9 +22,11 @@ import type { TreasurerConfig } from "./config.js";
 import { LedgerStore } from "./ledger-store.js";
 import { assertPaymentAsset } from "./usdc-guard.js";
 import { isPaymentsFrozen } from "./freeze.js";
+import { withLedgerFileLock } from "./file-lock.js";
 import {
   claimHoldForApproval,
   releaseHoldApproval,
+  flagNeedsReview,
   amountMeetsHoldThreshold,
   expireStaleHolds,
   findHeldEvent,
@@ -131,6 +135,11 @@ export type PayResult = {
   walletAddress: string;
   holdId?: string;
   held?: boolean;
+  /**
+   * Settle may have moved funds but there is no clean payment row.
+   * The hold (if any) is `needs_review` and the reservation is still open.
+   */
+  needsReview?: boolean;
 };
 
 /**
@@ -180,6 +189,15 @@ export function setBasePaymentTransportForTests(
  *   daily cap incl. open reservations → `reserved` row → sign + settle →
  *   payment row with the quoted (actual) amount, or `reservation_released`.
  */
+/**
+ * In-process lock, then the ledger file lock. Same order in approveHold so
+ * two waiters cannot deadlock. The file lock is what serializes the CLI and
+ * the HTTP server when they share one ledger on one host.
+ */
+function withPaymentGuards<T>(ledgerPath: string, fn: () => Promise<T>): Promise<T> {
+  return withBasePaymentLock(() => withLedgerFileLock(ledgerPath, fn));
+}
+
 export async function executePayment(opts: {
   config: TreasurerConfig;
   ledger: LedgerStore;
@@ -189,7 +207,7 @@ export async function executePayment(opts: {
   holdId?: string;
   approvedBy?: string;
 }): Promise<PayResult> {
-  return withBasePaymentLock(() => executePaymentLocked(opts));
+  return withPaymentGuards(opts.ledger.filePath, () => executePaymentLocked(opts));
 }
 
 async function executePaymentLocked(opts: {
@@ -243,6 +261,8 @@ async function executePaymentLocked(opts: {
 
   let quote: PriceQuote | null = null;
   let reservationId: string | null = null;
+  /** True only after the signed header matched the pin and was about to be sent. */
+  let signedOff = false;
   const guarded = quoteGuardedFetch(
     innerFetch,
     { network: config.network, asset: config.usdcAddress },
@@ -250,6 +270,16 @@ async function executePaymentLocked(opts: {
       // Runs on the unpaid 402, before the x402 client creates a payment payload.
       if (!q) {
         throw new Error("GUARDRAIL: PRICE_UNKNOWN — 402 has no parseable USDC price on this network; refusing to pay");
+      }
+      if (q.payToConflict || !q.payTo) {
+        throw new Error(
+          "GUARDRAIL: PAYTO_UNPINNED — 402 matching accepts omit payTo or disagree; refusing to pay",
+        );
+      }
+      if (config.expectedPayTo && q.payTo.toLowerCase() !== config.expectedPayTo.toLowerCase()) {
+        throw new Error(
+          `GUARDRAIL: PAYTO_UNPINNED — 402 payTo ${q.payTo} != TREASURER_PAY_TO ${config.expectedPayTo}`,
+        );
       }
       if (q.atomic <= 0n) throw new Error("GUARDRAIL: quoted price must be greater than 0");
       if (hintAtomic != null && q.atomic > hintAtomic) {
@@ -279,15 +309,60 @@ async function executePaymentLocked(opts: {
         atomic: q.atomic,
         network: config.network,
         holdId: opts.holdId,
+        payTo: q.payTo,
       });
     },
+    (init) => {
+      const pinned = quote as PriceQuote | null;
+      if (!pinned?.payTo || !reservationId) {
+        throw new Error("GUARDRAIL: SIGNED_PAYMENT_MISMATCH — payment header before a payTo was pinned");
+      }
+      const header = paymentHeaderValue(init);
+      const mismatch = signedPaymentMismatch(header ?? "", {
+        atomic: pinned.atomic,
+        payTo: pinned.payTo,
+        network: config.network,
+        asset: config.usdcAddress,
+      });
+      if (mismatch) {
+        throw new Error(`GUARDRAIL: SIGNED_PAYMENT_MISMATCH — ${mismatch}`);
+      }
+      signedOff = true;
+    },
   );
+
+  const markAmbiguous = (error: string, status: number, body: string, txHash?: string): PayResult => {
+    ledger.append({
+      type: "payment_failed",
+      timestamp: new Date().toISOString(),
+      endpoint,
+      amountUsdc: quote ? atomicToUsdc(quote.atomic) : undefined,
+      error,
+      walletAddress: evmAddress,
+      reason: opts.reason,
+    });
+    flagNeedsReview(ledger, { holdId: opts.holdId, reservationId: reservationId ?? undefined, error });
+    return {
+      status,
+      body,
+      txHash,
+      walletAddress: evmAddress,
+      holdId: opts.holdId,
+      needsReview: true,
+    };
+  };
 
   let response: Response;
   try {
     response = await transport.payFetch(config, payUrl, guarded);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
+    // The signed retry was handed to the network. A throw here can mean the
+    // facilitator settled and the response was lost. Keep the reservation.
+    if (reservationId && signedOff) {
+      markAmbiguous(`signed payment failed after send: ${message}`, 0, "");
+      throw new Error(`NEEDS_REVIEW: ${message}`);
+    }
     if (reservationId) release(ledger, reservationId, message);
     ledger.append({
       type: "payment_failed",
@@ -324,28 +399,14 @@ async function executePaymentLocked(opts: {
   const amountUsdc = atomicToUsdc(q.atomic);
 
   // NEVER append type=payment without a real txHash + HTTP 2xx.
+  // A response that is non-2xx or has no txHash may still have settled on-chain.
+  // Do not return the hold to pending and do not release the reservation.
   if (!settlement.settled || !settlement.txHash) {
     const error =
       settlement.error ??
       `HTTP ${response.status}; missing txHash — refusing payment ledger row`;
-    release(ledger, reservationId, error);
-    ledger.append({
-      type: "payment_failed",
-      timestamp: new Date().toISOString(),
-      endpoint,
-      amountUsdc,
-      error,
-      walletAddress: evmAddress,
-      reason: opts.reason,
-    });
     const body = await response.text();
-    return {
-      status: response.status,
-      body,
-      txHash: settlement.txHash,
-      walletAddress: evmAddress,
-      holdId: opts.holdId,
-    };
+    return markAmbiguous(error, response.status, body, settlement.txHash);
   }
 
   const txHash = settlement.txHash;
@@ -359,8 +420,17 @@ async function executePaymentLocked(opts: {
     holdId: opts.holdId,
     approvedBy: opts.approvedBy,
     reservationId,
+    payTo: q.payTo,
   });
-  if (!recorded) release(ledger, reservationId, `duplicate txHash ${txHash}`);
+  if (!recorded) {
+    const body = await response.text();
+    return markAmbiguous(
+      `duplicate txHash ${txHash} — payment not re-recorded; reservation kept for review`,
+      response.status,
+      body,
+      txHash,
+    );
+  }
 
   const body = await response.text();
   return {
@@ -397,7 +467,7 @@ export async function payEndpoint(opts: {
     );
   }
 
-  expireStaleHolds(ledger, config.holdTtlSeconds);
+  expireStaleHolds(ledger, config.holdTtlSeconds, new Date(), config.approvingTtlSeconds);
 
   const endpoint = assertAllowlistedEndpoint(opts.url, config.allowlist);
   const amount = opts.maxAmountHintUsdc;
@@ -426,7 +496,7 @@ export async function payEndpoint(opts: {
     const pollMs = opts.holdPollMs ?? 2_000;
 
     while (Date.now() < deadline) {
-      expireStaleHolds(ledger, config.holdTtlSeconds);
+      expireStaleHolds(ledger, config.holdTtlSeconds, new Date(), config.approvingTtlSeconds);
       const resolution = getHoldResolution(ledger.readAll(), held.holdId);
       if (resolution === "paid") {
         const events = ledger.readAll();
@@ -461,11 +531,16 @@ export async function payEndpoint(opts: {
           `HOLD_EXPIRED: hold ${held.holdId} auto-denied after TTL ${config.holdTtlSeconds}s`,
         );
       }
+      if (resolution === "needs_review") {
+        throw new Error(
+          `HOLD_NEEDS_REVIEW: hold ${held.holdId} needs operator review (settlement unclear)`,
+        );
+      }
       await sleep(pollMs);
     }
 
     // Final expiry sweep if the loop timed out without a writer race.
-    expireStaleHolds(ledger, config.holdTtlSeconds);
+    expireStaleHolds(ledger, config.holdTtlSeconds, new Date(), config.approvingTtlSeconds);
     const finalRes = getHoldResolution(ledger.readAll(), held.holdId);
     if (finalRes === "paid") {
       return {
@@ -477,6 +552,11 @@ export async function payEndpoint(opts: {
     }
     if (finalRes === "denied") {
       throw new Error(`HOLD_DENIED: hold ${held.holdId} denied by operator`);
+    }
+    if (finalRes === "needs_review") {
+      throw new Error(
+        `HOLD_NEEDS_REVIEW: hold ${held.holdId} needs operator review (settlement unclear)`,
+      );
     }
     throw new Error(
       `HOLD_EXPIRED: hold ${held.holdId} auto-denied after TTL ${config.holdTtlSeconds}s`,
@@ -525,7 +605,7 @@ export function requestHold(opts: {
       `HOLD_BELOW_THRESHOLD: ${amount} USDC < HOLD_ABOVE_USDC=${config.holdAboveUsdc}`,
     );
   }
-  expireStaleHolds(ledger, config.holdTtlSeconds);
+  expireStaleHolds(ledger, config.holdTtlSeconds, new Date(), config.approvingTtlSeconds);
   const endpoint = assertAllowlistedEndpoint(opts.url, config.allowlist);
   const held = recordHeld(ledger, {
     endpoint,
@@ -552,8 +632,13 @@ export function requestHold(opts: {
 
 /**
  * Approve a pending hold. The pending → approving transition is atomic
- * (claimHoldForApproval), so of N concurrent approvers exactly one pays; the
- * rest get HOLD_NOT_PENDING. A failed payment returns the hold to pending.
+ * (claimHoldForApproval) and runs under the same locks as the payment, so of
+ * N concurrent approvers (in this process or, via the file lock, the CLI)
+ * exactly one pays. The others get HOLD_NOT_PENDING.
+ *
+ * A failure before the signed request is sent returns the hold to pending.
+ * A settle that is non-2xx, has no txHash, or cannot be recorded leaves the
+ * hold in `needs_review` and keeps the reservation (it must not be paid twice).
  */
 export async function approveHold(opts: {
   config: TreasurerConfig;
@@ -561,8 +646,17 @@ export async function approveHold(opts: {
   holdId: string;
   approvedBy?: string;
 }): Promise<PayResult> {
+  return withPaymentGuards(opts.ledger.filePath, () => approveHoldLocked(opts));
+}
+
+async function approveHoldLocked(opts: {
+  config: TreasurerConfig;
+  ledger: LedgerStore;
+  holdId: string;
+  approvedBy?: string;
+}): Promise<PayResult> {
   const { config, ledger, holdId } = opts;
-  expireStaleHolds(ledger, config.holdTtlSeconds);
+  expireStaleHolds(ledger, config.holdTtlSeconds, new Date(), config.approvingTtlSeconds);
 
   const held = findHeldEvent(ledger.readAll(), holdId);
   if (!held) {
@@ -575,12 +669,15 @@ export async function approveHold(opts: {
     if (r === "paid") throw new Error(`HOLD_ALREADY_PAID: ${holdId}`);
     if (r === "denied") throw new Error(`HOLD_ALREADY_DENIED: ${holdId}`);
     if (r === "expired") throw new Error(`HOLD_ALREADY_EXPIRED: ${holdId}`);
+    if (r === "needs_review") {
+      throw new Error(`HOLD_NEEDS_REVIEW: ${holdId} needs operator review before it can be paid again`);
+    }
     if (r === "approving") throw new Error(`HOLD_NOT_PENDING: ${holdId} is already being approved`);
     throw new Error(`HOLD_NOT_FOUND: ${holdId}`);
   }
 
   try {
-    const result = await executePayment({
+    const result = await executePaymentLocked({
       config,
       ledger,
       url: held.endpoint,
@@ -589,12 +686,15 @@ export async function approveHold(opts: {
       holdId,
       approvedBy,
     });
+    if (result.needsReview) return result;
     if (!(result.status >= 200 && result.status < 300 && result.txHash)) {
       releaseHoldApproval(ledger, holdId, `settlement incomplete (HTTP ${result.status})`);
     }
     return result;
   } catch (err) {
-    releaseHoldApproval(ledger, holdId, err instanceof Error ? err.message : String(err));
+    if (getHoldResolution(ledger.readAll(), holdId) !== "needs_review") {
+      releaseHoldApproval(ledger, holdId, err instanceof Error ? err.message : String(err));
+    }
     throw err;
   }
 }
