@@ -11,9 +11,13 @@
  * This reads every Base USDC Transfer *to* payTo via JSON-RPC eth_getLogs
  * (public mainnet.base.org caps eth_getLogs at 500 blocks as of 2026-10-05;
  *  paid RPCs may allow more) and appends any tx hash that is not already in
- * the ledger. Existing rows are never modified. Only blocks with
- * ≥ CONFIRMATIONS are scanned; a cursor in data/chain-sync.json keeps runs short.
- * If the RPC returns "limited to a N range", the scanner auto-shrinks the chunk.
+ * the ledger. Existing rows are never modified. Only blocks at or below
+ * `head - CONFIRMATIONS` are scanned (300 blocks: ~60s after Denim's 200ms
+ * blocks, ~10min on the old 2s cadence). A cursor in data/chain-sync.json
+ * stores the last block whose eth_getLogs range fully returned — never a
+ * later tip — and each run keeps walking chunks until that tip or an RPC
+ * error. If the RPC returns "limited to a N range", the scanner auto-shrinks
+ * the chunk and does not advance the cursor for the rejected range.
  *
  * Usage (repo root): npm run chain-sync-ledger
  * Env: BASE_RPC_URL, LEDGER_PAY_TO_EVM, LEDGER_JSONL_PATH, LEDGER_CHAIN_SYNC_CURSOR,
@@ -45,7 +49,18 @@ import {
 export const DEFAULT_PAY_TO = "0x147991A1c25e78f6D9225d2dBA61eD93A6158c7b";
 /** Just before payTo's first USDC receipt (block 51266731, 2026-09-13). */
 export const DEFAULT_START_BLOCK = 51_266_000n;
-export const CONFIRMATIONS = 12n;
+/**
+ * Blocks kept back from the chain head. 12 was ~24s when Base blocks were 2s
+ * and is ~2.4s after Denim (200ms, 2026-11-05), short enough that a reorg
+ * could drop a log the cursor had already passed. 300 matches the /api/prove
+ * floor: 60s of post-Denim blocks.
+ */
+export const CONFIRMATIONS = 300n;
+
+/** Highest block a scan may include. Same formula as before (`head - CONFIRMATIONS`). */
+export function confirmedScanTip(head: bigint, confirmations: bigint = CONFIRMATIONS): bigint {
+  return head - confirmations;
+}
 /** Default eth_getLogs window. mainnet.base.org enforces 500; override via LEDGER_CHAIN_SYNC_CHUNK. */
 export const DEFAULT_CHUNK = 500n;
 export const TRANSFER_TOPIC =
@@ -171,16 +186,33 @@ type GetLogsRow = {
   removed?: boolean;
 };
 
-export async function fetchTransfersTo(opts: {
+export type ScanChunk = {
+  /** Inclusive. Every block from the previous cursor through here was returned by eth_getLogs. */
+  lastScannedBlock: bigint;
+  /** Transfers in this chunk only. */
+  transfers: ChainTransfer[];
+};
+
+/**
+ * Walk `[fromBlock, toBlock]` in getLogs-sized chunks.
+ * `onChunk` runs only after a chunk's eth_getLogs call returns. A rejected
+ * range (including "limited to a N range", which shrinks and retries) does
+ * not move the cursor. The returned `lastScannedBlock` is the last success,
+ * or `fromBlock - 1` when nothing completed — never `toBlock` unless that
+ * block was actually scanned.
+ */
+export async function scanTransfers(opts: {
   rpc: Rpc;
   payTo: string;
   fromBlock: bigint;
   toBlock: bigint;
   chunk: bigint;
-}): Promise<ChainTransfer[]> {
+  onChunk?: (chunk: ScanChunk) => void;
+}): Promise<{ transfers: ChainTransfer[]; lastScannedBlock: bigint }> {
   const out: ChainTransfer[] = [];
   const tsCache = new Map<string, number>();
   let chunk = opts.chunk > 0n ? opts.chunk : DEFAULT_CHUNK;
+  let lastScanned = opts.fromBlock - 1n;
 
   for (let from = opts.fromBlock; from <= opts.toBlock; ) {
     const to = from + chunk - 1n < opts.toBlock ? from + chunk - 1n : opts.toBlock;
@@ -205,6 +237,7 @@ export async function fetchTransfersTo(opts: {
       }
       throw err;
     }
+    const chunkTransfers: ChainTransfer[] = [];
     for (const l of logs) {
       if (l.removed || l.topics.length !== 3) continue;
       let ts = tsCache.get(l.blockNumber);
@@ -213,7 +246,7 @@ export async function fetchTransfersTo(opts: {
         ts = Number(BigInt(b.timestamp));
         tsCache.set(l.blockNumber, ts);
       }
-      out.push({
+      chunkTransfers.push({
         txHash: l.transactionHash,
         blockNumber: BigInt(l.blockNumber),
         logIndex: Number(BigInt(l.logIndex)),
@@ -223,9 +256,74 @@ export async function fetchTransfersTo(opts: {
         timestamp: ts,
       });
     }
+    out.push(...chunkTransfers);
+    lastScanned = to;
+    opts.onChunk?.({ lastScannedBlock: lastScanned, transfers: chunkTransfers });
     from = to + 1n;
   }
-  return out;
+  return { transfers: out, lastScannedBlock: lastScanned };
+}
+
+export async function fetchTransfersTo(opts: {
+  rpc: Rpc;
+  payTo: string;
+  fromBlock: bigint;
+  toBlock: bigint;
+  chunk: bigint;
+}): Promise<ChainTransfer[]> {
+  const { transfers } = await scanTransfers(opts);
+  return transfers;
+}
+
+export function cursorDocument(payTo: string, lastScannedBlock: bigint): string {
+  return JSON.stringify({ payTo, lastScannedBlock: lastScannedBlock.toString() }, null, 2) + "\n";
+}
+
+/** Next block to scan. A cursor for a different payTo is ignored. */
+export function resumeFromBlock(
+  cursor: { payTo?: string; lastScannedBlock?: string } | null,
+  payTo: string,
+  startBlock: bigint,
+): bigint {
+  if (!cursor || cursor.payTo?.toLowerCase() !== payTo.toLowerCase() || !cursor.lastScannedBlock) {
+    return startBlock;
+  }
+  try {
+    const next = BigInt(cursor.lastScannedBlock) + 1n;
+    return next > startBlock ? next : startBlock;
+  } catch {
+    return startBlock;
+  }
+}
+
+function writeAtomic(file: string, data: string) {
+  const tmp = `${file}.${process.pid}.tmp`;
+  fs.writeFileSync(tmp, data);
+  fs.renameSync(tmp, file);
+}
+
+/**
+ * Merge this chunk into the ledger file, then write the cursor.
+ * Ledger first so a crash between the two writes re-scans (idempotent)
+ * instead of skipping transfers that were never appended.
+ * `seen` is appended to and is the full set of transfers persisted this run.
+ */
+export function persistScanChunk(args: {
+  jsonlPath: string;
+  cursorPath: string;
+  payTo: string;
+  existing: LedgerEvent[];
+  seen: ChainTransfer[];
+  chunkTransfers: ChainTransfer[];
+  lastScannedBlock: bigint;
+  writeFile?: (path: string, data: string) => void;
+}): { added: PaymentEvent[] } {
+  for (const t of args.chunkTransfers) args.seen.push(t);
+  const { events, added } = reconcile(args.existing, args.seen, args.payTo);
+  const write = args.writeFile ?? writeAtomic;
+  if (added.length) write(args.jsonlPath, serializeLedgerJsonl(events));
+  write(args.cursorPath, cursorDocument(args.payTo, args.lastScannedBlock));
+  return { added };
 }
 
 // ------------------------------------------------------------------ main
@@ -252,38 +350,63 @@ async function main(): Promise<void> {
   const rpc = jsonRpc(rpcUrl);
 
   const startBlock = BigInt(process.env.LEDGER_CHAIN_SYNC_START_BLOCK?.trim() || DEFAULT_START_BLOCK);
-  let fromBlock = startBlock;
-  if (fs.existsSync(cursorPath)) {
-    const c = JSON.parse(fs.readFileSync(cursorPath, "utf8")) as Cursor;
-    if (c.payTo?.toLowerCase() === payTo.toLowerCase()) {
-      const next = BigInt(c.lastScannedBlock) + 1n;
-      if (next > fromBlock) fromBlock = next;
-    }
-  }
+  const saved: Cursor | null = fs.existsSync(cursorPath)
+    ? (JSON.parse(fs.readFileSync(cursorPath, "utf8")) as Cursor)
+    : null;
+  const fromBlock = resumeFromBlock(saved, payTo, startBlock);
   const head = BigInt(await rpc<string>("eth_blockNumber", []));
-  const toBlock = head - CONFIRMATIONS;
+  const toBlock = confirmedScanTip(head);
   if (toBlock < fromBlock) {
     console.log(JSON.stringify({ ok: true, skipped: true, reason: "no new confirmed blocks" }));
     return;
   }
 
-  const transfers = await fetchTransfersTo({ rpc, payTo, fromBlock, toBlock, chunk });
   const raw = fs.existsSync(jsonlPath) ? fs.readFileSync(jsonlPath, "utf8") : "";
   const existing = parseLedgerJsonl(raw);
-  const { events, added } = reconcile(existing, transfers, payTo);
-  if (added.length) fs.writeFileSync(jsonlPath, serializeLedgerJsonl(events), "utf8");
-  fs.writeFileSync(
-    cursorPath,
-    JSON.stringify({ payTo, lastScannedBlock: toBlock.toString() } satisfies Cursor, null, 2) + "\n",
-    "utf8",
-  );
+  const seen: ChainTransfer[] = [];
+  let scannedTo = fromBlock - 1n;
+  try {
+    const result = await scanTransfers({
+      rpc,
+      payTo,
+      fromBlock,
+      toBlock,
+      chunk,
+      onChunk: (c) => {
+        // Ledger rows for this chunk hit disk before the cursor moves past it.
+        persistScanChunk({
+          jsonlPath,
+          cursorPath,
+          payTo,
+          existing,
+          seen,
+          chunkTransfers: c.transfers,
+          lastScannedBlock: c.lastScannedBlock,
+        });
+        scannedTo = c.lastScannedBlock;
+      },
+    });
+    scannedTo = result.lastScannedBlock;
+  } catch (err) {
+    console.error(err);
+    console.error(
+      JSON.stringify({
+        ok: false,
+        partial: scannedTo >= fromBlock,
+        lastScannedBlock: scannedTo >= fromBlock ? scannedTo.toString() : null,
+        reason: "scan stopped before the confirmed tip; cursor is the last fully scanned block",
+      }),
+    );
+    process.exit(1);
+  }
+  const { added } = reconcile(existing, seen, payTo);
   console.log(
     JSON.stringify(
       {
         ok: true,
         payTo,
-        scanned: { fromBlock: fromBlock.toString(), toBlock: toBlock.toString() },
-        transfersSeen: transfers.length,
+        scanned: { fromBlock: fromBlock.toString(), toBlock: scannedTo.toString() },
+        transfersSeen: seen.length,
         added: added.map((a) => ({ txHash: a.txHash, amountUsdc: a.amountUsdc, endpoint: a.endpoint, from: a.walletAddress })),
       },
       null,

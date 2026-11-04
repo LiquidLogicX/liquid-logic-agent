@@ -41,8 +41,9 @@ reads every Base USDC `Transfer` to the x402 payTo
 `payment` row for any tx hash not already in this file (existing rows are never
 edited). Rows carry `walletAddress` = payer, `payTo`, and an endpoint inferred
 from the price (`0.03` → `/api/audit`, legacy `0.05`, `0.001` → `/api/allowance`, `0.02` →
-`/api/prove`). `data/chain-sync.json` is the scan cursor (only committed with a
-real ledger change).
+`/api/prove`). `data/chain-sync.json` is the scan cursor: the last Base block
+whose `eth_getLogs` range fully returned. The Publish ledger workflow commits
+it even when no new payment was appended, so the next run resumes there.
 
 Why: before this, only LLX's own outgoing payments reached this file (treasurer
 disk sync + `paid-*-call` scripts). Payments other agents made to our endpoints
