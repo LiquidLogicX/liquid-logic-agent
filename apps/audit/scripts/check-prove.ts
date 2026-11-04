@@ -89,20 +89,48 @@ function key(q: { txHash: string; payee: string; amountUSDC: string }) {
 }
 
 /** fetch mock serving Base JSON-RPC + recorder HTTP API. */
-function mockFetch(opts: { receipts: Record<string, any>; head: bigint; rec: RecorderState }): typeof fetch {
+function mockFetch(opts: {
+  receipts: Record<string, any>;
+  head: bigint;
+  /** Chain-time timestamp of `head`. Default: newest fixture block + 1 day (already final). */
+  headTimestamp?: bigint;
+  /** `safe` tag block number. `null` → tag unavailable. Default 0 (behind every fixture). */
+  safeHead?: bigint | null;
+  rec: RecorderState;
+  onRpc?: (method: string, params: unknown[]) => void;
+}): typeof fetch {
+  const stamps = Object.values(opts.receipts).map((f: any) => BigInt(f.block.timestamp));
+  const newest = stamps.reduce((a, b) => (a > b ? a : b), 0n);
+  const headTimestamp = opts.headTimestamp ?? newest + 86_400n;
+  const hex = (n: bigint) => "0x" + n.toString(16);
   return (async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input);
     const json = (body: unknown, status = 200) =>
       new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
     if (url.startsWith(BASE_RPC)) {
       const { method, params, id } = JSON.parse(String(init?.body));
+      opts.onRpc?.(method, params);
       if (method === "eth_getTransactionReceipt") {
         return json({ jsonrpc: "2.0", id, result: opts.receipts[params[0].toLowerCase()]?.receipt ?? null });
       }
-      if (method === "eth_blockNumber") return json({ jsonrpc: "2.0", id, result: "0x" + opts.head.toString(16) });
+      if (method === "eth_blockNumber") return json({ jsonrpc: "2.0", id, result: hex(opts.head) });
       if (method === "eth_getBlockByNumber") {
-        const hit = Object.values(opts.receipts).find((f: any) => f.block.number === params[0]);
-        return json({ jsonrpc: "2.0", id, result: hit ? (hit as any).block : null });
+        const tag = params[0];
+        const hit = Object.values(opts.receipts).find((f: any) => f.block.number === tag);
+        if (hit) return json({ jsonrpc: "2.0", id, result: (hit as any).block });
+        if (tag === "latest" || tag === hex(opts.head)) {
+          return json({
+            jsonrpc: "2.0",
+            id,
+            result: { number: hex(opts.head), timestamp: hex(headTimestamp) },
+          });
+        }
+        if (tag === "safe") {
+          if (opts.safeHead === null) return json({ jsonrpc: "2.0", id, result: null });
+          const safe = opts.safeHead ?? 0n;
+          return json({ jsonrpc: "2.0", id, result: { number: hex(safe), timestamp: "0x1" } });
+        }
+        return json({ jsonrpc: "2.0", id, result: null });
       }
       return json({ jsonrpc: "2.0", id, error: { message: "unsupported" } });
     }
@@ -163,7 +191,17 @@ function toCoreRoutes() {
   return out;
 }
 
-function harness(opts: { rec?: RecorderState; head?: bigint; apiKey?: string | null; warns?: string[] } = {}) {
+function harness(
+  opts: {
+    rec?: RecorderState;
+    head?: bigint;
+    headTimestamp?: bigint;
+    safeHead?: bigint | null;
+    apiKey?: string | null;
+    warns?: string[];
+    onRpc?: (method: string, params: unknown[]) => void;
+  } = {},
+) {
   const fac = mockFacilitator();
   const rec = opts.rec ?? newRecorderState();
   const receipts = {
@@ -171,7 +209,14 @@ function harness(opts: { rec?: RecorderState; head?: bigint; apiKey?: string | n
     [TX_EXTERNAL.receipt.transactionHash.toLowerCase()]: TX_EXTERNAL,
     [TX_NON_USDC.receipt.transactionHash.toLowerCase()]: TX_NON_USDC,
   };
-  const f = mockFetch({ receipts, head: opts.head ?? 60_000_000n, rec });
+  const f = mockFetch({
+    receipts,
+    head: opts.head ?? 60_000_000n,
+    headTimestamp: opts.headTimestamp,
+    safeHead: opts.safeHead,
+    rec,
+    onRpc: opts.onRpc,
+  });
   const warns = opts.warns ?? [];
   const deps: ProveDeps = {
     base: createBaseReader(BASE_RPC, f),
@@ -404,6 +449,54 @@ describe("check 6 — bad hash / non-USDC / wrong chain → 400 and no settlemen
     const { res, body } = await paidCall(h, TREASURER, { txHash: TX_PROOF1.receipt.transactionHash });
     assert.equal(res.status, 400);
     assert.equal(body.code, "TX_NOT_CONFIRMED");
+    assert.equal(h.fac.settles.length, 0);
+  });
+  it("12 confirmations at ~2s (Denim) → 400, retry hint is remaining seconds", async () => {
+    const bn = BigInt(TX_PROOF1.receipt.blockNumber);
+    const ts = BigInt(TX_PROOF1.block.timestamp);
+    const h = harness({ head: bn + 11n, headTimestamp: ts + 2n, safeHead: bn - 1n });
+    const { res, body } = await paidCall(h, TREASURER, { txHash: TX_PROOF1.receipt.transactionHash });
+    assert.equal(res.status, 400);
+    assert.equal(body.code, "TX_NOT_CONFIRMED");
+    assert.equal(body.retryAfterSeconds, 58);
+    assert.match(body.error, /2s old/);
+    assert.equal(h.fac.settles.length, 0);
+    assert.equal(h.rec.writes, 0);
+  });
+  it("60s old and 300 confirmations → recorded, and the safe tag is not read", async () => {
+    const bn = BigInt(TX_PROOF1.receipt.blockNumber);
+    const ts = BigInt(TX_PROOF1.block.timestamp);
+    const tags: string[] = [];
+    const h = harness({
+      head: bn + 299n,
+      headTimestamp: ts + 60n,
+      safeHead: null,
+      onRpc: (method, params) => {
+        if (method === "eth_getBlockByNumber") tags.push(String(params[0]));
+      },
+    });
+    const { res, body } = await paidCall(h, TREASURER, { txHash: TX_PROOF1.receipt.transactionHash });
+    assert.equal(res.status, 200, JSON.stringify(body));
+    assert.equal(body.status, "recorded");
+    assert.equal(tags.includes("safe"), false);
+    assert.equal(h.fac.settles.length, 1);
+  });
+  it("young block at the L1-safe head is recorded once the 300-block floor is met", async () => {
+    const bn = BigInt(TX_PROOF1.receipt.blockNumber);
+    const ts = BigInt(TX_PROOF1.block.timestamp);
+    const h = harness({ head: bn + 299n, headTimestamp: ts + 1n, safeHead: bn });
+    const { res, body } = await paidCall(h, TREASURER, { txHash: TX_PROOF1.receipt.transactionHash });
+    assert.equal(res.status, 200, JSON.stringify(body));
+    assert.equal(body.status, "recorded");
+  });
+  it("L1-safe but under the 300-block floor → 400, not settled", async () => {
+    const bn = BigInt(TX_PROOF1.receipt.blockNumber);
+    const ts = BigInt(TX_PROOF1.block.timestamp);
+    const h = harness({ head: bn + 11n, headTimestamp: ts + 1n, safeHead: bn });
+    const { res, body } = await paidCall(h, TREASURER, { txHash: TX_PROOF1.receipt.transactionHash });
+    assert.equal(res.status, 400);
+    assert.equal(body.code, "TX_NOT_CONFIRMED");
+    assert.match(body.error, /12 confirmation/);
     assert.equal(h.fac.settles.length, 0);
   });
   it("recorder rejects (Base verify mismatch) → 400, not settled", async () => {

@@ -3,7 +3,7 @@
  *
  * The @x402/next wrapper only settles when this handler returns < 400, so every
  * rejection below (400 / 403 / 503) means the caller is NOT charged:
- *   400  bad hash, memo, tx not on Base / reverted / no Base USDC Transfer, too few confirmations
+ *   400  bad hash, memo, tx not on Base / reverted / no Base USDC Transfer, not yet final
  *   403  paying wallet is neither `from` nor `to` of the USDC Transfer
  *   503  recorder down, Arc write failed, recorder gas low, Base RPC down, missing config
  * 200 with status "recorded" (new Arc write) or "existing" (already recorded, no write).
@@ -15,13 +15,14 @@ import {
   BASE_USDC,
   ERC20_TRANSFER_TOPIC,
   MEMO_MAX_CHARS,
-  MIN_BASE_CONFIRMATIONS,
+  MIN_BASE_SETTLEMENT_SECONDS,
   PROVE_ARC_CHAIN,
   PROVE_SOURCE_CHAIN,
   SETTLEMENT_PROOFS_ARC,
   verifyUrlFor,
 } from "./config";
 import { type BaseReader, BaseRpcError, type RpcLog } from "./base-rpc";
+import { assessBaseFinality } from "./finality";
 import {
   type RecorderClient,
   type RecorderProof,
@@ -219,10 +220,10 @@ export async function handleProve(req: NextRequest, deps: ProveDeps): Promise<Ne
     );
   }
 
-  let head: bigint;
+  let head: { number: bigint; timestamp: bigint };
   let blockTimestamp: bigint;
   try {
-    head = await deps.base.getBlockNumber();
+    head = await deps.base.getHead();
     blockTimestamp = await deps.base.getBlockTimestamp(receipt.blockNumber);
   } catch (err) {
     if (err instanceof BaseRpcError) {
@@ -230,14 +231,23 @@ export async function handleProve(req: NextRequest, deps: ProveDeps): Promise<Ne
     }
     throw err;
   }
-  const confirmations = head - BigInt(receipt.blockNumber) + 1n;
-  if (confirmations < BigInt(MIN_BASE_CONFIRMATIONS)) {
-    return fail(
-      400,
-      "TX_NOT_CONFIRMED",
-      `Base transaction has ${confirmations} confirmation(s); need ${MIN_BASE_CONFIRMATIONS}. Not charged, retry shortly.`,
-      { retryAfterSeconds: Number(BigInt(MIN_BASE_CONFIRMATIONS) - confirmations) * 2 + 2 },
-    );
+  const txBlock = BigInt(receipt.blockNumber);
+  const age = head.timestamp - blockTimestamp;
+  // Only read `safe` while chain time is still short. A hung safe-tag call
+  // must not delay a payment that is already 60 seconds old.
+  const safeHead =
+    age >= BigInt(MIN_BASE_SETTLEMENT_SECONDS) ? null : await deps.base.getSafeHead();
+  const decision = assessBaseFinality({
+    blockNumber: txBlock,
+    blockTimestamp,
+    head: head.number,
+    headTimestamp: head.timestamp,
+    safeHead,
+  });
+  if (!decision.settled) {
+    return fail(400, "TX_NOT_CONFIRMED", `${decision.message}. Not charged, retry shortly.`, {
+      retryAfterSeconds: decision.retryAfterSeconds,
+    });
   }
 
   const recordKey = {
@@ -297,6 +307,7 @@ export async function handleProve(req: NextRequest, deps: ProveDeps): Promise<Ne
       refId: body.refId,
       arcTx: body.arc.txHash,
       payer: getAddress(payer),
+      settledBy: decision.via,
     });
     return NextResponse.json(body);
   } catch (err) {
