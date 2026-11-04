@@ -1,8 +1,10 @@
 import type { NextConfig } from "next";
+import { securityHeaders } from "./lib/securityHeaders";
 
 const nextConfig: NextConfig = {
   async headers() {
     return [
+      ...securityHeaders(),
       {
         source: "/ledger",
         headers: [

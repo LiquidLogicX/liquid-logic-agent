@@ -2,7 +2,7 @@
   "name": "liquid-logic-agent",
   "version": "0.1.0",
   "private": true,
-  "description": "Liquid Logic Agent \u2014 Base mainnet USDC treasurer + x402 audit (services only)",
+  "description": "Liquid Logic Agent — Base mainnet USDC treasurer + x402 audit (services only)",
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -21,7 +21,7 @@
     "lint": "echo \"No root lint yet\"",
     "chain-sync-ledger": "node --import tsx packages/ledger-publisher/src/chain-sync.ts",
     "test:ledger": "node --import tsx --test packages/ledger-publisher/test/chain-sync.test.ts",
-    "test:web": "node --import tsx --test apps/web/test/request-access.test.ts apps/web/test/video-sound.test.ts apps/web/test/llx-utility.test.ts apps/web/test/settlement-proofs.test.ts apps/web/test/about.test.ts apps/web/test/addresses.test.ts apps/web/test/bridge.test.ts"
+    "test:web": "node --import tsx --test apps/web/test/request-access.test.ts apps/web/test/video-sound.test.ts apps/web/test/llx-utility.test.ts apps/web/test/settlement-proofs.test.ts apps/web/test/about.test.ts apps/web/test/addresses.test.ts apps/web/test/bridge.test.ts apps/web/test/security-headers.test.ts"
   },
   "license": "MIT"
 }
