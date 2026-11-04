@@ -60,7 +60,7 @@ const PRODUCTS = [
     status: "Live on 11 chains",
     icon: ICON.lock,
     text: "Lock or vest any token with a fixed unlock date. Every lock is public and checkable on the block explorer.",
-    detail: "10 USDC per lock, or $LLX at a discount on Base. Live on Base, Ethereum, BNB Chain and 8 more chains.",
+    detail: "49 USDC per lock, or 2,200 $LLX on Base. Live on Base, Ethereum, BNB Chain and 8 more chains.",
     href: "https://xlock.liquidlogicx.com",
     cta: "Lock a token",
     featured: true,

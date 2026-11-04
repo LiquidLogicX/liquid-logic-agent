@@ -12,14 +12,12 @@ import {
 import { BridgeSection } from "@/components/BridgeSection";
 import { CllxZeroSection } from "@/components/CllxZeroSection";
 import { HeroArt } from "@/components/HeroArt";
-import { HeroOrbs } from "@/components/HeroOrbs";
 import { HeroProducts } from "@/components/HeroProducts";
 
 export default function HomePage() {
   return (
     <>
       <div className="hero hero-v2" id="products">
-        <HeroOrbs />
         <div className="wrap">
           <div className="hero-copy">
             <div className="hero-text">
