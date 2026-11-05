@@ -12,6 +12,9 @@ import { CONTACT_EMAIL, CONTACT_TELEGRAM, CONTACT_X } from "@/lib/about";
 
 const fmt = (n: number) => n.toLocaleString("en-US");
 
+/** SolidProof KYC page for Liquid Logic X (KYC status READY, Nov 5 2026). */
+export const SOLIDPROOF_KYC_URL = "https://app.solidproof.io/projects/liquid-logic-x";
+
 export function TokenomicsSection() {
   return (
     <section className="block" id="tokenomics">
@@ -27,6 +30,14 @@ export function TokenomicsSection() {
           <div className="actions" style={{ marginTop: 20 }}>
             <a className="btn secondary" href="/whitepaper">
               Read the whitepaper
+            </a>
+            <a
+              className="btn secondary"
+              href={SOLIDPROOF_KYC_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span aria-hidden="true">✓ </span>KYC by SolidProof
             </a>
           </div>
         </div>
@@ -129,6 +140,18 @@ export function TeamSection() {
               <p>{m.bio}</p>
             </article>
           ))}
+          <article className="tkn-kyc">
+            <h3>
+              <span aria-hidden="true">✓ </span>KYC verified
+            </h3>
+            <div className="tkn-role">SolidProof</div>
+            <p>
+              The founder completed KYC with SolidProof (status: Ready).{" "}
+              <a href={SOLIDPROOF_KYC_URL} rel="noopener noreferrer" target="_blank">
+                View the KYC page
+              </a>
+            </p>
+          </article>
           <article className="tkn-channels">
             <h3>Official channels</h3>
             <p>
