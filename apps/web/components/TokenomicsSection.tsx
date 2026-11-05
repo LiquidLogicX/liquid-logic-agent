@@ -12,8 +12,10 @@ import { CONTACT_EMAIL, CONTACT_TELEGRAM, CONTACT_X } from "@/lib/about";
 
 const fmt = (n: number) => n.toLocaleString("en-US");
 
-/** SolidProof KYC page for Liquid Logic X (KYC status READY, Nov 5 2026). */
+/** SolidProof KYC page for Liquid Logic X (KYC status READY, Gold tier, Nov 5 2026, valid to Nov 5 2028). */
 export const SOLIDPROOF_KYC_URL = "https://app.solidproof.io/projects/liquid-logic-x";
+/** Official SolidProof gold KYC badge image, as shown on the SolidProof project page. */
+export const SOLIDPROOF_KYC_BADGE = "https://app.solidproof.io/static/img/media/kyc_gold.webp";
 
 export function TokenomicsSection() {
   return (
@@ -37,7 +39,7 @@ export function TokenomicsSection() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <span aria-hidden="true">✓ </span>KYC by SolidProof
+              <span aria-hidden="true">✓ </span>KYC Gold by SolidProof
             </a>
           </div>
         </div>
@@ -141,12 +143,24 @@ export function TeamSection() {
             </article>
           ))}
           <article className="tkn-kyc">
+            <a href={SOLIDPROOF_KYC_URL} rel="noopener noreferrer" target="_blank">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={SOLIDPROOF_KYC_BADGE}
+                alt="SolidProof KYC Gold badge for Liquid Logic X"
+                width={220}
+                height={88}
+                loading="lazy"
+                style={{ display: "block", width: "100%", maxWidth: 220, height: "auto", marginBottom: 12, borderRadius: 10 }}
+              />
+            </a>
             <h3>
-              <span aria-hidden="true">✓ </span>KYC verified
+              <span aria-hidden="true">✓ </span>KYC verified · Gold tier
             </h3>
             <div className="tkn-role">SolidProof</div>
             <p>
-              The founder completed KYC with SolidProof (status: Ready).{" "}
+              The founder completed KYC with SolidProof on Nov 5, 2026 (valid until
+              Nov 5, 2028).{" "}
               <a href={SOLIDPROOF_KYC_URL} rel="noopener noreferrer" target="_blank">
                 View the KYC page
               </a>
