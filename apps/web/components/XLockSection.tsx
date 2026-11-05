@@ -27,8 +27,8 @@ export function XLockSection() {
             lock verifiable on the chain&apos;s block explorer.
           </p>
           <p className="intro">
-            10 USDC per lock (10 USDG on Robinhood Chain, 10 RLUSD on XRPL EVM), or pay in $LLX at a
-            discount on Base.
+            49 USDC per lock (49 USDG on Robinhood Chain, 49 RLUSD on XRPL EVM), or 2,200 $LLX
+            on Base.
           </p>
           <ul className="chain-pills" aria-label="Live on 11 chains">
             {CHAINS.map((c) => (
